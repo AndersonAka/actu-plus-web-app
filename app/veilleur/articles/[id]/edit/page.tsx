@@ -107,6 +107,14 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
           console.log('Article loaded:', article);
           console.log('Sources:', article.sources);
           
+          // Vérifier si l'article est modifiable (seulement brouillon ou rejeté)
+          const status = article.status || 'draft';
+          if (status !== 'draft' && status !== 'rejected') {
+            setError('Cet article ne peut plus être modifié car il est en attente de validation ou déjà publié.');
+            router.push('/veilleur/articles');
+            return;
+          }
+          
           setArticleData(article);
         } else {
           setError('Article non trouvé');
@@ -122,7 +130,7 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
     if (id) {
       fetchArticle();
     }
-  }, [id]);
+  }, [id, router]);
 
   // Initialiser le formulaire une fois que les données et les catégories/pays sont chargés
   useEffect(() => {
@@ -183,7 +191,13 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
       }
 
       if (submitForReview) {
-        await fetch(`/api/proxy/articles/${id}/submit`, { method: 'POST' });
+        const submitResponse = await fetch(`/api/proxy/articles/${id}/submit`, { method: 'POST' });
+        const submitResult = await submitResponse.json();
+        console.log('Submit response:', submitResult);
+        
+        if (!submitResponse.ok) {
+          throw new Error(submitResult.message || "Erreur lors de la soumission pour validation");
+        }
       }
 
       router.push('/veilleur/articles');

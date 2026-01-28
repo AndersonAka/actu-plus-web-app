@@ -12,7 +12,7 @@ export default function AdminArticleViewPage() {
       articleId={id}
       backUrl="/admin/articles"
       backLabel="Retour aux articles"
-      editUrl={`/admin/articles/${id}/edit`}
+      showEditButton={false}
       userRole="admin"
     />
   );

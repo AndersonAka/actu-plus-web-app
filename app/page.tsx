@@ -6,6 +6,9 @@ import { apiConfig } from '@/config/api.config';
 import { Article, ArticleStatus } from '@/types';
 import { HomePageClient } from './HomePageClient';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 // Mapper les données du backend vers le type Article du frontend
 function mapArticle(data: any): Article {
   return {
@@ -60,10 +63,32 @@ async function getRecentArticles(): Promise<Article[]> {
   }
 }
 
+interface CountrySummary {
+  countryCode: string;
+  countryName: string;
+  summary: any;
+}
+
+async function getSummariesByCountry(): Promise<CountrySummary[]> {
+  try {
+    const response = await fetch(
+      `${apiConfig.baseUrl}/api/articles/summaries-by-country`,
+      { cache: 'no-store' }
+    );
+    if (!response.ok) return [];
+    const result = await response.json();
+    return result.data || result || [];
+  } catch (error) {
+    console.error('Error fetching summaries by country:', error);
+    return [];
+  }
+}
+
 export default async function HomePage() {
-  const [featuredArticles, recentArticles] = await Promise.all([
+  const [featuredArticles, recentArticles, summariesByCountry] = await Promise.all([
     getFeaturedArticles(),
     getRecentArticles(),
+    getSummariesByCountry(),
   ]);
 
   return (
@@ -107,8 +132,8 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Summary Section - Résumé de l'actualité */}
-        <SummarySection article={recentArticles[0]} />
+        {/* Summary Section - Résumé de l'actualité par pays */}
+        <SummarySection summaries={summariesByCountry} />
 
         {/* Recent Articles Grid */}
         <section className="bg-gray-50 py-8">

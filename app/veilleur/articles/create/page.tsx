@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { Button, Input, TextArea, Select, Card, CardHeader, CardTitle, CardContent, Alert } from '@/components/atoms';
 import { RichTextEditor, ImageUpload } from '@/components/molecules';
 import { Category, Country } from '@/types';
-import { ArrowLeft, Save, Send, Wand2, Plus, Trash2, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, Save, Send, Wand2, Plus, Trash2, Link as LinkIcon, FileText, Newspaper, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 const sourceSchema = z.object({
@@ -21,7 +21,9 @@ const articleSchema = z.object({
   excerpt: z.string().optional(),
   content: z.string().min(50, 'Le contenu doit contenir au moins 50 caractères'),
   categoryId: z.string().min(1, 'Veuillez sélectionner une catégorie'),
-  countryId: z.string().optional(),
+  countryId: z.string().min(1, 'Veuillez sélectionner un pays'),
+  contentType: z.enum(['article', 'summary']),
+  articleSection: z.string().optional(),
   coverImage: z.string().url('URL invalide').optional().or(z.literal('')),
   sources: z.array(sourceSchema).optional(),
 });
@@ -41,12 +43,14 @@ export default function CreateArticlePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sources, setSources] = useState<Source[]>([]);
+  const [contentType, setContentType] = useState<'article' | 'summary'>('article');
 
   const {
     register,
     handleSubmit,
     control,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<ArticleFormData>({
     resolver: zodResolver(articleSchema),
@@ -56,10 +60,31 @@ export default function CreateArticlePage() {
       content: '',
       categoryId: '',
       countryId: '',
+      contentType: 'article',
+      articleSection: '',
       coverImage: '',
       sources: [],
     },
   });
+
+  // Fonction pour extraire le texte du HTML et générer le résumé
+  const generateExcerptFromContent = () => {
+    const content = watch('content');
+    if (!content) return;
+    
+    // Supprimer les balises HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    // Nettoyer et tronquer à 200 caractères
+    const cleanText = textContent.replace(/\s+/g, ' ').trim();
+    const excerpt = cleanText.length > 200 
+      ? cleanText.substring(0, 200).trim() + '...' 
+      : cleanText;
+    
+    setValue('excerpt', excerpt);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -100,7 +125,9 @@ export default function CreateArticlePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...articleData,
-          imageUrl: coverImage || undefined,
+          contentType: contentType,
+          articleSection: contentType === 'article' ? articleData.articleSection : undefined,
+          imageUrl: contentType === 'article' ? (coverImage || undefined) : undefined,
           sources: sources.filter(s => s.name.trim() !== ''),
         }),
       });
@@ -111,8 +138,18 @@ export default function CreateArticlePage() {
         throw new Error(result.message || "Erreur lors de la création");
       }
 
-      if (submitForReview && result.id) {
-        await fetch(`/api/proxy/articles/${result.id}/submit`, { method: 'POST' });
+      // L'ID peut être dans result.data.id ou result.id selon la structure de réponse
+      const articleId = result.data?.id || result.id;
+      console.log('Article created with ID:', articleId, 'Full result:', result);
+
+      if (submitForReview && articleId) {
+        const submitResponse = await fetch(`/api/proxy/articles/${articleId}/submit`, { method: 'POST' });
+        const submitResult = await submitResponse.json();
+        console.log('Submit response:', submitResult);
+        
+        if (!submitResponse.ok) {
+          throw new Error(submitResult.message || "Erreur lors de la soumission pour validation");
+        }
       }
 
       router.push('/veilleur/articles');
@@ -161,6 +198,8 @@ export default function CreateArticlePage() {
     setValue('content', randomContent);
     setValue('categoryId', randomCategory);
     setValue('countryId', randomCountry);
+    setValue('contentType', 'article');
+    setValue('articleSection', 'toute-actualite');
     setSources([
       { name: 'Reuters', url: 'https://www.reuters.com' },
       { name: 'AFP', url: 'https://www.afp.com' },
@@ -215,6 +254,99 @@ export default function CreateArticlePage() {
       )}
 
       <form className="space-y-6">
+        {/* Type de contenu */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Type de contenu</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label
+                className={`flex items-center gap-4 rounded-xl border-2 p-4 cursor-pointer transition-all ${
+                  contentType === 'article'
+                    ? 'border-primary-500 bg-primary-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  value="article"
+                  checked={contentType === 'article'}
+                  onChange={(e) => {
+                    setContentType('article');
+                    setValue('contentType', 'article');
+                  }}
+                  className="sr-only"
+                />
+                <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${
+                  contentType === 'article' ? 'bg-primary-500 text-white' : 'bg-gray-100 text-gray-500'
+                }`}>
+                  <Newspaper className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Article standard</p>
+                  <p className="text-sm text-gray-500">Image + texte complet</p>
+                </div>
+              </label>
+
+              <label
+                className={`flex items-center gap-4 rounded-xl border-2 p-4 cursor-pointer transition-all ${
+                  contentType === 'summary'
+                    ? 'border-primary-500 bg-primary-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  value="summary"
+                  checked={contentType === 'summary'}
+                  onChange={(e) => {
+                    setContentType('summary');
+                    setValue('contentType', 'summary');
+                    setValue('articleSection', '');
+                  }}
+                  className="sr-only"
+                />
+                <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${
+                  contentType === 'summary' ? 'bg-primary-500 text-white' : 'bg-gray-100 text-gray-500'
+                }`}>
+                  <FileText className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Résumé de l'actualité</p>
+                  <p className="text-sm text-gray-500">Texte uniquement (pas d'image)</p>
+                </div>
+              </label>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Section d'article (seulement pour les articles) */}
+        {contentType === 'article' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Section de destination</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select
+                label="Dans quelle section cet article doit-il apparaître ?"
+                options={[
+                  { value: '', label: 'Sélectionner une section' },
+                  { value: 'essentiel', label: "L'Essentiel de l'actualité" },
+                  { value: 'toute-actualite', label: "Toute l'actualité" },
+                  { value: 'focus', label: 'Focus (Premium)' },
+                  { value: 'chronique', label: 'Chronique (Premium)' },
+                ]}
+                error={errors.articleSection?.message}
+                {...register('articleSection')}
+              />
+              <p className="mt-2 text-sm text-gray-500">
+                Les sections Focus et Chronique sont réservées aux abonnés Premium.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle>Informations générales</CardTitle>
@@ -227,13 +359,26 @@ export default function CreateArticlePage() {
               {...register('title')}
             />
 
-            <TextArea
-              label="Résumé (optionnel)"
-              placeholder="Bref résumé..."
-              rows={3}
-              error={errors.excerpt?.message}
-              {...register('excerpt')}
-            />
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">Résumé (optionnel)</label>
+                <button
+                  type="button"
+                  onClick={generateExcerptFromContent}
+                  className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 font-medium"
+                  title="Générer à partir du contenu"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  Générer auto
+                </button>
+              </div>
+              <TextArea
+                placeholder="Bref résumé... (cliquez sur 'Générer auto' pour extraire du contenu)"
+                rows={3}
+                error={errors.excerpt?.message}
+                {...register('excerpt')}
+              />
+            </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Select
@@ -245,11 +390,12 @@ export default function CreateArticlePage() {
               />
 
               <Select
-                label="Pays (optionnel)"
+                label="Pays *"
                 options={[
-                  { value: '', label: 'Aucun' },
+                  { value: '', label: 'Sélectionner un pays' },
                   ...countries.map((c) => ({ value: c.id, label: c.name })),
                 ]}
+                error={errors.countryId?.message}
                 {...register('countryId')}
               />
             </div>
@@ -257,24 +403,27 @@ export default function CreateArticlePage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Image de couverture</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Controller
-              name="coverImage"
-              control={control}
-              render={({ field }) => (
-                <ImageUpload
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                  error={errors.coverImage?.message}
-                />
-              )}
-            />
-          </CardContent>
-        </Card>
+        {/* Image de couverture (seulement pour les articles) */}
+        {contentType === 'article' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Image de couverture</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Controller
+                name="coverImage"
+                control={control}
+                render={({ field }) => (
+                  <ImageUpload
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                    error={errors.coverImage?.message}
+                  />
+                )}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>

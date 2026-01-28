@@ -160,8 +160,8 @@ export default function AdminArticlesPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <Link href={`/articles/${article.id}`}>
-                            <Button variant="ghost" size="sm">
+                          <Link href={`/admin/articles/${article.id}`}>
+                            <Button variant="ghost" size="sm" title="Voir l'article">
                               <Eye className="h-4 w-4" />
                             </Button>
                           </Link>

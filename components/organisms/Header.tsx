@@ -18,6 +18,9 @@ import {
   Archive,
   FileText,
   ChevronDown,
+  Newspaper,
+  Home,
+  Sparkles,
 } from 'lucide-react';
 
 const Header = () => {
@@ -36,12 +39,13 @@ const Header = () => {
   };
 
   const navLinks = [
-    { href: '/', label: 'Accueil', exact: true },
-    { href: '/articles', label: 'Articles' },
+    { href: '/', label: 'Accueil', icon: Home, exact: true },
+    { href: '/articles', label: 'Articles', icon: Newspaper },
+    { href: '/favorites', label: 'Favoris', icon: Heart },
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white">
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -63,8 +67,9 @@ const Header = () => {
                 key={link.href}
                 href={link.href}
                 exact={link.exact}
-                className="text-sm"
+                className="text-sm flex items-center gap-1.5 transition-all hover:scale-105"
               >
+                <link.icon className="h-4 w-4" />
                 {link.label}
               </NavLink>
             ))}
@@ -116,22 +121,6 @@ const Header = () => {
                         >
                           <User className="h-4 w-4" />
                           Mon profil
-                        </Link>
-                        <Link
-                          href="/favorites"
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <Heart className="h-4 w-4" />
-                          Mes favoris
-                        </Link>
-                        <Link
-                          href="/archives"
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <Archive className="h-4 w-4" />
-                          Mes archives
                         </Link>
                       </div>
 
@@ -250,20 +239,6 @@ const Header = () => {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Mon profil
-                </Link>
-                <Link
-                  href="/favorites"
-                  className="block rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-100"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Mes favoris
-                </Link>
-                <Link
-                  href="/archives"
-                  className="block rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-100"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Mes archives
                 </Link>
                 {isVeilleur() && (
                   <Link

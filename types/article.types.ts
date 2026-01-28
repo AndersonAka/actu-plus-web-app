@@ -1,5 +1,14 @@
 // Types pour les articles
 
+// Sections d'articles pour les pages pays
+export enum ArticleSection {
+  ESSENTIEL = 'essentiel',
+  TOUTE_ACTUALITE = 'toute-actualite',
+  ARCHIVE = 'archive',
+  FOCUS = 'focus',
+  CHRONIQUE = 'chronique',
+}
+
 // Statuts du workflow de publication
 export enum ArticleStatus {
   DRAFT = 'draft',           // Brouillon (créé par Veilleur)
@@ -38,6 +47,14 @@ export interface Article {
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
+  
+  // Nouveaux champs pour pages pays
+  articleSection?: ArticleSection;
+  isArchive?: boolean;
+  isFeaturedHome?: boolean;        // Article dans "À la une" page d'accueil
+  featuredHomeExpiresAt?: string;  // Date d'expiration (24h)
+  scheduledPublishAt?: string;     // Date de publication programmée
+  isScheduled?: boolean;           // En attente de publication
 }
 
 export interface ArticleAuthor {
@@ -90,4 +107,21 @@ export interface ArticleListResponse {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+// Réponse des résumés par pays
+export interface CountrySummary {
+  countryCode: string;
+  countryName: string;
+  summary: Article | null;
+}
+
+// Payload pour ajouter à la une
+export interface SetFeaturedHomePayload {
+  isFeaturedHome: boolean;
+}
+
+// Payload pour programmer la publication
+export interface SchedulePublishPayload {
+  scheduledPublishAt: string;
 }

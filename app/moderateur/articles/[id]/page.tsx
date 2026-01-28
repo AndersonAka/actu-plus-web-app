@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Button, Card, CardHeader, CardTitle, CardContent, Badge, Alert, TextArea } from '@/components/atoms';
 import { StatusBadge } from '@/components/molecules';
 import { Article, ArticleStatus } from '@/types';
-import { ArrowLeft, CheckCircle, XCircle, Send, Calendar, User, MapPin, Tag, Link as LinkIcon, Crown } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Send, Calendar, User, MapPin, Tag, Link as LinkIcon, Crown, Star, Archive, Clock, Layers } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -26,6 +26,11 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [articleId, setArticleId] = useState<string>('');
   const [isPremium, setIsPremium] = useState(false);
+  const [isFeaturedHome, setIsFeaturedHome] = useState(false);
+  const [isArchive, setIsArchive] = useState(false);
+  const [articleSection, setArticleSection] = useState<string>('');
+  const [scheduledPublishAt, setScheduledPublishAt] = useState<string>('');
+  const [isScheduled, setIsScheduled] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -39,6 +44,9 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
           const articleData = data.data || data;
           setArticle(articleData);
           setIsPremium(articleData.isPremium || false);
+          setIsFeaturedHome(articleData.isFeaturedHome || false);
+          setIsArchive(articleData.isArchive || false);
+          setArticleSection(articleData.articleSection || '');
         }
       } catch (error) {
         console.error('Error fetching article:', error);
@@ -111,7 +119,14 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
       const response = await fetch(`/api/proxy/articles/${articleId}/publish`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isPremium }),
+        body: JSON.stringify({ 
+          isPremium,
+          isFeaturedHome,
+          isArchive,
+          articleSection: articleSection || undefined,
+          scheduledPublishAt: isScheduled && scheduledPublishAt ? new Date(scheduledPublishAt).toISOString() : undefined,
+          isScheduled,
+        }),
       });
 
       if (!response.ok) {
@@ -237,7 +252,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
             </div>
           )}
           <div 
-            className="prose prose-gray prose-headings:font-bold prose-h2:text-xl prose-h3:text-lg prose-p:text-gray-700 prose-strong:text-gray-900 prose-ul:list-disc prose-ol:list-decimal max-w-none"
+            className="article-content prose prose-gray max-w-none"
             dangerouslySetInnerHTML={{ __html: article.content }} 
           />
         </CardContent>
@@ -270,30 +285,106 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
         </Card>
       )}
 
-      {/* Option Premium - visible pour tous les statuts sauf publié */}
+      {/* Options de modération - visible pour tous les statuts sauf publié */}
       {article.status !== ArticleStatus.PUBLISHED && (
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Crown className="h-5 w-5 text-warning-500" />
-              Type d'article
+              <Layers className="h-5 w-5 text-primary-500" />
+              Options de publication
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
-              <input
-                type="checkbox"
-                checked={isPremium}
-                onChange={(e) => setIsPremium(e.target.checked)}
-                className="h-5 w-5 rounded border-gray-300 text-warning-500 focus:ring-warning-500"
-              />
-              <div>
-                <span className="font-medium text-gray-900">Article Premium</span>
-                <p className="text-sm text-gray-500">
-                  {isPremium ? 'Réservé aux abonnés payants' : 'Accessible à tous les utilisateurs'}
-                </p>
-              </div>
-            </label>
+          <CardContent className="space-y-6">
+            {/* Section de l'article */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Section de destination
+              </label>
+              <select
+                value={articleSection}
+                onChange={(e) => setArticleSection(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+              >
+                <option value="">Sélectionner une section</option>
+                <option value="essentiel">L'Essentiel de l'actualité</option>
+                <option value="toute-actualite">Toute l'actualité</option>
+                <option value="focus">Focus (Premium)</option>
+                <option value="chronique">Chronique (Premium)</option>
+              </select>
+            </div>
+
+            {/* Options checkboxes */}
+            <div className="space-y-3">
+              <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={isPremium}
+                  onChange={(e) => setIsPremium(e.target.checked)}
+                  className="h-5 w-5 rounded border-gray-300 text-warning-500 focus:ring-warning-500"
+                />
+                <Crown className="h-5 w-5 text-warning-500" />
+                <div>
+                  <span className="font-medium text-gray-900">Article Premium</span>
+                  <p className="text-sm text-gray-500">Réservé aux abonnés payants</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={isFeaturedHome}
+                  onChange={(e) => setIsFeaturedHome(e.target.checked)}
+                  className="h-5 w-5 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+                />
+                <Star className="h-5 w-5 text-primary-500" />
+                <div>
+                  <span className="font-medium text-gray-900">À la une</span>
+                  <p className="text-sm text-gray-500">Afficher dans le carrousel d'accueil (24h)</p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={isArchive}
+                  onChange={(e) => setIsArchive(e.target.checked)}
+                  className="h-5 w-5 rounded border-gray-300 text-gray-500 focus:ring-gray-500"
+                />
+                <Archive className="h-5 w-5 text-gray-500" />
+                <div>
+                  <span className="font-medium text-gray-900">Archive</span>
+                  <p className="text-sm text-gray-500">Déplacer dans la section Archives</p>
+                </div>
+              </label>
+            </div>
+
+            {/* Publication programmée */}
+            <div className="border-t border-gray-200 pt-4">
+              <label className="flex items-center gap-3 mb-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isScheduled}
+                  onChange={(e) => setIsScheduled(e.target.checked)}
+                  className="h-5 w-5 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+                />
+                <Clock className="h-5 w-5 text-primary-500" />
+                <span className="font-medium text-gray-900">Programmer la publication</span>
+              </label>
+              {isScheduled && (
+                <div className="ml-8">
+                  <input
+                    type="datetime-local"
+                    value={scheduledPublishAt}
+                    onChange={(e) => setScheduledPublishAt(e.target.value)}
+                    min={new Date().toISOString().slice(0, 16)}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  />
+                  <p className="mt-1 text-sm text-gray-500">
+                    L'article sera publié automatiquement à cette date.
+                  </p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}

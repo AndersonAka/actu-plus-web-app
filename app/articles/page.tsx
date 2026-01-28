@@ -37,14 +37,16 @@ function ArticlesContent() {
         ]);
 
         if (articlesRes.ok) {
-          const data: ArticleListResponse = await articlesRes.json();
-          setArticles(data.articles || []);
-          setTotalPages(data.totalPages || 1);
+          const data = await articlesRes.json();
+          // Handle different response structures from backend
+          const articlesList = data.data?.data || data.data || data.articles || [];
+          setArticles(articlesList);
+          setTotalPages(data.data?.totalPages || data.totalPages || 1);
         }
 
         if (categoriesRes.ok) {
           const cats = await categoriesRes.json();
-          setCategories(Array.isArray(cats) ? cats : []);
+          setCategories(Array.isArray(cats) ? cats : cats.data || []);
         }
       } catch (error) {
         console.error('Error fetching articles:', error);

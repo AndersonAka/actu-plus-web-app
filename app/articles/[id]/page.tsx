@@ -8,8 +8,9 @@ import { apiConfig } from '@/config/api.config';
 import { Article, ArticleStatus } from '@/types';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Calendar, Eye, ArrowLeft, Share2, Crown } from 'lucide-react';
+import { Calendar, Eye, Share2, Crown } from 'lucide-react';
 import { ArticleContent } from './ArticleContent';
+import { BackButton } from './BackButton';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -88,13 +89,10 @@ export default async function ArticleDetailPage({ params }: PageProps) {
       <Header />
       <main className="flex-1 py-8">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <Link
-            href="/articles"
-            className="mb-6 inline-flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Retour aux articles
-          </Link>
+          <BackButton 
+            countryCode={article.country?.code} 
+            countryName={article.country?.name} 
+          />
 
           <header className="mb-8">
             <div className="mb-4 flex items-center gap-2">

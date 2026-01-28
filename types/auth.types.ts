@@ -1,4 +1,12 @@
 // Types pour l'authentification
+export interface UserSubscription {
+  id: string;
+  tier: 'standard' | 'premium' | 'enterprise';
+  status: 'active' | 'expired' | 'cancelled' | 'pending';
+  startDate: string;
+  endDate: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -11,6 +19,13 @@ export interface User {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  
+  // Enterprise fields
+  isEnterpriseUser?: boolean;
+  singleSessionOnly?: boolean;
+  
+  // Subscription info
+  subscription?: UserSubscription;
 }
 
 export enum UserRole {

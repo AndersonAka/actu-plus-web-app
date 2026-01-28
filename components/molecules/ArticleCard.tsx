@@ -16,6 +16,7 @@ export interface ArticleCardProps {
   onFavorite?: (id: string) => void;
   isFavorite?: boolean;
   className?: string;
+  fromCountry?: string;
 }
 
 const statusLabels: Record<ArticleStatus, { label: string; variant: 'default' | 'primary' | 'success' | 'warning' | 'error' }> = {
@@ -34,7 +35,11 @@ const ArticleCard = ({
   onFavorite,
   isFavorite = false,
   className,
+  fromCountry,
 }: ArticleCardProps) => {
+  const articleUrl = fromCountry 
+    ? `/articles/${article.id}?from=${fromCountry}` 
+    : `/articles/${article.id}`;
   const formattedDate = article.publishedAt
     ? format(new Date(article.publishedAt), 'dd MMM yyyy', { locale: fr })
     : format(new Date(article.createdAt), 'dd MMM yyyy', { locale: fr });
@@ -42,7 +47,7 @@ const ArticleCard = ({
   if (variant === 'compact') {
     return (
       <Link
-        href={`/articles/${article.id}`}
+        href={articleUrl}
         className={cn(
           'flex gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50',
           className
@@ -71,7 +76,7 @@ const ArticleCard = ({
   if (variant === 'featured') {
     return (
       <Link
-        href={`/articles/${article.id}`}
+        href={articleUrl}
         className={cn(
           'group relative block overflow-hidden rounded-xl',
           className
@@ -120,11 +125,11 @@ const ArticleCard = ({
   return (
     <article
       className={cn(
-        'group overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md',
+        'group overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-300 hover:shadow-lg hover:-translate-y-1',
         className
       )}
     >
-      <Link href={`/articles/${article.id}`} className="block">
+      <Link href={articleUrl} className="block">
         <div className="relative aspect-[16/10] w-full overflow-hidden">
           {article.coverImage ? (
             <Image
@@ -161,7 +166,7 @@ const ArticleCard = ({
             <span className="text-xs text-gray-500">{article.country.name}</span>
           )}
         </div>
-        <Link href={`/articles/${article.id}`}>
+        <Link href={articleUrl}>
           <h3 className="mb-2 line-clamp-2 font-semibold text-gray-900 group-hover:text-primary-600">
             {article.title}
           </h3>
