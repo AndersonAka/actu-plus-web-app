@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { apiConfig } from '@/config/api.config';
-import { authConfig } from '@/config/auth.config';
+import { authConfig } from '@/lib/auth/config';
 
 // POST /api/proxy/subscriptions/enterprise/[userId] - Create enterprise subscription
 export async function POST(
