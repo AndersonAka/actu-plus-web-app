@@ -37,3 +37,6 @@ export type { FloatingCTAProps } from './FloatingCTA';
 export { RichTextEditor } from './RichTextEditor';
 
 export { ImageUpload } from './ImageUpload';
+
+export { NotificationDropdown } from './NotificationDropdown';
+export type { NotificationDropdownProps } from './NotificationDropdown';

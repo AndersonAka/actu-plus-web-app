@@ -21,7 +21,9 @@ import {
   Newspaper,
   Home,
   Sparkles,
+  Bell,
 } from 'lucide-react';
+import { NotificationDropdown } from '@/components/molecules';
 
 const Header = () => {
   const router = useRouter();
@@ -87,11 +89,13 @@ const Header = () => {
             {isLoading ? (
               <div className="h-10 w-20 animate-pulse rounded-lg bg-gray-200" />
             ) : isAuthenticated && user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-gray-100"
-                >
+              <div className="flex items-center gap-2">
+                <NotificationDropdown variant="header" />
+                <div className="relative">
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-gray-100"
+                  >
                   <Avatar
                     src={user.avatar}
                     name={`${user.firstName || ''} ${user.lastName || ''}`}
@@ -176,6 +180,7 @@ const Header = () => {
                     </div>
                   </>
                 )}
+                </div>
               </div>
             ) : (
               <div className="flex items-center gap-2">
