@@ -10,15 +10,19 @@ export async function GET(request: NextRequest) {
     const queryString = searchParams.toString();
     const url = `${apiConfig.baseUrl}/api/articles${queryString ? `?${queryString}` : ''}`;
 
+    console.log('[Proxy Articles] Fetching from:', url);
+
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      next: { revalidate: 60 }, // Cache pendant 60 secondes
+      cache: 'no-store', // Disable cache for fresh data
     });
 
     const data = await response.json();
+
+    console.log('[Proxy Articles] Response status:', response.status, 'Data keys:', Object.keys(data));
 
     if (!response.ok) {
       return NextResponse.json(data, { status: response.status });
@@ -26,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data);
   } catch (error: any) {
-    console.error('Get articles error:', error);
+    console.error('[Proxy Articles] Error:', error.message, 'URL:', `${apiConfig.baseUrl}/api/articles`);
     return NextResponse.json(
       { message: error.message || 'Erreur lors de la récupération des articles' },
       { status: 500 }

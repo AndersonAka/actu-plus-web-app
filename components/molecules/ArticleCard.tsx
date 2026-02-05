@@ -37,6 +37,8 @@ const ArticleCard = ({
   className,
   fromCountry,
 }: ArticleCardProps) => {
+  // Handle both coverImage and imageUrl from backend
+  const imageUrl = article.coverImage || article.imageUrl;
   const articleUrl = fromCountry 
     ? `/articles/${article.id}?from=${fromCountry}` 
     : `/articles/${article.id}`;
@@ -53,10 +55,10 @@ const ArticleCard = ({
           className
         )}
       >
-        {article.coverImage && (
+        {imageUrl && (
           <div className="relative h-16 w-24 flex-shrink-0 overflow-hidden rounded-md">
             <Image
-              src={article.coverImage}
+              src={imageUrl}
               alt={article.title}
               fill
               className="object-cover"
@@ -91,9 +93,9 @@ const ArticleCard = ({
         )}
       >
         <div className="relative aspect-[16/9] w-full">
-          {article.coverImage ? (
+          {imageUrl ? (
             <Image
-              src={article.coverImage}
+              src={imageUrl}
               alt={article.title}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -147,9 +149,9 @@ const ArticleCard = ({
     >
       <Link href={articleUrl} className="block">
         <div className="relative aspect-[16/10] w-full overflow-hidden">
-          {article.coverImage ? (
+          {imageUrl ? (
             <Image
-              src={article.coverImage}
+              src={imageUrl}
               alt={article.title}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"

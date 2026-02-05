@@ -76,16 +76,18 @@ const FeaturedCarousel = ({ articles, className }: FeaturedCarouselProps) => {
         className="flex snap-x snap-mandatory overflow-x-auto scrollbar-hide"
         style={{ scrollSnapType: 'x mandatory' }}
       >
-        {articles.map((article, index) => (
+        {articles.map((article, index) => {
+          const articleImage = article.coverImage || article.imageUrl;
+          return (
           <div
             key={article.id}
             className="w-full flex-shrink-0 snap-center"
           >
             <Link href={`/articles/${article.id}`}>
               <div className="relative aspect-[21/9] overflow-hidden rounded-xl bg-gray-100">
-                {article.coverImage ? (
+                {articleImage ? (
                   <Image
-                    src={article.coverImage}
+                    src={articleImage}
                     alt={article.title}
                     fill
                     className="object-cover transition-transform duration-300 hover:scale-105"
@@ -163,7 +165,8 @@ const FeaturedCarousel = ({ articles, className }: FeaturedCarouselProps) => {
               </div>
             </Link>
           </div>
-        ))}
+        );
+        })}
       </div>
 
       {/* Navigation Arrows */}
