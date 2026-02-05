@@ -101,7 +101,7 @@ export function ImageUpload({
               alt="Aperçu"
               fill
               className="object-cover"
-              unoptimized={value.startsWith('data:')}
+              unoptimized={true}
             />
           </div>
           <button

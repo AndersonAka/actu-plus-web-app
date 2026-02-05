@@ -53,9 +53,14 @@ export default function AdminNotificationsPage() {
       const response = await fetch(`/api/proxy/notifications?${params}`);
       if (response.ok) {
         const result = await response.json();
-        // Gérer les différents formats de réponse
-        const notifications = Array.isArray(result) ? result : (result.data || []);
-        const total = Array.isArray(result) ? result.length : (result.total || 0);
+        // Handle double-wrapped response: { success, data: { data: [...], total, ... } }
+        const payload = result?.data ?? result;
+        const notifications = Array.isArray(payload) 
+          ? payload 
+          : (payload?.data || []);
+        const total = Array.isArray(payload) 
+          ? payload.length 
+          : (payload?.total || 0);
         setMyNotifications(notifications);
         setMyTotal(total);
       }
@@ -74,9 +79,14 @@ export default function AdminNotificationsPage() {
       const response = await fetch(`/api/proxy/notifications/all?${params}`);
       if (response.ok) {
         const result = await response.json();
-        // Gérer les différents formats de réponse
-        const notifications = Array.isArray(result) ? result : (result.data || []);
-        const total = Array.isArray(result) ? result.length : (result.total || 0);
+        // Handle double-wrapped response: { success, data: { data: [...], total, ... } }
+        const payload = result?.data ?? result;
+        const notifications = Array.isArray(payload) 
+          ? payload 
+          : (payload?.data || []);
+        const total = Array.isArray(payload) 
+          ? payload.length 
+          : (payload?.total || 0);
         setAllNotifications(notifications);
         setAllTotal(total);
       }

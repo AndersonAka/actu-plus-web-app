@@ -1,16 +1,17 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Badge, Button } from '@/components/atoms';
+import { Badge } from '@/components/atoms';
 import { ArticleCard } from '@/components/molecules';
 import { Header, Footer } from '@/components/organisms';
 import { apiConfig } from '@/config/api.config';
 import { Article, ArticleStatus } from '@/types';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Calendar, Eye, Share2, Crown } from 'lucide-react';
+import { Calendar, Eye, Crown, ExternalLink } from 'lucide-react';
 import { ArticleContent } from './ArticleContent';
 import { BackButton } from './BackButton';
+import { ShareButton } from './ShareButton';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -35,6 +36,7 @@ function mapArticle(data: any): Article {
     publishedAt: data.publishedAt,
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
+    sources: data.sources || [],
   };
 }
 
@@ -132,6 +134,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                 alt={article.title}
                 fill
                 className="object-cover"
+                unoptimized={true}
                 priority
               />
             </div>
@@ -139,14 +142,47 @@ export default async function ArticleDetailPage({ params }: PageProps) {
 
           <ArticleContent article={article} />
 
+          {/* Sources Section */}
+          {article.sources && article.sources.length > 0 && (
+            <div className="mt-8 rounded-lg border border-gray-200 bg-gray-50 p-6">
+              <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900">
+                <ExternalLink className="h-5 w-5 text-primary-600" />
+                Sources
+              </h3>
+              <ul className="space-y-3">
+                {article.sources.map((source, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-medium text-primary-700">
+                      {index + 1}
+                    </span>
+                    <div className="flex-1">
+                      <a
+                        href={source.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700"
+                      >
+                        {source.name}
+                        <ExternalLink className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
+                      </a>
+                      <p className="mt-1 text-xs text-gray-500 break-all">{source.url}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="mt-8 border-t border-gray-200 pt-8">
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-500">
                 Publié par {article.author.firstName} {article.author.lastName}
               </p>
-              <Button variant="outline" size="sm" leftIcon={<Share2 className="h-4 w-4" />}>
-                Partager
-              </Button>
+              <ShareButton 
+                title={article.title} 
+                excerpt={article.excerpt} 
+                articleId={article.id} 
+              />
             </div>
           </div>
 

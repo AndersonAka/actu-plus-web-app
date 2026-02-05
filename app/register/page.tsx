@@ -21,6 +21,7 @@ export default function RegisterPage() {
                 height={50}
                 priority
                 className="h-12 w-auto"
+                unoptimized={true}
               />
             </Link>
           </div>
@@ -34,6 +35,7 @@ export default function RegisterPage() {
           fill
           className="object-cover"
           priority
+          unoptimized={true}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-primary-600/80 to-primary-900/90">
           <div className="flex h-full flex-col items-center justify-center p-12 text-white">

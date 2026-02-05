@@ -192,7 +192,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
             alt={article.title}
             fill
             className="object-cover"
-            unoptimized
+            unoptimized={true}
           />
         </div>
       )}

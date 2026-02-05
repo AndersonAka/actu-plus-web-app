@@ -7,7 +7,6 @@ import { Header, Footer } from '@/components/organisms';
 import { ArticleCard } from '@/components/molecules';
 import { Button } from '@/components/atoms';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { archivesService } from '@/lib/services';
 import { Article, ArticleStatus } from '@/types';
 import { Archive, ArrowLeft, Loader2 } from 'lucide-react';
 
@@ -57,14 +56,22 @@ export default function ArchivesPage() {
     try {
       setLoading(true);
       setError(null);
-      const result = await archivesService.findAll();
-      let fetchedArticles = (result.data?.data || []).map(mapArticle);
+      
+      // Charger les articles archivés via l'API articles avec status=archived
+      const response = await fetch('/api/proxy/articles?status=archived&limit=50');
+      
+      if (!response.ok) {
+        throw new Error('Erreur lors du chargement des archives');
+      }
+      
+      const result = await response.json();
+      let fetchedArticles = (result.data?.data || result.data || []).map(mapArticle);
       
       // Filtrer par type de contenu si nécessaire
       if (contentFilter === 'summary') {
-        fetchedArticles = fetchedArticles.filter((a) => a.content?.length < 500);
+        fetchedArticles = fetchedArticles.filter((a: Article) => a.content?.length < 500);
       } else if (contentFilter === 'article') {
-        fetchedArticles = fetchedArticles.filter((a) => a.content?.length >= 500);
+        fetchedArticles = fetchedArticles.filter((a: Article) => a.content?.length >= 500);
       }
       
       setArticles(fetchedArticles);
@@ -84,8 +91,16 @@ export default function ArchivesPage() {
 
   const handleRemoveArchive = async (articleId: string) => {
     try {
-      await archivesService.remove(articleId);
-      setArticles((prev) => prev.filter((a) => a.id !== articleId));
+      // Désarchiver l'article en changeant son statut
+      const response = await fetch(`/api/proxy/articles/${articleId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'published' }),
+      });
+      
+      if (response.ok) {
+        setArticles((prev) => prev.filter((a) => a.id !== articleId));
+      }
     } catch (err) {
       console.error('Erreur lors du désarchivage:', err);
     }

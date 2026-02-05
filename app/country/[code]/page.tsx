@@ -32,6 +32,19 @@ interface CountryData {
   flag?: string;
 }
 
+// Mapper les données du backend vers le type Article du frontend
+function mapArticle(data: any): Article {
+  return {
+    ...data,
+    coverImage: data.imageUrl || data.coverImage,
+  };
+}
+
+function mapArticles(articles: any): Article[] {
+  if (!Array.isArray(articles)) return [];
+  return articles.map(mapArticle);
+}
+
 export default function CountryPage() {
   const params = useParams();
   const code = params.code as string;
@@ -48,12 +61,14 @@ export default function CountryPage() {
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<string>('essentiel');
 
-  // Check if user has premium access
-  const hasPremiumAccess = user?.subscription?.tier === 'premium' || user?.subscription?.tier === 'enterprise';
+  // Check if user is staff (admin, veilleur, moderateur)
+  const isStaff = user?.role && ['admin', 'veilleur', 'moderateur'].includes(user.role.toLowerCase());
   
-  // Check if user has active subscription or is staff (admin, veilleur, moderateur)
+  // Check if user has premium access (staff or premium subscription)
+  const hasPremiumAccess = isStaff || user?.subscription?.tier === 'premium' || user?.subscription?.tier === 'enterprise';
+  
+  // Check if user has active subscription or is staff
   const hasActiveSubscription = user?.subscription?.status === 'active';
-  const isStaff = user?.role && ['admin', 'veilleur', 'moderateur'].includes(user.role);
   const canAccessCountryPage = isStaff || hasActiveSubscription;
 
   useEffect(() => {
@@ -90,32 +105,37 @@ export default function CountryPage() {
 
         if (summaryRes.ok) {
           const data = await summaryRes.json();
-          setSummary(data.data);
+          setSummary(data.data ? mapArticle(data.data) : null);
         }
 
         if (essentielRes.ok) {
           const data = await essentielRes.json();
-          setEssentielArticles(data.data || []);
+          setEssentielArticles(mapArticles(data.data || []));
         }
 
         if (allRes.ok) {
           const data = await allRes.json();
-          setAllArticles(data.data?.items || data.data || []);
+          // PaginatedResultDto: { data: [...], total, page, limit }
+          const articles = data.data?.data || data.data?.items || data.data || [];
+          setAllArticles(mapArticles(articles));
         }
 
         if (archivesRes.ok) {
           const data = await archivesRes.json();
-          setArchiveArticles(data.data?.items || data.data || []);
+          // PaginatedResultDto: { data: [...], total, page, limit }
+          const articles = data.data?.data || data.data?.items || data.data || [];
+          setArchiveArticles(mapArticles(articles));
         }
 
         if (focusRes.ok) {
           const data = await focusRes.json();
-          setFocusArticle(data.data?.[0] || null);
+          const focusData = data.data?.[0] || null;
+          setFocusArticle(focusData ? mapArticle(focusData) : null);
         }
 
         if (chroniquesRes.ok) {
           const data = await chroniquesRes.json();
-          setChroniqueArticles(data.data || []);
+          setChroniqueArticles(mapArticles(data.data || []));
         }
       } catch (error) {
         console.error('Error fetching country data:', error);

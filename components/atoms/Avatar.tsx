@@ -52,6 +52,7 @@ const Avatar = ({ src, alt, name, size = 'md', className }: AvatarProps) => {
           width={imageSizes[size]}
           height={imageSizes[size]}
           className="h-full w-full object-cover"
+          unoptimized={true}
         />
       </div>
     );

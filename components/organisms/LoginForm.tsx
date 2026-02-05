@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -24,6 +24,9 @@ const LoginForm = () => {
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [attemptCount, setAttemptCount] = useState(0);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockEndTime, setBlockEndTime] = useState<number | null>(null);
 
   const {
     register,
@@ -33,7 +36,52 @@ const LoginForm = () => {
     resolver: zodResolver(loginSchema),
   });
 
+  // Check if user is blocked
+  useEffect(() => {
+    const storedBlockEndTime = localStorage.getItem('loginBlockEndTime');
+    if (storedBlockEndTime) {
+      const endTime = parseInt(storedBlockEndTime);
+      if (Date.now() < endTime) {
+        setIsBlocked(true);
+        setBlockEndTime(endTime);
+      } else {
+        localStorage.removeItem('loginBlockEndTime');
+        localStorage.removeItem('loginAttemptCount');
+      }
+    }
+
+    const storedAttemptCount = localStorage.getItem('loginAttemptCount');
+    if (storedAttemptCount) {
+      setAttemptCount(parseInt(storedAttemptCount));
+    }
+  }, []);
+
+  // Update block status
+  useEffect(() => {
+    if (isBlocked && blockEndTime) {
+      const timer = setInterval(() => {
+        if (Date.now() >= blockEndTime) {
+          setIsBlocked(false);
+          setBlockEndTime(null);
+          setAttemptCount(0);
+          localStorage.removeItem('loginBlockEndTime');
+          localStorage.removeItem('loginAttemptCount');
+          clearInterval(timer);
+        }
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [isBlocked, blockEndTime]);
+
   const onSubmit = async (data: LoginFormData) => {
+    // Check if blocked
+    if (isBlocked) {
+      const remainingTime = blockEndTime ? Math.ceil((blockEndTime - Date.now()) / 1000 / 60) : 0;
+      setError(`Trop de tentatives échouées. Veuillez réessayer dans ${remainingTime} minute(s).`);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -47,11 +95,31 @@ const LoginForm = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || 'Erreur de connexion');
+        // Increment attempt count on failure
+        const newAttemptCount = attemptCount + 1;
+        setAttemptCount(newAttemptCount);
+        localStorage.setItem('loginAttemptCount', newAttemptCount.toString());
+
+        // Block after 5 failed attempts
+        if (newAttemptCount >= 5) {
+          const blockTime = Date.now() + 15 * 60 * 1000; // 15 minutes
+          setIsBlocked(true);
+          setBlockEndTime(blockTime);
+          localStorage.setItem('loginBlockEndTime', blockTime.toString());
+          throw new Error('Trop de tentatives échouées. Votre compte est temporairement bloqué pour 15 minutes.');
+        }
+
+        const remainingAttempts = 5 - newAttemptCount;
+        throw new Error(`${result.message || 'Erreur de connexion'}. ${remainingAttempts} tentative(s) restante(s).`);
       }
 
-      router.push(returnUrl);
-      router.refresh();
+      // Reset attempt count on success
+      setAttemptCount(0);
+      localStorage.removeItem('loginAttemptCount');
+      localStorage.removeItem('loginBlockEndTime');
+
+      // Force a hard navigation to ensure proper state refresh
+      window.location.href = returnUrl;
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue');
     } finally {

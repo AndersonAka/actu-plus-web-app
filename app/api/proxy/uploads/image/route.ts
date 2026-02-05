@@ -32,6 +32,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(data, { status: response.status });
     }
 
+    // Réécrire l'URL pour utiliser le proxy au lieu de localhost:3001
+    if (data.data?.url) {
+      const originalUrl = data.data.url;
+      // Extraire le chemin relatif (ex: /uploads/images/xxx.jpg -> images/xxx.jpg)
+      const match = originalUrl.match(/\/uploads\/(.+)$/);
+      if (match) {
+        data.data.url = `/api/proxy/uploads/serve/${match[1]}`;
+      }
+    } else if (data.url) {
+      const originalUrl = data.url;
+      const match = originalUrl.match(/\/uploads\/(.+)$/);
+      if (match) {
+        data.url = `/api/proxy/uploads/serve/${match[1]}`;
+      }
+    }
+
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('Upload image error:', error);

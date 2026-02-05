@@ -104,6 +104,7 @@ const Sidebar = ({ variant }: SidebarProps) => {
             width={100}
             height={32}
             className="h-8 w-auto"
+            unoptimized={true}
           />
         </Link>
       </div>

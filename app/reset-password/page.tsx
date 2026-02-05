@@ -311,6 +311,7 @@ export default function ResetPasswordPage() {
                 height={50}
                 priority
                 className="h-12 w-auto"
+                unoptimized={true}
               />
             </Link>
           </div>
@@ -335,6 +336,7 @@ export default function ResetPasswordPage() {
           fill
           className="object-cover"
           priority
+          unoptimized={true}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-primary-600/90 to-primary-900/95">
           <div className="flex h-full flex-col items-center justify-center p-12 text-white">

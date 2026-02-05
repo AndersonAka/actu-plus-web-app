@@ -58,7 +58,12 @@ export default function FavoritesPage() {
       setLoading(true);
       setError(null);
       const result = await favoritesService.findAll();
-      let fetchedArticles = (result.data?.data || []).map(mapArticle);
+      
+      // Le backend retourne des objets Favorite avec une relation article
+      const favorites = result.data?.data || result.data || [];
+      let fetchedArticles = favorites
+        .filter((fav: any) => fav.article) // S'assurer que l'article existe
+        .map((fav: any) => mapArticle(fav.article));
       
       // Filtrer par type de contenu si nécessaire
       if (contentFilter === 'summary') {

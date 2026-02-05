@@ -21,10 +21,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'api-actuplus.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'actuplusagence.com',
+      },
     ],
     dangerouslyAllowSVG: true,
-    // En production sur Vercel, utiliser l'optimisation d'images
-    unoptimized: process.env.NODE_ENV === 'development',
+    // Désactiver l'optimisation d'images pour éviter les erreurs INVALID_IMAGE_OPTIMIZE_REQUEST
+    unoptimized: true,
   },
   // Configuration pour Vercel
   output: 'standalone',

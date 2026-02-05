@@ -22,7 +22,7 @@ const articleSchema = z.object({
   content: z.string().min(50, 'Le contenu doit contenir au moins 50 caractères'),
   categoryId: z.string().min(1, 'Veuillez sélectionner une catégorie'),
   countryId: z.string().optional(),
-  coverImage: z.string().url('URL invalide').optional().or(z.literal('')),
+  coverImage: z.string().optional().or(z.literal('')),
   sources: z.array(sourceSchema).optional(),
 });
 

@@ -130,7 +130,7 @@ export function ArticleView({
             alt={article.title}
             fill
             className="object-cover"
-            unoptimized
+            unoptimized={true}
           />
         </div>
       )}

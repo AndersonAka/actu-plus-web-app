@@ -11,8 +11,8 @@ const Footer = ({ className }: { className?: string }) => {
     navigation: [
       { href: '/', label: 'Accueil' },
       { href: '/articles', label: 'Articles' },
-      { href: '/categories', label: 'Catégories' },
-      { href: '/search', label: 'Recherche' },
+      { href: '/subscriptions', label: 'Abonnements' },
+      { href: '/about', label: 'À propos' },
     ],
     legal: [
       { href: '/terms', label: "Conditions d'utilisation" },
@@ -34,6 +34,7 @@ const Footer = ({ className }: { className?: string }) => {
                 width={120}
                 height={40}
                 className="h-8 w-auto"
+                unoptimized={true}
               />
             </Link>
             <p className="mt-3 text-sm text-gray-600">

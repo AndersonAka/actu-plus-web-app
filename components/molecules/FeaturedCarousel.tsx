@@ -9,6 +9,8 @@ import { Article } from '@/types';
 import { ChevronLeft, ChevronRight, Heart, Share2, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useShare } from '@/hooks/useShare';
 
 export interface FeaturedCarouselProps {
   articles: Article[];
@@ -18,6 +20,8 @@ export interface FeaturedCarouselProps {
 const FeaturedCarousel = ({ articles, className }: FeaturedCarouselProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const { toggleFavorite, isFavorite, isLoading } = useFavorites();
+  const { shareArticle } = useShare();
 
   const scrollToIndex = (index: number) => {
     if (carouselRef.current) {
@@ -85,6 +89,7 @@ const FeaturedCarousel = ({ articles, className }: FeaturedCarouselProps) => {
                     alt={article.title}
                     fill
                     className="object-cover transition-transform duration-300 hover:scale-105"
+                    unoptimized={true}
                     priority={index === 0}
                   />
                 ) : (
@@ -124,18 +129,33 @@ const FeaturedCarousel = ({ articles, className }: FeaturedCarouselProps) => {
                   <button
                     onClick={(e) => {
                       e.preventDefault();
-                      // Handle favorite
+                      e.stopPropagation();
+                      toggleFavorite(article.id);
                     }}
-                    className="rounded-full bg-white/20 p-2 backdrop-blur-sm transition-colors hover:bg-white/30"
+                    disabled={isLoading(article.id)}
+                    className={cn(
+                      "rounded-full p-2 backdrop-blur-sm transition-colors",
+                      isFavorite(article.id)
+                        ? "bg-red-500/90 hover:bg-red-600/90"
+                        : "bg-white/20 hover:bg-white/30"
+                    )}
+                    title={isFavorite(article.id) ? "Retirer des favoris" : "Ajouter aux favoris"}
                   >
-                    <Heart className="h-5 w-5 text-white" />
+                    <Heart 
+                      className={cn(
+                        "h-5 w-5",
+                        isFavorite(article.id) ? "fill-white text-white" : "text-white"
+                      )} 
+                    />
                   </button>
                   <button
                     onClick={(e) => {
                       e.preventDefault();
-                      // Handle share
+                      e.stopPropagation();
+                      shareArticle(article.id, article.title);
                     }}
                     className="rounded-full bg-white/20 p-2 backdrop-blur-sm transition-colors hover:bg-white/30"
+                    title="Partager l'article"
                   >
                     <Share2 className="h-5 w-5 text-white" />
                   </button>

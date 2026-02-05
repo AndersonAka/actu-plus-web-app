@@ -60,7 +60,15 @@ const ArticleCard = ({
               alt={article.title}
               fill
               className="object-cover"
+              unoptimized={true}
             />
+            {article.isPremium && (
+              <div className="absolute right-1 top-1">
+                <Badge variant="warning" size="sm" className="bg-amber-500 text-white text-xs px-1 py-0">
+                  Premium
+                </Badge>
+              </div>
+            )}
           </div>
         )}
         <div className="flex-1 min-w-0">
@@ -89,6 +97,7 @@ const ArticleCard = ({
               alt={article.title}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
+              unoptimized={true}
             />
           ) : (
             <div className="h-full w-full bg-gray-200" />
@@ -96,9 +105,16 @@ const ArticleCard = ({
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-6">
-          <Badge variant="primary" className="mb-2">
-            {article.category.name}
-          </Badge>
+          <div className="mb-2 flex gap-2">
+            <Badge variant="primary">
+              {article.category.name}
+            </Badge>
+            {article.isPremium && (
+              <Badge variant="warning" className="bg-amber-500 text-white">
+                Premium
+              </Badge>
+            )}
+          </div>
           <h2 className="mb-2 line-clamp-2 text-2xl font-bold text-white">
             {article.title}
           </h2>
@@ -137,24 +153,28 @@ const ArticleCard = ({
               alt={article.title}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
+              unoptimized={true}
             />
           ) : (
             <div className="h-full w-full bg-gray-200 flex items-center justify-center">
               <span className="text-gray-400">Pas d'image</span>
             </div>
           )}
-          {showStatus && (
-            <div className="absolute left-2 top-2">
+          <div className="absolute left-2 top-2 flex gap-2">
+            {showStatus && (
               <Badge variant={statusLabels[article.status].variant}>
                 {statusLabels[article.status].label}
               </Badge>
-            </div>
-          )}
-          {article.isFeatured && !showStatus && (
-            <div className="absolute left-2 top-2">
+            )}
+            {article.isFeatured && !showStatus && (
               <Badge variant="primary">À la une</Badge>
-            </div>
-          )}
+            )}
+            {article.isPremium && (
+              <Badge variant="warning" className="bg-amber-500 text-white">
+                Premium
+              </Badge>
+            )}
+          </div>
         </div>
       </Link>
       <div className="p-4">

@@ -24,7 +24,7 @@ const articleSchema = z.object({
   countryId: z.string().min(1, 'Veuillez sélectionner un pays'),
   contentType: z.enum(['article', 'summary']),
   articleSection: z.string().optional(),
-  coverImage: z.string().url('URL invalide').optional().or(z.literal('')),
+  coverImage: z.string().optional().or(z.literal('')),
   sources: z.array(sourceSchema).optional(),
 });
 

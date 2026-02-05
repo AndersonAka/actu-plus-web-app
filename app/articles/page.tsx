@@ -25,10 +25,10 @@ function ArticlesContent() {
       setIsLoading(true);
       try {
         const params = new URLSearchParams();
-        params.set('status', 'PUBLISHED');
+        params.set('status', 'published');
         params.set('page', String(currentPage));
         params.set('limit', '9');
-        if (categoryFilter) params.set('category', categoryFilter);
+        if (categoryFilter) params.set('categoryId', categoryFilter);
         if (searchQuery) params.set('search', searchQuery);
 
         const [articlesRes, categoriesRes] = await Promise.all([

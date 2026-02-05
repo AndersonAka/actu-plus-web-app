@@ -101,6 +101,18 @@ export default function AdminCountriesPage() {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce pays ?')) return;
 
     try {
+      // Vérifier d'abord s'il y a des articles liés
+      const checkResponse = await fetch(`/api/proxy/articles?countryId=${id}&limit=1`);
+      if (checkResponse.ok) {
+        const checkData = await checkResponse.json();
+        const articlesCount = checkData.data?.total || checkData.total || 0;
+        
+        if (articlesCount > 0) {
+          setError(`Impossible de supprimer ce pays. ${articlesCount} article(s) y sont associés. Veuillez d'abord réassigner ou supprimer ces articles.`);
+          return;
+        }
+      }
+
       const response = await fetch(`/api/proxy/countries/${id}`, {
         method: 'DELETE',
       });

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button, Card, EmptyState, Input, Select, Badge, Alert } from '@/components/atoms';
 import { Pagination } from '@/components/molecules';
 import { User } from '@/types';
-import { Search, Users, Mail, Phone, Plus, Edit2, UserX, UserCheck, X, Eye, Calendar, CreditCard } from 'lucide-react';
+import { Search, Users, Mail, Phone, Plus, Edit2, UserX, UserCheck, X, Eye, Calendar, CreditCard, Building2 } from 'lucide-react';
 
 interface UserFormData {
   email: string;
@@ -14,6 +14,17 @@ interface UserFormData {
   civility: string;
   password: string;
   role: string;
+  isEnterpriseUser: boolean;
+  subscriptionPlanId: string;
+  subscriptionDuration: number;
+}
+
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  category: string;
+  duration: number;
+  price: number;
 }
 
 const initialFormData: UserFormData = {
@@ -24,6 +35,9 @@ const initialFormData: UserFormData = {
   civility: 'M.',
   password: '',
   role: 'manager',
+  isEnterpriseUser: false,
+  subscriptionPlanId: '',
+  subscriptionDuration: 12,
 };
 
 export default function AdminUsersPage() {
@@ -49,6 +63,26 @@ export default function AdminUsersPage() {
   const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
   const [userToDeactivate, setUserToDeactivate] = useState<User | null>(null);
   const [isDeactivating, setIsDeactivating] = useState(false);
+
+  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
+
+  // Fetch subscription plans for enterprise user creation
+  const fetchSubscriptionPlans = async () => {
+    try {
+      const response = await fetch('/api/proxy/subscriptions/plans?all=true');
+      if (response.ok) {
+        const res = await response.json();
+        const plans = res?.data ?? res;
+        setSubscriptionPlans(Array.isArray(plans) ? plans : []);
+      }
+    } catch (error) {
+      console.error('Error fetching subscription plans:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubscriptionPlans();
+  }, []);
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -113,6 +147,9 @@ export default function AdminUsersPage() {
       civility: user.civility || 'M.',
       password: '',
       role: user.role || 'manager',
+      isEnterpriseUser: (user as any).isEnterpriseUser || false,
+      subscriptionPlanId: '',
+      subscriptionDuration: 12,
     });
     setError('');
     setShowModal(true);
@@ -157,10 +194,31 @@ export default function AdminUsersPage() {
           throw new Error('Le mot de passe doit contenir au moins 8 caractères');
         }
 
+        // Validate enterprise user requirements
+        if (formData.isEnterpriseUser && !formData.subscriptionPlanId) {
+          throw new Error('Veuillez sélectionner un plan d\'abonnement pour l\'utilisateur enterprise');
+        }
+
+        // Create user with enterprise flags
+        const userData: Record<string, any> = {
+          email: formData.email,
+          phone: formData.phone,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          civility: formData.civility,
+          password: formData.password,
+          role: formData.isEnterpriseUser ? 'user' : formData.role,
+        };
+
+        if (formData.isEnterpriseUser) {
+          userData.isEnterpriseUser = true;
+          userData.singleSessionOnly = true;
+        }
+
         const response = await fetch('/api/proxy/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(userData),
         });
 
         if (!response.ok) {
@@ -168,7 +226,31 @@ export default function AdminUsersPage() {
           throw new Error(data.message || "Erreur lors de la création");
         }
 
-        setSuccess('Utilisateur créé avec succès');
+        const createdUser = await response.json();
+        const userId = createdUser?.data?.id || createdUser?.id;
+
+        // Create subscription for enterprise user
+        if (formData.isEnterpriseUser && userId) {
+          const subResponse = await fetch(`/api/proxy/subscriptions/enterprise/${userId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              planId: formData.subscriptionPlanId,
+              durationMonths: formData.subscriptionDuration,
+            }),
+          });
+
+          if (!subResponse.ok) {
+            const subData = await subResponse.json();
+            console.error('Error creating subscription:', subData);
+            // User was created but subscription failed
+            setSuccess('Utilisateur créé mais erreur lors de l\'attribution de l\'abonnement');
+          } else {
+            setSuccess('Utilisateur enterprise créé avec abonnement');
+          }
+        } else {
+          setSuccess('Utilisateur créé avec succès');
+        }
       }
 
       closeModal();
@@ -393,7 +475,15 @@ export default function AdminUsersPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        {getRoleBadge(user.role)}
+                        <div className="flex items-center gap-1">
+                          {getRoleBadge(user.role)}
+                          {(user as any).isEnterpriseUser && (
+                            <Badge variant="secondary" size="sm" className="ml-1">
+                              <Building2 className="mr-1 h-3 w-3" />
+                              Enterprise
+                            </Badge>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         {user.isActive ? (
@@ -676,6 +766,70 @@ export default function AdminUsersPage() {
                     required
                   />
                   <p className="mt-1 text-xs text-gray-500">Min. 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre</p>
+                </div>
+              )}
+
+              {/* Enterprise User Section */}
+              {!editingUser && (
+                <div className="border-t pt-4">
+                  <div className="mb-4 flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="isEnterpriseUser"
+                      checked={formData.isEnterpriseUser}
+                      onChange={(e) => setFormData({ 
+                        ...formData, 
+                        isEnterpriseUser: e.target.checked,
+                        role: e.target.checked ? 'user' : formData.role,
+                      })}
+                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <label htmlFor="isEnterpriseUser" className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <Building2 className="h-4 w-4" />
+                      Utilisateur Enterprise
+                    </label>
+                  </div>
+
+                  {formData.isEnterpriseUser && (
+                    <div className="space-y-4 rounded-lg bg-gray-50 p-4">
+                      <p className="text-xs text-gray-500">
+                        Les utilisateurs enterprise ont une session unique obligatoire et un abonnement géré par l'administrateur.
+                      </p>
+
+                      <Select
+                        label="Plan d'abonnement"
+                        options={[
+                          { value: '', label: 'Sélectionner un plan...' },
+                          ...subscriptionPlans
+                            .filter(p => p.category === 'standard' || p.category === 'premium')
+                            .map(p => ({
+                              value: p.id,
+                              label: `${p.name} (${p.category}) - ${p.price.toLocaleString('fr-FR')} FCFA/${p.duration} mois`,
+                            })),
+                        ]}
+                        value={formData.subscriptionPlanId}
+                        onChange={(e) => setFormData({ ...formData, subscriptionPlanId: e.target.value })}
+                        required={formData.isEnterpriseUser}
+                      />
+
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                          Durée de l'abonnement (mois)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="60"
+                          value={formData.subscriptionDuration}
+                          onChange={(e) => setFormData({ ...formData, subscriptionDuration: parseInt(e.target.value) || 12 })}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                          Laissez par défaut pour utiliser la durée du plan
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

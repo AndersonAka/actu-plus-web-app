@@ -57,6 +57,7 @@ const Header = () => {
               height={45}
               priority
               className="h-10 w-auto"
+              unoptimized={true}
             />
           </Link>
 

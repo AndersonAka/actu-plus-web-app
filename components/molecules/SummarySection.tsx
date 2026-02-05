@@ -45,7 +45,7 @@ const SummarySection = ({ summaries = [], className }: SummarySectionProps) => {
             {validSummaries.map((item) => (
               <Link 
                 key={item.countryCode} 
-                href={`/country/${item.countryCode.toLowerCase()}`}
+                href={`/countries/${item.countryCode.toLowerCase()}`}
                 className="block"
               >
                 <div className="flex gap-3 rounded-lg border border-gray-100 p-3 transition-all hover:bg-gray-50 hover:border-primary-200 hover:shadow-sm">

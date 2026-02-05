@@ -119,6 +119,19 @@ export default function AdminCategoriesPage() {
     setError(null);
 
     try {
+      // Vérifier d'abord s'il y a des articles liés
+      const checkResponse = await fetch(`/api/proxy/articles?categoryId=${categoryToDelete.id}&limit=1`);
+      if (checkResponse.ok) {
+        const checkData = await checkResponse.json();
+        const articlesCount = checkData.data?.total || checkData.total || 0;
+        
+        if (articlesCount > 0) {
+          setError(`Impossible de supprimer cette catégorie. ${articlesCount} article(s) y sont associés. Veuillez d'abord réassigner ou supprimer ces articles.`);
+          setIsDeleting(false);
+          return;
+        }
+      }
+
       const response = await fetch(`/api/proxy/categories/${categoryToDelete.id}`, {
         method: 'DELETE',
       });
