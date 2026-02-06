@@ -3,8 +3,8 @@ import { cookies } from 'next/headers';
 import { apiConfig } from '@/config/api.config';
 import { authConfig } from '@/lib/auth/config';
 
-// PATCH /api/proxy/notifications/read-all - Mark all notifications as read
-export async function PATCH(request: NextRequest) {
+// PUT /api/proxy/notifications/read-all - Mark all notifications as read
+export async function PUT(request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get(authConfig.cookies.accessToken)?.value;
@@ -14,7 +14,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const response = await fetch(`${apiConfig.baseUrl}/api/notifications/read-all`, {
-      method: 'PATCH',
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${accessToken}`,

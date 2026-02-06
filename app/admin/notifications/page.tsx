@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, EmptyState, Alert, Badge } from '@/components/atoms';
-import { Bell, Clock, User, FileText, CreditCard, UserPlus, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react';
+import { Card, EmptyState, Alert, Badge, Button } from '@/components/atoms';
+import { Bell, Clock, User, FileText, CreditCard, UserPlus, CheckCircle, XCircle, Eye, EyeOff, Check } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -43,6 +43,8 @@ export default function AdminNotificationsPage() {
   const [allTotal, setAllTotal] = useState(0);
   const [myPage, setMyPage] = useState(1);
   const [allPage, setAllPage] = useState(1);
+  const [markingRead, setMarkingRead] = useState<string | null>(null);
+  const [markingAllRead, setMarkingAllRead] = useState(false);
 
   const fetchMyNotifications = async (page = 1) => {
     try {
@@ -122,6 +124,36 @@ export default function AdminNotificationsPage() {
       fetchAllNotifications(allPage);
     }
   }, [filterType, filterRead, myPage, allPage, activeTab]);
+
+  const markAsRead = async (id: string) => {
+    setMarkingRead(id);
+    try {
+      const response = await fetch(`/api/proxy/notifications/${id}/read`, { method: 'PUT' });
+      if (response.ok) {
+        setMyNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+        setAllNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+      }
+    } catch (err) {
+      console.error('Error marking as read:', err);
+    } finally {
+      setMarkingRead(null);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    setMarkingAllRead(true);
+    try {
+      const response = await fetch('/api/proxy/notifications/read-all', { method: 'PUT' });
+      if (response.ok) {
+        setMyNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        fetchNotifications();
+      }
+    } catch (err) {
+      console.error('Error marking all as read:', err);
+    } finally {
+      setMarkingAllRead(false);
+    }
+  };
 
   const getTypeIcon = (type: string) => {
     if (type.startsWith('article')) return <FileText className="h-4 w-4" />;
@@ -235,6 +267,24 @@ export default function AdminNotificationsPage() {
                     </span>
                   </div>
                 </div>
+                {!notif.isRead && (
+                  <button
+                    onClick={() => markAsRead(notif.id)}
+                    disabled={markingRead === notif.id}
+                    className="ml-2 flex-shrink-0 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                  >
+                    {markingRead === notif.id ? (
+                      <span className="flex items-center gap-1">
+                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-primary-500" />
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <Check className="h-3 w-3" />
+                        Marquer lu
+                      </span>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -300,8 +350,19 @@ export default function AdminNotificationsPage() {
         </nav>
       </div>
 
-      {/* Filtres */}
-      <div className="mb-6 flex flex-wrap gap-4">
+      {/* Actions et Filtres */}
+      <div className="mb-6 flex flex-wrap items-center gap-4">
+        {activeTab === 'mine' && myNotifications.some(n => !n.isRead) && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={markAllAsRead}
+            disabled={markingAllRead}
+            leftIcon={<Check className="h-4 w-4" />}
+          >
+            {markingAllRead ? 'Marquage...' : 'Tout marquer comme lu'}
+          </Button>
+        )}
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}

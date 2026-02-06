@@ -126,7 +126,7 @@ const NotificationDropdown = ({ variant = 'header', className }: NotificationDro
 
   const markAsRead = async (id: string) => {
     try {
-      await fetch(`/api/proxy/notifications/${id}/read`, { method: 'PATCH' });
+      await fetch(`/api/proxy/notifications/${id}/read`, { method: 'PUT' });
       setNotifications(prev => 
         prev.map(n => n.id === id ? { ...n, isRead: true } : n)
       );
@@ -138,7 +138,7 @@ const NotificationDropdown = ({ variant = 'header', className }: NotificationDro
 
   const markAllAsRead = async () => {
     try {
-      await fetch('/api/proxy/notifications/read-all', { method: 'PATCH' });
+      await fetch('/api/proxy/notifications/read-all', { method: 'PUT' });
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       setUnreadCount(0);
     } catch (error) {

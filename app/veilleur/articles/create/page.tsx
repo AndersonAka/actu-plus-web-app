@@ -61,7 +61,7 @@ export default function CreateArticlePage() {
       categoryId: '',
       countryId: '',
       contentType: 'article',
-      articleSection: '',
+      articleSection: 'toute-actualite',
       coverImage: '',
       sources: [],
     },
@@ -331,17 +331,13 @@ export default function CreateArticlePage() {
               <Select
                 label="Dans quelle section cet article doit-il apparaître ?"
                 options={[
-                  { value: '', label: 'Sélectionner une section' },
-                  { value: 'essentiel', label: "L'Essentiel de l'actualité" },
                   { value: 'toute-actualite', label: "Toute l'actualité" },
-                  { value: 'focus', label: 'Focus (Premium)' },
-                  { value: 'chronique', label: 'Chronique (Premium)' },
                 ]}
                 error={errors.articleSection?.message}
                 {...register('articleSection')}
               />
               <p className="mt-2 text-sm text-gray-500">
-                Les sections Focus et Chronique sont réservées aux abonnés Premium.
+                Les autres sections (L'Essentiel, Focus, Chronique) sont gérées par les modérateurs et administrateurs.
               </p>
             </CardContent>
           </Card>

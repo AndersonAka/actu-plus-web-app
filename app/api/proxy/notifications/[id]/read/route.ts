@@ -3,8 +3,8 @@ import { cookies } from 'next/headers';
 import { apiConfig } from '@/config/api.config';
 import { authConfig } from '@/lib/auth/config';
 
-// PATCH /api/proxy/notifications/[id]/read - Mark notification as read
-export async function PATCH(
+// PUT /api/proxy/notifications/[id]/read - Mark notification as read
+export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -19,7 +19,7 @@ export async function PATCH(
     const { id } = await params;
 
     const response = await fetch(`${apiConfig.baseUrl}/api/notifications/${id}/read`, {
-      method: 'PATCH',
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${accessToken}`,
