@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, EmptyState, Alert, Badge, Button } from '@/components/atoms';
-import { Bell, Clock, FileText, CreditCard, UserPlus, Eye, EyeOff, Check } from 'lucide-react';
+import { Bell, Clock, FileText, Eye, EyeOff, Check } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -15,7 +15,7 @@ interface Notification {
   createdAt: string;
 }
 
-export default function AdminNotificationsPage() {
+export default function ModerateurNotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -90,9 +90,6 @@ export default function AdminNotificationsPage() {
 
   const getTypeIcon = (type: string) => {
     if (type.startsWith('article')) return <FileText className="h-4 w-4" />;
-    if (type.startsWith('subscription')) return <CreditCard className="h-4 w-4" />;
-    if (type.startsWith('payment')) return <CreditCard className="h-4 w-4" />;
-    if (type.startsWith('user')) return <UserPlus className="h-4 w-4" />;
     return <Bell className="h-4 w-4" />;
   };
 
@@ -102,14 +99,6 @@ export default function AdminNotificationsPage() {
       article_approved: { variant: 'success', label: 'Article validé' },
       article_rejected: { variant: 'error', label: 'Article rejeté' },
       article_published: { variant: 'success', label: 'Article publié' },
-      subscription_created: { variant: 'info', label: 'Abonnement créé' },
-      subscription_activated: { variant: 'success', label: 'Abonnement activé' },
-      subscription_expired: { variant: 'warning', label: 'Abonnement expiré' },
-      subscription_cancelled: { variant: 'error', label: 'Abonnement annulé' },
-      payment_success: { variant: 'success', label: 'Paiement réussi' },
-      payment_failed: { variant: 'error', label: 'Paiement échoué' },
-      user_registered: { variant: 'info', label: 'Inscription' },
-      user_deactivated: { variant: 'warning', label: 'Compte désactivé' },
       system: { variant: 'info', label: 'Système' },
     };
     const c = config[type] || { variant: 'info', label: type };
@@ -122,103 +111,7 @@ export default function AdminNotificationsPage() {
     { value: 'article_approved', label: 'Article validé' },
     { value: 'article_rejected', label: 'Article rejeté' },
     { value: 'article_published', label: 'Article publié' },
-    { value: 'subscription_created', label: 'Abonnement créé' },
-    { value: 'subscription_activated', label: 'Abonnement activé' },
-    { value: 'subscription_expired', label: 'Abonnement expiré' },
-    { value: 'subscription_cancelled', label: 'Abonnement annulé' },
-    { value: 'payment_success', label: 'Paiement réussi' },
-    { value: 'payment_failed', label: 'Paiement échoué' },
-    { value: 'user_registered', label: 'Inscription' },
-    { value: 'user_deactivated', label: 'Compte désactivé' },
   ];
-
-  const renderNotificationList = (notifList: Notification[]) => {
-    if (!Array.isArray(notifList) || notifList.length === 0) {
-      return (
-        <EmptyState
-          title="Aucune notification"
-          description="Aucune notification ne correspond à vos critères."
-          icon={<Bell className="h-12 w-12 text-gray-400" />}
-        />
-      );
-    }
-
-    return (
-      <Card padding="none">
-        <div className="divide-y divide-gray-100">
-          {notifList.map((notif) => (
-            <div
-              key={notif.id}
-              className={`p-4 hover:bg-gray-50 ${!notif.isRead ? 'bg-blue-50/50' : ''}`}
-            >
-              <div className="flex items-start gap-3">
-                <div className={`mt-1 rounded-full p-2 ${!notif.isRead ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-500'}`}>
-                  {getTypeIcon(notif.type)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className={`font-medium ${!notif.isRead ? 'text-gray-900' : 'text-gray-700'}`}>
-                      {notif.title}
-                    </h3>
-                    {getTypeBadge(notif.type)}
-                    {!notif.isRead && (
-                      <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
-                        Nouveau
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-1 text-sm text-gray-600">{notif.message}</p>
-                  <div className="mt-2 flex items-center gap-4 text-xs text-gray-500 flex-wrap">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {new Date(notif.createdAt).toLocaleDateString('fr-FR', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      {notif.isRead ? (
-                        <>
-                          <Eye className="h-3 w-3" />
-                          Lu
-                        </>
-                      ) : (
-                        <>
-                          <EyeOff className="h-3 w-3" />
-                          Non lu
-                        </>
-                      )}
-                    </span>
-                  </div>
-                </div>
-                {!notif.isRead && (
-                  <button
-                    onClick={() => markAsRead(notif.id)}
-                    disabled={markingRead === notif.id}
-                    className="ml-2 flex-shrink-0 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
-                  >
-                    {markingRead === notif.id ? (
-                      <span className="flex items-center gap-1">
-                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-primary-500" />
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        <Check className="h-3 w-3" />
-                        Marquer lu
-                      </span>
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
-    );
-  };
 
   const totalPages = Math.ceil(total / 20);
 
@@ -227,7 +120,7 @@ export default function AdminNotificationsPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
         <p className="mt-1 text-gray-600">
-          Consultez les notifications système générées automatiquement
+          Recevez des alertes sur les nouveaux articles à modérer
         </p>
       </div>
 
@@ -279,9 +172,87 @@ export default function AdminNotificationsPage() {
             <div key={i} className="h-24 animate-pulse rounded-lg bg-gray-100" />
           ))}
         </div>
+      ) : notifications.length === 0 ? (
+        <EmptyState
+          title="Aucune notification"
+          description="Vous n'avez pas encore de notification."
+          icon={<Bell className="h-12 w-12 text-gray-400" />}
+        />
       ) : (
         <>
-          {renderNotificationList(notifications)}
+          <Card padding="none">
+            <div className="divide-y divide-gray-100">
+              {notifications.map((notif) => (
+                <div
+                  key={notif.id}
+                  className={`p-4 hover:bg-gray-50 ${!notif.isRead ? 'bg-blue-50/50' : ''}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`mt-1 rounded-full p-2 ${!notif.isRead ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-500'}`}>
+                      {getTypeIcon(notif.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className={`font-medium ${!notif.isRead ? 'text-gray-900' : 'text-gray-700'}`}>
+                          {notif.title}
+                        </h3>
+                        {getTypeBadge(notif.type)}
+                        {!notif.isRead && (
+                          <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                            Nouveau
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-sm text-gray-600">{notif.message}</p>
+                      <div className="mt-2 flex items-center gap-4 text-xs text-gray-500 flex-wrap">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {new Date(notif.createdAt).toLocaleDateString('fr-FR', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          {notif.isRead ? (
+                            <>
+                              <Eye className="h-3 w-3" />
+                              Lu
+                            </>
+                          ) : (
+                            <>
+                              <EyeOff className="h-3 w-3" />
+                              Non lu
+                            </>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    {!notif.isRead && (
+                      <button
+                        onClick={() => markAsRead(notif.id)}
+                        disabled={markingRead === notif.id}
+                        className="ml-2 flex-shrink-0 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                      >
+                        {markingRead === notif.id ? (
+                          <span className="flex items-center gap-1">
+                            <span className="h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-primary-500" />
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1">
+                            <Check className="h-3 w-3" />
+                            Marquer lu
+                          </span>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
 
           {/* Pagination */}
           {totalPages > 1 && (

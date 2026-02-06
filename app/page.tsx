@@ -47,10 +47,10 @@ async function getFeaturedArticles(): Promise<Article[]> {
   }
 }
 
-async function getRecentArticles(): Promise<Article[]> {
+async function getFocusArticles(): Promise<Article[]> {
   try {
     const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles?limit=6`,
+      `${apiConfig.baseUrl}/api/articles?articleSection=focus&limit=6`,
       { cache: 'no-store' }
     );
     if (!response.ok) return [];
@@ -58,7 +58,7 @@ async function getRecentArticles(): Promise<Article[]> {
     const articles = result.data?.data || [];
     return articles.map(mapArticle);
   } catch (error) {
-    console.error('Error fetching recent articles:', error);
+    console.error('Error fetching focus articles:', error);
     return [];
   }
 }
@@ -85,9 +85,9 @@ async function getSummariesByCountry(): Promise<CountrySummary[]> {
 }
 
 export default async function HomePage() {
-  const [featuredArticles, recentArticles, summariesByCountry] = await Promise.all([
+  const [featuredArticles, focusArticles, summariesByCountry] = await Promise.all([
     getFeaturedArticles(),
-    getRecentArticles(),
+    getFocusArticles(),
     getSummariesByCountry(),
   ]);
 
@@ -135,31 +135,31 @@ export default async function HomePage() {
         {/* Summary Section - Résumé de l'actualité par pays */}
         <SummarySection summaries={summariesByCountry} />
 
-        {/* Recent Articles Grid */}
+        {/* Focus Articles Grid */}
         <section className="bg-gray-50 py-8">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">
-                Articles récents
+                Focus
               </h2>
               <Link
-                href="/articles"
+                href="/articles?section=focus"
                 className="text-sm font-medium text-primary-600 hover:text-primary-700"
               >
                 Voir tout →
               </Link>
             </div>
-            {recentArticles.length > 1 ? (
+            {focusArticles.length > 0 ? (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {recentArticles.slice(1).map((article) => (
+                {focusArticles.map((article) => (
                   <ArticleCard key={article.id} article={article} variant="compact" />
                 ))}
               </div>
             ) : (
               <div className="rounded-lg bg-white p-8 text-center">
-                <p className="text-gray-500">Aucun article disponible pour le moment.</p>
+                <p className="text-gray-500">Aucun article Focus disponible pour le moment.</p>
                 <p className="mt-2 text-sm text-gray-400">
-                  Revenez bientôt pour découvrir nos actualités.
+                  Revenez bientôt pour découvrir nos analyses approfondies.
                 </p>
               </div>
             )}

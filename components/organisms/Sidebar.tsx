@@ -65,6 +65,7 @@ const Sidebar = ({ variant }: SidebarProps) => {
       { href: '/veilleur', label: 'Tableau de bord', icon: LayoutDashboard, exact: true },
       { href: '/veilleur/articles', label: 'Mes articles', icon: FileText },
       { href: '/veilleur/articles/create', label: 'Nouvel article', icon: Send },
+      { href: '/veilleur/notifications', label: 'Notifications', icon: Bell },
     ],
     moderateur: [
       { href: '/moderateur', label: 'Tableau de bord', icon: LayoutDashboard, exact: true },
@@ -72,6 +73,7 @@ const Sidebar = ({ variant }: SidebarProps) => {
       { href: '/moderateur/approved', label: 'Validés', icon: CheckSquare },
       { href: '/moderateur/rejected', label: 'Rejetés', icon: XCircle },
       { href: '/moderateur/published', label: 'Publiés', icon: FileText },
+      { href: '/moderateur/notifications', label: 'Notifications', icon: Bell },
     ],
     admin: [
       { href: '/admin', label: 'Tableau de bord', icon: LayoutDashboard, exact: true },
@@ -121,7 +123,7 @@ const Sidebar = ({ variant }: SidebarProps) => {
               : pathname.startsWith(item.href);
             const Icon = item.icon;
 
-            const showBadge = item.href === '/admin/notifications' && unreadCount > 0;
+            const showBadge = (item.href === '/admin/notifications' || item.href === '/veilleur/notifications' || item.href === '/moderateur/notifications') && unreadCount > 0;
 
             return (
               <li key={item.href}>
