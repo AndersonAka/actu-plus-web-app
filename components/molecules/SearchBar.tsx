@@ -45,10 +45,13 @@ const SearchBar = ({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) return;
+    
     if (onSearch) {
-      onSearch(query);
+      onSearch(trimmedQuery);
     } else {
-      router.push(`/search?q=${encodeURIComponent(query)}`);
+      router.push(`/articles?search=${encodeURIComponent(trimmedQuery)}`);
     }
   };
 

@@ -18,7 +18,8 @@ function ArticlesContent() {
   
   const currentPage = Number(searchParams.get('page')) || 1;
   const categoryFilter = searchParams.get('category') || '';
-  const searchQuery = searchParams.get('q') || '';
+  const sectionFilter = searchParams.get('section') || '';
+  const searchQuery = searchParams.get('search') || searchParams.get('q') || '';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,6 +30,7 @@ function ArticlesContent() {
         params.set('page', String(currentPage));
         params.set('limit', '9');
         if (categoryFilter) params.set('categoryId', categoryFilter);
+        if (sectionFilter) params.set('articleSection', sectionFilter);
         if (searchQuery) params.set('search', searchQuery);
 
         const [articlesRes, categoriesRes] = await Promise.all([
@@ -56,7 +58,7 @@ function ArticlesContent() {
     };
 
     fetchData();
-  }, [currentPage, categoryFilter, searchQuery]);
+  }, [currentPage, categoryFilter, sectionFilter, searchQuery]);
 
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -78,10 +80,11 @@ function ArticlesContent() {
   const handleSearch = (query: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (query) {
-      params.set('q', query);
+      params.set('search', query);
     } else {
-      params.delete('q');
+      params.delete('search');
     }
+    params.delete('q'); // Clean up old param if exists
     params.delete('page');
     router.push(`/articles?${params.toString()}`);
   };
