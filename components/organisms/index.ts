@@ -15,3 +15,6 @@ export { RegisterForm } from './RegisterForm';
 
 export { ArticleView } from './ArticleView';
 export type { ArticleViewProps } from './ArticleView';
+
+export { CookieBanner } from './CookieBanner';
+export { CookieSettingsModal } from './CookieSettingsModal';

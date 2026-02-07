@@ -3,8 +3,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { cn } from '@/lib/utils/cn';
+import { useCookieConsent } from '@/lib/contexts/CookieConsentContext';
+import { Cookie } from 'lucide-react';
 
 const Footer = ({ className }: { className?: string }) => {
+  const { openSettings } = useCookieConsent();
   const currentYear = new Date().getFullYear();
 
   const footerLinks = {
@@ -77,10 +80,19 @@ const Footer = ({ className }: { className?: string }) => {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-gray-200 pt-8 text-center">
-          <p className="text-sm text-gray-500">
-            © {currentYear} Actu Plus. Tous droits réservés.
-          </p>
+        <div className="mt-8 border-t border-gray-200 pt-8">
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <p className="text-sm text-gray-500">
+              © {currentYear} Actu Plus. Tous droits réservés.
+            </p>
+            <button
+              onClick={openSettings}
+              className="flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-primary-600"
+            >
+              <Cookie className="h-4 w-4" />
+              Gérer les cookies
+            </button>
+          </div>
         </div>
       </div>
     </footer>
