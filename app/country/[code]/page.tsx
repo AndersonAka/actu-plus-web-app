@@ -120,22 +120,58 @@ export default function CountryPage() {
           setAllArticles(mapArticles(articles));
         }
 
+        // Archives - support multiple response formats
         if (archivesRes.ok) {
           const data = await archivesRes.json();
-          // PaginatedResultDto: { data: [...], total, page, limit }
-          const articles = data.data?.data || data.data?.items || data.data || [];
+          console.log('[Country Page] Archives response:', data);
+          // Handle different response structures
+          let articles: any[] = [];
+          if (Array.isArray(data)) {
+            articles = data;
+          } else if (Array.isArray(data.data)) {
+            articles = data.data;
+          } else if (data.data?.data && Array.isArray(data.data.data)) {
+            articles = data.data.data;
+          } else if (data.data?.items && Array.isArray(data.data.items)) {
+            articles = data.data.items;
+          }
           setArchiveArticles(mapArticles(articles));
         }
 
+        // Focus - support single article or array response
         if (focusRes.ok) {
           const data = await focusRes.json();
-          const focusData = data.data?.[0] || null;
+          console.log('[Country Page] Focus response:', data);
+          let focusData = null;
+          if (data.data) {
+            // Could be single object or array
+            if (Array.isArray(data.data)) {
+              focusData = data.data[0] || null;
+            } else {
+              focusData = data.data;
+            }
+          } else if (Array.isArray(data)) {
+            focusData = data[0] || null;
+          }
           setFocusArticle(focusData ? mapArticle(focusData) : null);
         }
 
+        // Chroniques - support multiple response formats
         if (chroniquesRes.ok) {
           const data = await chroniquesRes.json();
-          setChroniqueArticles(mapArticles(data.data || []));
+          console.log('[Country Page] Chroniques response:', data);
+          // Handle different response structures
+          let articles: any[] = [];
+          if (Array.isArray(data)) {
+            articles = data;
+          } else if (Array.isArray(data.data)) {
+            articles = data.data;
+          } else if (data.data?.data && Array.isArray(data.data.data)) {
+            articles = data.data.data;
+          } else if (data.data?.items && Array.isArray(data.data.items)) {
+            articles = data.data.items;
+          }
+          setChroniqueArticles(mapArticles(articles));
         }
       } catch (error) {
         console.error('Error fetching country data:', error);

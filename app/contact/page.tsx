@@ -59,15 +59,16 @@ export default function ContactPage() {
     setError(null);
 
     try {
-      // Simuler l'envoi (à remplacer par un vrai endpoint)
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      
-      // TODO: Envoyer au backend
-      // const response = await fetch('/api/proxy/contact', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data),
-      // });
+      const response = await fetch('/api/proxy/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Erreur lors de l'envoi du message");
+      }
 
       setIsSubmitted(true);
       reset();

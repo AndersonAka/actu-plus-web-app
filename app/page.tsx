@@ -49,13 +49,32 @@ async function getFeaturedArticles(): Promise<Article[]> {
 
 async function getFocusArticles(): Promise<Article[]> {
   try {
+    // Try with articleSection parameter (backend may use this or 'section')
     const response = await fetch(
       `${apiConfig.baseUrl}/api/articles?articleSection=focus&limit=6`,
       { cache: 'no-store' }
     );
+    
+    console.log('[Home] Focus articles response status:', response.status);
+    
     if (!response.ok) return [];
+    
     const result = await response.json();
-    const articles = result.data?.data || [];
+    console.log('[Home] Focus articles raw result:', result);
+    
+    // Handle multiple response structures
+    let articles: any[] = [];
+    if (Array.isArray(result)) {
+      articles = result;
+    } else if (Array.isArray(result.data)) {
+      articles = result.data;
+    } else if (result.data?.data && Array.isArray(result.data.data)) {
+      articles = result.data.data;
+    } else if (result.data?.items && Array.isArray(result.data.items)) {
+      articles = result.data.items;
+    }
+    
+    console.log('[Home] Focus articles parsed count:', articles.length);
     return articles.map(mapArticle);
   } catch (error) {
     console.error('Error fetching focus articles:', error);
