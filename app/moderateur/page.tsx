@@ -21,6 +21,8 @@ export default function ModerateurDashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // L'endpoint public GET /articles supporte le filtrage par status
+        // Response: { success, data: { data: T[], total, page, limit, totalPages } }
         const [pendingRes, approvedRes, rejectedRes, publishedRes] = await Promise.all([
           fetch('/api/proxy/articles?status=pending&limit=10'),
           fetch('/api/proxy/articles?status=approved&limit=1'),
@@ -28,16 +30,14 @@ export default function ModerateurDashboardPage() {
           fetch('/api/proxy/articles?status=published&limit=1'),
         ]);
 
-        // Helper pour extraire les données de la réponse API
         const parseResponse = (result: any) => {
-          if (result.data?.data && Array.isArray(result.data.data)) {
-            return { articles: result.data.data, total: result.data.meta?.total || result.data.data.length };
-          } else if (result.data && Array.isArray(result.data)) {
-            return { articles: result.data, total: result.data.length };
-          } else if (Array.isArray(result)) {
-            return { articles: result, total: result.length };
-          }
-          return { articles: [], total: 0 };
+          // Handle: { success, data: { data: [...], total } } or { data: [...], total }
+          const payload = result.data || result;
+          const articles = Array.isArray(payload.data)
+            ? payload.data
+            : Array.isArray(payload) ? payload : [];
+          const total = payload.total ?? articles.length;
+          return { articles, total };
         };
 
         if (pendingRes.ok) {

@@ -105,7 +105,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
               {article.isPremium && (
                 <Badge variant="warning" className="flex items-center gap-1">
                   <Crown className="h-3 w-3" />
-                  Premium
+                  Contenu abonné
                 </Badge>
               )}
             </div>
@@ -174,10 +174,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
           )}
 
           <div className="mt-8 border-t border-gray-200 pt-8">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500">
-                Publié par {article.author.firstName} {article.author.lastName}
-              </p>
+            <div className="flex items-center justify-end">
               <ShareButton 
                 title={article.title} 
                 excerpt={article.excerpt} 

@@ -11,7 +11,7 @@ import { fr } from 'date-fns/locale';
 
 export interface ArticleCardProps {
   article: Article;
-  variant?: 'default' | 'compact' | 'featured';
+  variant?: 'default' | 'compact' | 'featured' | 'list';
   showStatus?: boolean;
   onFavorite?: (id: string) => void;
   isFavorite?: boolean;
@@ -67,7 +67,7 @@ const ArticleCard = ({
             {article.isPremium && (
               <div className="absolute right-1 top-1">
                 <Badge variant="warning" size="sm" className="bg-amber-500 text-white text-xs px-1 py-0">
-                  Premium
+                  Contenu abonné
                 </Badge>
               </div>
             )}
@@ -80,6 +80,92 @@ const ArticleCard = ({
           <p className="mt-1 text-xs text-gray-500">{formattedDate}</p>
         </div>
       </Link>
+    );
+  }
+
+  if (variant === 'list') {
+    return (
+      <article
+        className={cn(
+          'group flex gap-4 overflow-hidden rounded-xl border border-gray-200 bg-white p-3 transition-all duration-200 hover:shadow-md hover:border-gray-300',
+          className
+        )}
+      >
+        <Link href={articleUrl} className="relative h-28 w-40 flex-shrink-0 overflow-hidden rounded-lg sm:h-32 sm:w-48">
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={article.title}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              unoptimized={true}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gray-100">
+              <span className="text-xs text-gray-400">Pas d'image</span>
+            </div>
+          )}
+          {article.isPremium && (
+            <div className="absolute left-1.5 top-1.5">
+              <Badge variant="warning" size="sm" className="bg-amber-500 text-white text-[10px] px-1.5 py-0">
+                Contenu abonné
+              </Badge>
+            </div>
+          )}
+        </Link>
+        <div className="flex flex-1 flex-col justify-between py-0.5 min-w-0">
+          <div>
+            <div className="mb-1.5 flex items-center gap-2">
+              <Badge variant="secondary" size="sm">
+                {article.category.name}
+              </Badge>
+              {showStatus && (
+                <Badge variant={statusLabels[article.status].variant} size="sm">
+                  {statusLabels[article.status].label}
+                </Badge>
+              )}
+            </div>
+            <Link href={articleUrl}>
+              <h3 className="mb-1 line-clamp-2 text-[0.95rem] font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
+                {article.title}
+              </h3>
+            </Link>
+            {article.excerpt && (
+              <p className="line-clamp-2 text-sm text-gray-500 leading-relaxed hidden sm:block">
+                {article.excerpt}
+              </p>
+            )}
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            <div className="flex items-center gap-3 text-xs text-gray-400">
+              <span className="flex items-center gap-1">
+                <Calendar className="h-3.5 w-3.5" />
+                {formattedDate}
+              </span>
+              <span className="flex items-center gap-1">
+                <Eye className="h-3.5 w-3.5" />
+                {article.views}
+              </span>
+            </div>
+            {onFavorite && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  onFavorite(article.id);
+                }}
+                className={cn(
+                  'rounded-full p-1 transition-colors',
+                  isFavorite
+                    ? 'text-error-500 hover:bg-error-50'
+                    : 'text-gray-400 hover:bg-gray-100 hover:text-error-500'
+                )}
+              >
+                <Heart className={cn('h-4 w-4', isFavorite && 'fill-current')} />
+              </button>
+            )}
+          </div>
+        </div>
+      </article>
     );
   }
 
@@ -113,7 +199,7 @@ const ArticleCard = ({
             </Badge>
             {article.isPremium && (
               <Badge variant="warning" className="bg-amber-500 text-white">
-                Premium
+                Contenu abonné
               </Badge>
             )}
           </div>
@@ -173,7 +259,7 @@ const ArticleCard = ({
             )}
             {article.isPremium && (
               <Badge variant="warning" className="bg-amber-500 text-white">
-                Premium
+                Contenu abonné
               </Badge>
             )}
           </div>

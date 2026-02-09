@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/atoms';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { FileText, Users, Tag, Globe, CreditCard, Bell, Clock, CheckCircle, XCircle, Send, Settings } from 'lucide-react';
+import { FileText, Users, Tag, Globe, CreditCard, Bell, Clock, CheckCircle, XCircle, Send, Settings, Eye, BarChart3 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const { user } = useAuth();
@@ -107,6 +107,8 @@ export default function AdminDashboardPage() {
   const quickLinks = [
     { label: 'Gérer les articles', href: '/admin/articles', icon: FileText },
     { label: 'Gérer les utilisateurs', href: '/admin/users', icon: Users },
+    { label: 'Suivi utilisateurs', href: '/admin/user-analytics', icon: Eye },
+    { label: 'Suivi veilleurs', href: '/admin/veilleur-analytics', icon: BarChart3 },
     { label: 'Gérer les catégories', href: '/admin/categories', icon: Tag },
     { label: 'Gérer les pays', href: '/admin/countries', icon: Globe },
     { label: 'Abonnements', href: '/admin/subscriptions', icon: CreditCard },

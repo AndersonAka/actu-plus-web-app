@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Article, ArticleSection, CountrySummary } from '@/types/article.types';
-import { ArticleCard } from '@/components/molecules';
+import { ArticleCard, FocusDetailCard } from '@/components/molecules';
 import { Button } from '@/components/atoms';
 import { Header, Footer } from '@/components/organisms';
 import { 
@@ -21,7 +21,9 @@ import {
   Sparkles,
   Globe2,
   ArrowRight,
-  Megaphone
+  Megaphone,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 
@@ -57,9 +59,10 @@ export default function CountryPage() {
   const [allArticles, setAllArticles] = useState<Article[]>([]);
   const [archiveArticles, setArchiveArticles] = useState<Article[]>([]);
   const [focusArticle, setFocusArticle] = useState<Article | null>(null);
-  const [chroniqueArticles, setChroniqueArticles] = useState<Article[]>([]);
+  const [chroniqueArticle, setChroniqueArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<string>('essentiel');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Check if user is staff (admin, veilleur, moderateur)
   const isStaff = user?.role && ['admin', 'veilleur', 'moderateur'].includes(user.role.toLowerCase());
@@ -156,22 +159,21 @@ export default function CountryPage() {
           setFocusArticle(focusData ? mapArticle(focusData) : null);
         }
 
-        // Chroniques - support multiple response formats
+        // Chroniques - single article (like Focus)
         if (chroniquesRes.ok) {
           const data = await chroniquesRes.json();
           console.log('[Country Page] Chroniques response:', data);
-          // Handle different response structures
-          let articles: any[] = [];
-          if (Array.isArray(data)) {
-            articles = data;
-          } else if (Array.isArray(data.data)) {
-            articles = data.data;
-          } else if (data.data?.data && Array.isArray(data.data.data)) {
-            articles = data.data.data;
-          } else if (data.data?.items && Array.isArray(data.data.items)) {
-            articles = data.data.items;
+          let chroniqueData = null;
+          if (data.data) {
+            if (Array.isArray(data.data)) {
+              chroniqueData = data.data[0] || null;
+            } else {
+              chroniqueData = data.data;
+            }
+          } else if (Array.isArray(data)) {
+            chroniqueData = data[0] || null;
           }
-          setChroniqueArticles(mapArticles(articles));
+          setChroniqueArticle(chroniqueData ? mapArticle(chroniqueData) : null);
         }
       } catch (error) {
         console.error('Error fetching country data:', error);
@@ -211,13 +213,70 @@ export default function CountryPage() {
   const renderPremiumLock = () => (
     <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center">
       <Lock className="mb-4 h-12 w-12 text-gray-400" />
-      <h3 className="mb-2 text-lg font-semibold text-gray-700">Contenu Premium</h3>
+      <h3 className="mb-2 text-lg font-semibold text-gray-700">Contenu Abonné</h3>
       <p className="mb-4 text-sm text-gray-500">
-        Cette section est réservée aux abonnés Premium.
+        Cette section est réservée aux abonnés.
       </p>
       <Link href="/subscriptions">
-        <Button variant="primary">Passer à Premium</Button>
+        <Button variant="primary">S'abonner</Button>
       </Link>
+    </div>
+  );
+
+  const renderArticleList = (articles: Article[], emptyMessage: string) => {
+    if (articles.length === 0) {
+      return (
+        <p className="text-center text-gray-500 py-4">{emptyMessage}</p>
+      );
+    }
+
+    if (viewMode === 'list') {
+      return (
+        <div className="flex flex-col gap-3">
+          {articles.map((article) => (
+            <ArticleCard key={article.id} article={article} variant="list" fromCountry={code} />
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {articles.map((article) => (
+          <ArticleCard key={article.id} article={article} fromCountry={code} />
+        ))}
+      </div>
+    );
+  };
+
+  const renderViewToggle = () => (
+    <div className="mb-4 flex items-center justify-end">
+      <div className="flex items-center gap-1 rounded-lg bg-gray-100 p-1">
+        <button
+          onClick={() => setViewMode('grid')}
+          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200 ${
+            viewMode === 'grid'
+              ? 'bg-white text-primary-600 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          title="Affichage grille"
+        >
+          <LayoutGrid className="h-4 w-4" />
+          <span className="hidden sm:inline">Grille</span>
+        </button>
+        <button
+          onClick={() => setViewMode('list')}
+          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200 ${
+            viewMode === 'list'
+              ? 'bg-white text-primary-600 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          title="Affichage liste"
+        >
+          <List className="h-4 w-4" />
+          <span className="hidden sm:inline">Liste</span>
+        </button>
+      </div>
     </div>
   );
 
@@ -225,73 +284,54 @@ export default function CountryPage() {
     switch (activeSection) {
       case 'essentiel':
         return (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {essentielArticles.length > 0 ? (
-              essentielArticles.map((article) => (
-                <ArticleCard key={article.id} article={article} fromCountry={code} />
-              ))
-            ) : (
-              <p className="col-span-full text-center text-gray-500">
-                Aucun article essentiel pour le moment.
-              </p>
-            )}
-          </div>
+          <>
+            {renderViewToggle()}
+            {renderArticleList(essentielArticles, "Aucun article essentiel pour le moment.")}
+          </>
         );
 
       case 'focus':
         if (!hasPremiumAccess) return renderPremiumLock();
         return focusArticle ? (
-          <div className="mx-auto max-w-3xl">
-            <ArticleCard article={focusArticle} variant="featured" fromCountry={code} />
-          </div>
+          <FocusDetailCard
+            article={focusArticle}
+            sectionTitle="Le Focus sur..."
+            sectionColor="red"
+            fromCountry={code}
+          />
         ) : (
           <p className="text-center text-gray-500">Aucun article Focus pour le moment.</p>
         );
 
       case 'chronique':
         if (!hasPremiumAccess) return renderPremiumLock();
-        return (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {chroniqueArticles.length > 0 ? (
-              chroniqueArticles.map((article) => (
-                <ArticleCard key={article.id} article={article} fromCountry={code} />
-              ))
-            ) : (
-              <p className="col-span-full text-center text-gray-500">
-                Aucune chronique pour le moment.
-              </p>
-            )}
-          </div>
+        return chroniqueArticle ? (
+          <FocusDetailCard
+            article={chroniqueArticle}
+            sectionTitle="La Chronique"
+            sectionColor="blue"
+            fromCountry={code}
+          />
+        ) : (
+          <p className="text-center text-gray-500">
+            Aucune chronique pour le moment.
+          </p>
         );
 
       case 'toute-actualite':
         return (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {allArticles.length > 0 ? (
-              allArticles.map((article) => (
-                <ArticleCard key={article.id} article={article} fromCountry={code} />
-              ))
-            ) : (
-              <p className="col-span-full text-center text-gray-500">
-                Aucun article pour le moment.
-              </p>
-            )}
-          </div>
+          <>
+            {renderViewToggle()}
+            {renderArticleList(allArticles, "Aucun article pour le moment.")}
+          </>
         );
 
       case 'archives':
         return (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {archiveArticles.length > 0 ? (
-              archiveArticles.map((article) => (
-                <ArticleCard key={article.id} article={article} fromCountry={code} />
-              ))
-            ) : (
-              <p className="col-span-full text-center text-gray-500">
-                Aucune archive pour le moment.
-              </p>
-            )}
-          </div>
+          <>
+            {renderViewToggle()}
+            {renderArticleList(archiveArticles, "Aucune archive pour le moment.")}
+          </>
         );
 
       default:

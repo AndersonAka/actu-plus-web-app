@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button, Badge } from '@/components/atoms';
-import { ArticleCard, FeaturedCarousel, SummarySection, FloatingCTA } from '@/components/molecules';
+import { ArticleCard, FeaturedCarousel, FloatingCTA } from '@/components/molecules';
 import { Header, Footer } from '@/components/organisms';
 import { apiConfig } from '@/config/api.config';
 import { Article, ArticleStatus } from '@/types';
@@ -82,32 +82,10 @@ async function getFocusArticles(): Promise<Article[]> {
   }
 }
 
-interface CountrySummary {
-  countryCode: string;
-  countryName: string;
-  summary: any;
-}
-
-async function getSummariesByCountry(): Promise<CountrySummary[]> {
-  try {
-    const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles/summaries-by-country`,
-      { cache: 'no-store' }
-    );
-    if (!response.ok) return [];
-    const result = await response.json();
-    return result.data || result || [];
-  } catch (error) {
-    console.error('Error fetching summaries by country:', error);
-    return [];
-  }
-}
-
 export default async function HomePage() {
-  const [featuredArticles, focusArticles, summariesByCountry] = await Promise.all([
+  const [featuredArticles, focusArticles] = await Promise.all([
     getFeaturedArticles(),
     getFocusArticles(),
-    getSummariesByCountry(),
   ]);
 
   return (
@@ -151,16 +129,20 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Summary Section - Résumé de l'actualité par pays */}
-        <SummarySection summaries={summariesByCountry} />
-
         {/* Focus Articles Grid */}
         <section className="bg-gray-50 py-8">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">
-                Focus
-              </h2>
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-100">
+                  <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  Focus
+                </h2>
+              </div>
               <Link
                 href="/articles?section=focus"
                 className="text-sm font-medium text-primary-600 hover:text-primary-700"
@@ -169,9 +151,57 @@ export default async function HomePage() {
               </Link>
             </div>
             {focusArticles.length > 0 ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {focusArticles.map((article) => (
-                  <ArticleCard key={article.id} article={article} variant="compact" />
+                  <Link
+                    key={article.id}
+                    href={`/articles/${article.id}${article.country?.code ? `?from=${article.country.code.toLowerCase()}` : ''}`}
+                    className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+                  >
+                    {/* Image */}
+                    <div className="relative aspect-[16/10] w-full overflow-hidden">
+                      {(article.coverImage || article.imageUrl) ? (
+                        <img
+                          src={article.coverImage || article.imageUrl}
+                          alt={article.title}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-red-50 to-red-100">
+                          <span className="text-3xl font-bold text-red-200">F</span>
+                        </div>
+                      )}
+                      {/* Country badge overlay */}
+                      {article.country && (
+                        <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm backdrop-blur-sm">
+                          {article.country.flag && <span className="text-sm">{article.country.flag}</span>}
+                          <span>{article.country.name}</span>
+                        </div>
+                      )}
+                      {article.isPremium && (
+                        <div className="absolute right-2 top-2 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+                          Contenu abonné
+                        </div>
+                      )}
+                    </div>
+                    {/* Content */}
+                    <div className="flex flex-1 flex-col p-4">
+                      <div className="mb-2 flex items-center gap-2">
+                        <Badge variant="error" size="sm">Focus</Badge>
+                        {article.category?.name && (
+                          <Badge variant="secondary" size="sm">{article.category.name}</Badge>
+                        )}
+                      </div>
+                      <h3 className="mb-1.5 line-clamp-2 text-[0.95rem] font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
+                        {article.title}
+                      </h3>
+                      {article.excerpt && (
+                        <p className="line-clamp-2 text-sm text-gray-500 leading-relaxed">
+                          {article.excerpt}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
                 ))}
               </div>
             ) : (

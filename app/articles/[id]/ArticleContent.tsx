@@ -103,12 +103,12 @@ export function ArticleContent({ article }: ArticleContentProps) {
           <Crown className="h-8 w-8 text-white" />
         </div>
         <h3 className="mb-2 text-xl font-bold text-gray-900">
-          Contenu Premium
+          Contenu Abonné
         </h3>
         <p className="mb-6 text-gray-600">
           {!isAuthenticated
-            ? 'Connectez-vous et abonnez-vous pour accéder à cet article premium.'
-            : 'Abonnez-vous pour accéder à cet article et à tout le contenu premium.'}
+            ? 'Connectez-vous et abonnez-vous pour accéder à ce contenu réservé aux abonnés.'
+            : 'Abonnez-vous pour accéder à cet article et à tout le contenu réservé aux abonnés.'}
         </p>
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           {!isAuthenticated ? (

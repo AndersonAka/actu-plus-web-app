@@ -21,6 +21,8 @@ import {
   XCircle,
   Send,
   LogOut,
+  BarChart3,
+  Eye,
 } from 'lucide-react';
 
 export interface SidebarProps {
@@ -79,6 +81,8 @@ const Sidebar = ({ variant }: SidebarProps) => {
       { href: '/admin', label: 'Tableau de bord', icon: LayoutDashboard, exact: true },
       { href: '/admin/articles', label: 'Articles', icon: FileText },
       { href: '/admin/users', label: 'Utilisateurs', icon: Users },
+      { href: '/admin/user-analytics', label: 'Suivi utilisateurs', icon: Eye },
+      { href: '/admin/veilleur-analytics', label: 'Suivi veilleurs', icon: BarChart3 },
       { href: '/admin/categories', label: 'Catégories', icon: Tag },
       { href: '/admin/countries', label: 'Pays', icon: Globe },
       { href: '/admin/subscriptions', label: 'Abonnements', icon: CreditCard },

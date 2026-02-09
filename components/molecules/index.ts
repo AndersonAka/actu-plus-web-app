@@ -40,3 +40,6 @@ export { ImageUpload } from './ImageUpload';
 
 export { NotificationDropdown } from './NotificationDropdown';
 export type { NotificationDropdownProps } from './NotificationDropdown';
+
+export { FocusDetailCard } from './FocusDetailCard';
+export type { FocusDetailCardProps } from './FocusDetailCard';

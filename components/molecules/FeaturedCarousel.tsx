@@ -120,9 +120,6 @@ const FeaturedCarousel = ({ articles, className }: FeaturedCarouselProps) => {
                       <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                       {format(new Date(article.createdAt), 'dd MMM yyyy', { locale: fr })}
                     </span>
-                    {article.author && (
-                      <span className="hidden sm:inline">Par {article.author.firstName} {article.author.lastName}</span>
-                    )}
                   </div>
                 </div>
 

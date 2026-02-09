@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Button, Card, CardHeader, CardTitle, CardContent, Badge, Alert, TextArea } from '@/components/atoms';
 import { StatusBadge } from '@/components/molecules';
 import { Article, ArticleStatus } from '@/types';
-import { ArrowLeft, CheckCircle, XCircle, Send, Calendar, User, MapPin, Tag, Link as LinkIcon, Crown, Star, Archive, Clock, Layers } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Send, Calendar, User, MapPin, Tag, Link as LinkIcon, Crown, Star, Archive, Clock, Layers, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -28,6 +28,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
   const [isPremium, setIsPremium] = useState(false);
   const [isFeaturedHome, setIsFeaturedHome] = useState(false);
   const [isArchive, setIsArchive] = useState(false);
+  const [isEssentiel, setIsEssentiel] = useState(false);
   const [articleSection, setArticleSection] = useState<string>('');
   const [scheduledPublishAt, setScheduledPublishAt] = useState<string>('');
   const [isScheduled, setIsScheduled] = useState(false);
@@ -46,7 +47,8 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
           setIsPremium(articleData.isPremium || false);
           setIsFeaturedHome(articleData.isFeaturedHome || false);
           setIsArchive(articleData.isArchive || false);
-          setArticleSection(articleData.articleSection || '');
+          setIsEssentiel(articleData.articleSection === 'essentiel');
+          setArticleSection(articleData.articleSection === 'essentiel' ? '' : (articleData.articleSection || ''));
         }
       } catch (error) {
         console.error('Error fetching article:', error);
@@ -112,10 +114,75 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
     }
   };
 
+  const handleUpdatePublishedOptions = async () => {
+    setActionLoading('update-options');
+    setError(null);
+    try {
+      const response = await fetch(`/api/proxy/articles/${articleId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          isPremium,
+          isFeaturedHome,
+          isArchive,
+          articleSection: isEssentiel ? 'essentiel' : (articleSection || undefined),
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Erreur lors de la mise à jour');
+      }
+
+      setSuccess('Options mises à jour avec succès');
+      // Mettre à jour l'article local
+      setArticle(prev => prev ? {
+        ...prev,
+        isPremium,
+        isFeaturedHome,
+        isArchive,
+        articleSection: articleSection as any,
+      } : null);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const handlePublish = async () => {
+    // Validation : la section de destination est obligatoire
+    const finalSection = isEssentiel ? 'essentiel' : articleSection;
+    if (!finalSection) {
+      setError('Veuillez sélectionner une section de destination avant de publier.');
+      return;
+    }
+
     setActionLoading('publish');
     setError(null);
     try {
+      // Étape 1 : Mettre à jour les options de l'article (section, premium, etc.) via PATCH
+      // Cela garantit que articleSection est persisté même si le backend /publish ne le gère pas
+      const patchResponse = await fetch(`/api/proxy/articles/${articleId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          isPremium,
+          isFeaturedHome,
+          isArchive,
+          articleSection: finalSection,
+        }),
+      });
+
+      if (!patchResponse.ok) {
+        const patchData = await patchResponse.json();
+        console.error('[Publish] PATCH failed:', patchData);
+        throw new Error(patchData.message || 'Erreur lors de la mise à jour des options');
+      }
+
+      console.log('[Publish] Options updated via PATCH:', { articleSection, isPremium, isFeaturedHome, isArchive });
+
+      // Étape 2 : Publier l'article
       const response = await fetch(`/api/proxy/articles/${articleId}/publish`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,7 +190,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
           isPremium,
           isFeaturedHome,
           isArchive,
-          articleSection: articleSection || undefined,
+          articleSection: finalSection,
           scheduledPublishAt: isScheduled && scheduledPublishAt ? new Date(scheduledPublishAt).toISOString() : undefined,
           isScheduled,
         }),
@@ -134,8 +201,13 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
         throw new Error(data.message || 'Erreur lors de la publication');
       }
 
-      setSuccess(`Article publié avec succès (${isPremium ? 'Premium' : 'Public'})`);
-      setArticle(prev => prev ? { ...prev, status: ArticleStatus.PUBLISHED, isPremium } : null);
+      const sectionLabel = finalSection === 'focus' ? 'Focus' 
+        : finalSection === 'chronique' ? 'Chronique'
+        : finalSection === 'essentiel' ? "L'Essentiel"
+        : "Toute l'actualité";
+
+      setSuccess(`Article publié avec succès dans la section "${sectionLabel}" (${isPremium ? 'Contenu Abonné' : 'Public'})`);
+      setArticle(prev => prev ? { ...prev, status: ArticleStatus.PUBLISHED, isPremium, articleSection: finalSection as any } : null);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -165,6 +237,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
 
   const canApprove = article.status === ArticleStatus.PENDING;
   const canPublish = article.status === ArticleStatus.APPROVED;
+  const isPublished = article.status === ArticleStatus.PUBLISHED;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -285,80 +358,93 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
         </Card>
       )}
 
-      {/* Options de modération - visible pour tous les statuts sauf publié */}
-      {article.status !== ArticleStatus.PUBLISHED && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Layers className="h-5 w-5 text-primary-500" />
-              Options de publication
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Section de l'article */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Section de destination
-              </label>
-              <select
-                value={articleSection}
-                onChange={(e) => setArticleSection(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-              >
-                <option value="">Sélectionner une section</option>
-                <option value="essentiel">L'Essentiel de l'actualité</option>
-                <option value="toute-actualite">Toute l'actualité</option>
-                <option value="focus">Focus (Premium)</option>
-                <option value="chronique">Chronique (Premium)</option>
-              </select>
-            </div>
+      {/* Options de modération - visible pour tous les statuts */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Layers className="h-5 w-5 text-primary-500" />
+            {isPublished ? 'Modifier les options' : 'Options de publication'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Section de l'article */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Section de destination
+            </label>
+            <select
+              value={articleSection}
+              onChange={(e) => setArticleSection(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            >
+              <option value="">Sélectionner une section</option>
+              <option value="toute-actualite">Toute l'actualité</option>
+              <option value="focus">Focus (Premium)</option>
+              <option value="chronique">Chronique (Premium)</option>
+            </select>
+          </div>
 
-            {/* Options checkboxes */}
-            <div className="space-y-3">
-              <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={isPremium}
-                  onChange={(e) => setIsPremium(e.target.checked)}
-                  className="h-5 w-5 rounded border-gray-300 text-warning-500 focus:ring-warning-500"
-                />
-                <Crown className="h-5 w-5 text-warning-500" />
-                <div>
-                  <span className="font-medium text-gray-900">Article Premium</span>
-                  <p className="text-sm text-gray-500">Réservé aux abonnés payants</p>
-                </div>
-              </label>
+          {/* Options checkboxes */}
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+              <input
+                type="checkbox"
+                checked={isEssentiel}
+                onChange={(e) => setIsEssentiel(e.target.checked)}
+                className="h-5 w-5 rounded border-gray-300 text-green-500 focus:ring-green-500"
+              />
+              <Layers className="h-5 w-5 text-green-500" />
+              <div>
+                <span className="font-medium text-gray-900">L'Essentiel de l'actualité</span>
+                <p className="text-sm text-gray-500">Afficher dans la section "L'Essentiel"</p>
+              </div>
+            </label>
 
-              <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={isFeaturedHome}
-                  onChange={(e) => setIsFeaturedHome(e.target.checked)}
-                  className="h-5 w-5 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
-                />
-                <Star className="h-5 w-5 text-primary-500" />
-                <div>
-                  <span className="font-medium text-gray-900">À la une</span>
-                  <p className="text-sm text-gray-500">Afficher dans le carrousel d'accueil (24h)</p>
-                </div>
-              </label>
+            <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+              <input
+                type="checkbox"
+                checked={isPremium}
+                onChange={(e) => setIsPremium(e.target.checked)}
+                className="h-5 w-5 rounded border-gray-300 text-warning-500 focus:ring-warning-500"
+              />
+              <Crown className="h-5 w-5 text-warning-500" />
+              <div>
+                <span className="font-medium text-gray-900">Contenu Abonné</span>
+                <p className="text-sm text-gray-500">Réservé aux abonnés payants</p>
+              </div>
+            </label>
 
-              <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={isArchive}
-                  onChange={(e) => setIsArchive(e.target.checked)}
-                  className="h-5 w-5 rounded border-gray-300 text-gray-500 focus:ring-gray-500"
-                />
-                <Archive className="h-5 w-5 text-gray-500" />
-                <div>
-                  <span className="font-medium text-gray-900">Archive</span>
-                  <p className="text-sm text-gray-500">Déplacer dans la section Archives</p>
-                </div>
-              </label>
-            </div>
+            <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+              <input
+                type="checkbox"
+                checked={isFeaturedHome}
+                onChange={(e) => setIsFeaturedHome(e.target.checked)}
+                className="h-5 w-5 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+              />
+              <Star className="h-5 w-5 text-primary-500" />
+              <div>
+                <span className="font-medium text-gray-900">À la une</span>
+                <p className="text-sm text-gray-500">Afficher dans le carrousel d'accueil (24h)</p>
+              </div>
+            </label>
 
-            {/* Publication programmée */}
+            <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+              <input
+                type="checkbox"
+                checked={isArchive}
+                onChange={(e) => setIsArchive(e.target.checked)}
+                className="h-5 w-5 rounded border-gray-300 text-gray-500 focus:ring-gray-500"
+              />
+              <Archive className="h-5 w-5 text-gray-500" />
+              <div>
+                <span className="font-medium text-gray-900">Archive</span>
+                <p className="text-sm text-gray-500">Déplacer dans la section Archives</p>
+              </div>
+            </label>
+          </div>
+
+          {/* Publication programmée - seulement pour les articles non publiés */}
+          {!isPublished && (
             <div className="border-t border-gray-200 pt-4">
               <label className="flex items-center gap-3 mb-3 cursor-pointer">
                 <input
@@ -385,9 +471,23 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
                 </div>
               )}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+
+          {/* Bouton de sauvegarde pour les articles déjà publiés */}
+          {isPublished && (
+            <div className="border-t border-gray-200 pt-4">
+              <Button
+                variant="primary"
+                onClick={handleUpdatePublishedOptions}
+                isLoading={actionLoading === 'update-options'}
+                leftIcon={<Save className="h-4 w-4" />}
+              >
+                Enregistrer les modifications
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -398,7 +498,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
             {canApprove && (
               <>
                 <Button variant="success" onClick={handleApprove} isLoading={actionLoading === 'approve'} leftIcon={<CheckCircle className="h-4 w-4" />}>
-                  Valider {isPremium ? '(Premium)' : ''}
+                  Valider {isPremium ? '(Contenu Abonné)' : ''}
                 </Button>
                 <Button variant="danger" onClick={() => setShowRejectModal(true)} leftIcon={<XCircle className="h-4 w-4" />}>
                   Rejeter
@@ -407,7 +507,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
             )}
             {canPublish && (
               <Button variant="primary" onClick={handlePublish} isLoading={actionLoading === 'publish'} leftIcon={<Send className="h-4 w-4" />}>
-                Publier {isPremium ? '(Premium)' : '(Public)'}
+                Publier {isPremium ? '(Contenu Abonné)' : '(Public)'}
               </Button>
             )}
             {article.status === ArticleStatus.REJECTED && (
