@@ -12,6 +12,7 @@ import { Calendar, Eye, Crown, ExternalLink } from 'lucide-react';
 import { ArticleContent } from './ArticleContent';
 import { BackButton } from './BackButton';
 import { ShareButton } from './ShareButton';
+import { FavoriteButton } from './FavoriteButton';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -174,7 +175,8 @@ export default async function ArticleDetailPage({ params }: PageProps) {
           )}
 
           <div className="mt-8 border-t border-gray-200 pt-8">
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-end gap-3">
+              <FavoriteButton articleId={article.id} />
               <ShareButton 
                 title={article.title} 
                 excerpt={article.excerpt} 

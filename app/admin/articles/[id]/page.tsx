@@ -13,6 +13,7 @@ export default function AdminArticleViewPage() {
       backUrl="/admin/articles"
       backLabel="Retour aux articles"
       showEditButton={false}
+      showUnpublishButton={true}
       userRole="admin"
     />
   );

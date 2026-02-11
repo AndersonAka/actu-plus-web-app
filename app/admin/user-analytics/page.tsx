@@ -76,19 +76,27 @@ export default function UserAnalyticsPage() {
   const [articles, setArticles] = useState<ArticleData[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalSubscriptions, setTotalSubscriptions] = useState({ active: 0, expired: 0, premium: 0 });
+  const [mostFavorited, setMostFavorited] = useState<{ articleId: string; count: number; article: any }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch all articles with pagination (backend max 100/page)
-        const [allArticles, usersRes, subsRes] = await Promise.all([
+        const [allArticles, usersRes, subsRes, favRes] = await Promise.all([
           fetchAllArticles(),
           fetch('/api/proxy/users?limit=1'),
           fetch('/api/proxy/subscriptions/stats'),
+          fetch('/api/proxy/favorites/most-favorited?limit=10'),
         ]);
 
         setArticles(allArticles);
+
+        if (favRes.ok) {
+          const favData = await favRes.json();
+          const items = favData.data || favData;
+          setMostFavorited(Array.isArray(items) ? items : []);
+        }
 
         if (usersRes.ok) {
           const res = await usersRes.json();
@@ -127,10 +135,8 @@ export default function UserAnalyticsPage() {
     .sort((a, b) => (b.views || 0) - (a.views || 0))
     .slice(0, 10);
 
-  // Top articles by likes (backend field: likes)
-  const topByLikes = [...publishedArticles]
-    .sort((a, b) => (b.likes || 0) - (a.likes || 0))
-    .slice(0, 10);
+  // Top articles by favorites (from dedicated endpoint)
+  const topByFavorites = mostFavorited.filter(f => f.count > 0);
 
   // Articles by category
   const byCategory = publishedArticles.reduce((acc, a) => {
@@ -300,7 +306,7 @@ export default function UserAnalyticsPage() {
           </CardContent>
         </Card>
 
-        {/* Top articles by likes */}
+        {/* Top articles by favorites */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -309,10 +315,10 @@ export default function UserAnalyticsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {topByLikes.length > 0 && topByLikes.some(a => (a.likes || 0) > 0) ? (
+            {topByFavorites.length > 0 ? (
               <div className="space-y-3">
-                {topByLikes.filter(a => (a.likes || 0) > 0).map((article, index) => (
-                  <div key={article.id} className="flex items-center gap-3">
+                {topByFavorites.map((fav: { articleId: string; count: number; article: any }, index: number) => (
+                  <div key={fav.articleId} className="flex items-center gap-3">
                     <div className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                       index === 0 ? 'bg-rose-100 text-rose-700' :
                       index === 1 ? 'bg-gray-200 text-gray-600' :
@@ -322,21 +328,21 @@ export default function UserAnalyticsPage() {
                       {index + 1}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <Link href={`/admin/articles/${article.id}`} className="line-clamp-1 text-sm font-medium text-gray-900 hover:text-primary-600">
-                        {article.title}
+                      <Link href={`/admin/articles/${fav.article?.id || fav.articleId}`} className="line-clamp-1 text-sm font-medium text-gray-900 hover:text-primary-600">
+                        {fav.article?.title || 'Article'}
                       </Link>
                       <div className="flex items-center gap-2 mt-0.5">
-                        {article.country?.flag && (
-                          <span className="text-xs">{article.country.flag}</span>
+                        {fav.article?.country?.flag && (
+                          <span className="text-xs">{fav.article.country.flag}</span>
                         )}
                         <span className="text-xs text-gray-400">
-                          {article.category?.name}
+                          {fav.article?.category?.name}
                         </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 text-sm font-semibold text-rose-500">
                       <Heart className="h-3.5 w-3.5" />
-                      {article.likes}
+                      {fav.count}
                     </div>
                   </div>
                 ))}
@@ -344,8 +350,8 @@ export default function UserAnalyticsPage() {
             ) : (
               <div className="text-center py-6">
                 <Heart className="mx-auto h-8 w-8 text-gray-300 mb-2" />
-                <p className="text-sm text-gray-500">Aucun article n'a encore reçu de likes</p>
-                <p className="text-xs text-gray-400 mt-1">Les likes seront affichés dès que les utilisateurs interagiront</p>
+                <p className="text-sm text-gray-500">Aucun article n'a encore été mis en favoris</p>
+                <p className="text-xs text-gray-400 mt-1">Les favoris seront affichés dès que les utilisateurs interagiront</p>
               </div>
             )}
           </CardContent>

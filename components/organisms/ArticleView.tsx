@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/atoms';
+import { Card, CardHeader, CardTitle, CardContent, Button, Alert } from '@/components/atoms';
 import { StatusBadge } from '@/components/molecules';
 import { Article, ArticleStatus } from '@/types';
-import { ArrowLeft, Calendar, MapPin, Tag, User, Edit } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Tag, User, Edit, EyeOff } from 'lucide-react';
 
 const getArticleStatus = (article: any): ArticleStatus => {
   if (article.status) return article.status;
@@ -21,6 +21,7 @@ export interface ArticleViewProps {
   backLabel: string;
   editUrl?: string;
   showEditButton?: boolean;
+  showUnpublishButton?: boolean;
   userRole?: 'admin' | 'manager' | 'veilleur';
 }
 
@@ -30,12 +31,16 @@ export function ArticleView({
   backLabel, 
   editUrl,
   showEditButton = true,
+  showUnpublishButton = false,
   userRole = 'veilleur'
 }: ArticleViewProps) {
   const router = useRouter();
   const [article, setArticle] = useState<Article | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -121,6 +126,9 @@ export function ArticleView({
           )}
         </div>
       </div>
+
+      {actionError && <Alert variant="error" className="mb-6" onClose={() => setActionError(null)}>{actionError}</Alert>}
+      {success && <Alert variant="success" className="mb-6" onClose={() => setSuccess(null)}>{success}</Alert>}
 
       {/* Image de couverture */}
       {article.imageUrl && (
@@ -237,15 +245,43 @@ export function ArticleView({
           )}
 
           {status === ArticleStatus.PUBLISHED && (
-            <div className="mt-8 p-4 bg-success-50 border border-success-200 rounded-lg">
-              <p className="text-success-800">
-                <strong>Article publié</strong> - Cet article est visible publiquement.
-                {article.publishedAt && (
-                  <span className="ml-1">
-                    Publié le {new Date(article.publishedAt).toLocaleDateString('fr-FR')}.
-                  </span>
-                )}
-              </p>
+            <div className="mt-8 space-y-3">
+              <div className="p-4 bg-success-50 border border-success-200 rounded-lg">
+                <p className="text-success-800">
+                  <strong>Article publié</strong> - Cet article est visible publiquement.
+                  {article.publishedAt && (
+                    <span className="ml-1">
+                      Publié le {new Date(article.publishedAt).toLocaleDateString('fr-FR')}.
+                    </span>
+                  )}
+                </p>
+              </div>
+              {showUnpublishButton && (
+                <Button
+                  variant="danger"
+                  onClick={async () => {
+                    setActionLoading('unpublish');
+                    setActionError(null);
+                    try {
+                      const res = await fetch(`/api/proxy/articles/${articleId}/unpublish`, { method: 'POST' });
+                      if (!res.ok) {
+                        const d = await res.json();
+                        throw new Error(d.message || 'Erreur lors de la dépublication');
+                      }
+                      setSuccess('Article dépublié avec succès');
+                      setArticle(prev => prev ? { ...prev, status: ArticleStatus.APPROVED, isPublished: false } : null);
+                    } catch (err: any) {
+                      setActionError(err.message);
+                    } finally {
+                      setActionLoading(null);
+                    }
+                  }}
+                  isLoading={actionLoading === 'unpublish'}
+                  leftIcon={<EyeOff className="h-4 w-4" />}
+                >
+                  Dépublier l'article
+                </Button>
+              )}
             </div>
           )}
         </CardContent>

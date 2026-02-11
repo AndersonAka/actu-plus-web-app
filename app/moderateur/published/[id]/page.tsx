@@ -15,6 +15,7 @@ export default function ModerateurPublishedArticleViewPage() {
       editUrl={`/moderateur/articles/${id}`}
       userRole="manager"
       showEditButton={false}
+      showUnpublishButton={true}
     />
   );
 }

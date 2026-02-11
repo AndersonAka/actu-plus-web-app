@@ -18,7 +18,6 @@ import {
   Star,
   Clock,
   Eye,
-  Sparkles,
   Globe2,
   ArrowRight,
   Megaphone,
@@ -385,53 +384,47 @@ export default function CountryPage() {
         {/* Hero Banner */}
         <div className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 text-white overflow-hidden">
           <div className="absolute inset-0 bg-[url('/images/pattern-dots.svg')] opacity-10" />
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
           
-          <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-6">
-              {country?.flag && (
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm text-5xl shadow-lg">
-                  {country.flag}
+          <div className="relative mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              {/* Country info */}
+              <div className="flex items-center gap-4">
+                {country?.flag && (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm text-3xl">
+                    {country.flag}
+                  </div>
+                )}
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight">
+                    {country?.name || code.toUpperCase()}
+                  </h1>
+                  <p className="text-sm text-primary-200 flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5" />
+                    Actualités et analyses en temps réel
+                  </p>
                 </div>
-              )}
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Sparkles className="h-4 w-4 text-primary-200" />
-                  <span className="text-sm font-medium text-primary-200">Zone Pays</span>
-                </div>
-                <h1 className="text-4xl font-bold tracking-tight">
-                  {country?.name || code.toUpperCase()}
-                </h1>
-                <p className="mt-1 text-primary-100 flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Actualités et analyses en temps réel
-                </p>
               </div>
-            </div>
-          
-            {/* Country Flags Navigation */}
-            {allCountries.length > 0 && (
-              <div className="mt-8 pt-6 border-t border-white/20">
-                <p className="text-sm text-primary-200 mb-3">Explorer les autres pays :</p>
-                <div className="flex flex-wrap gap-2">
+
+              {/* Country Flags Navigation */}
+              {allCountries.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
                   {allCountries.map((c) => (
                     <Link
                       key={c.id}
                       href={`/country/${c.code.toLowerCase()}`}
-                      className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-all duration-200 ${
+                      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-200 ${
                         c.code.toLowerCase() === code.toLowerCase()
                           ? 'bg-white text-primary-600 shadow-md'
                           : 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm'
                       }`}
                     >
-                      <span className="text-lg">{c.flag}</span>
+                      <span className="text-base">{c.flag}</span>
                       <span className="hidden sm:inline">{c.name}</span>
                     </Link>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
@@ -448,16 +441,10 @@ export default function CountryPage() {
                 <h2 className="mb-3 text-xl font-bold text-gray-900">
                   Résumé de l'actualité
                 </h2>
-                <div className="prose max-w-none">
-                  <p className="text-gray-600 leading-relaxed">{summary.excerpt || summary.content.substring(0, 500)}...</p>
-                </div>
-                <Link 
-                  href={`/articles/${summary.slug}?from=${code}`} 
-                  className="mt-4 inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 font-medium group"
-                >
-                  Lire la suite 
-                  <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
+                <div 
+                  className="article-content prose prose-gray max-w-none text-gray-600 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: summary.content }}
+                />
               </div>
             </div>
           </section>
@@ -501,7 +488,7 @@ export default function CountryPage() {
         </section>
 
         {/* Section Publicité */}
-        <section className="mt-10 rounded-2xl bg-gradient-to-r from-primary-50 to-primary-100 border border-primary-200 p-6 relative overflow-hidden">
+        {/* <section className="mt-10 rounded-2xl bg-gradient-to-r from-primary-50 to-primary-100 border border-primary-200 p-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary-200/30 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="relative flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
@@ -521,7 +508,7 @@ export default function CountryPage() {
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
-        </section>
+        </section> */}
 
         {/* Autres Pays Section - Minimaliste */}
         {allCountries.length > 1 && (

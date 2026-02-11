@@ -24,6 +24,8 @@ export interface ArticleSource {
   url: string;
 }
 
+export type ContentType = 'article' | 'alert' | 'summary' | 'press-review';
+
 export interface Article {
   id: string;
   title: string;
@@ -36,6 +38,7 @@ export interface Article {
   country: Country;
   author: ArticleAuthor;
   status: ArticleStatus;
+  contentType?: ContentType; // Type de contenu (article, alert, summary, press-review)
   isFeatured: boolean;
   isPremium: boolean;        // Article premium (abonnement requis) ou public
   isPublished?: boolean;

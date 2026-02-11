@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Button, Card, CardHeader, CardTitle, CardContent, Badge, Alert, TextArea } from '@/components/atoms';
 import { StatusBadge } from '@/components/molecules';
 import { Article, ArticleStatus } from '@/types';
-import { ArrowLeft, CheckCircle, XCircle, Send, Calendar, User, MapPin, Tag, Link as LinkIcon, Crown, Star, Archive, Clock, Layers, Save } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Send, Calendar, User, MapPin, Tag, Link as LinkIcon, Crown, Star, Archive, Clock, Layers, Save, EyeOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -44,11 +44,13 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
           const data = await response.json();
           const articleData = data.data || data;
           setArticle(articleData);
-          setIsPremium(articleData.isPremium || false);
-          setIsFeaturedHome(articleData.isFeaturedHome || false);
+          // Pour les articles de type "Résumé", forcer isPremium et désactiver les sections
+          const isSummaryType = articleData.contentType === 'summary';
+          setIsPremium(isSummaryType ? true : (articleData.isPremium || false));
+          setIsFeaturedHome(isSummaryType ? false : (articleData.isFeaturedHome || false));
           setIsArchive(articleData.isArchive || false);
-          setIsEssentiel(articleData.articleSection === 'essentiel');
-          setArticleSection(articleData.articleSection === 'essentiel' ? '' : (articleData.articleSection || ''));
+          setIsEssentiel(isSummaryType ? false : (articleData.articleSection === 'essentiel'));
+          setArticleSection(isSummaryType ? '' : (articleData.articleSection === 'essentiel' ? '' : (articleData.articleSection || '')));
         }
       } catch (error) {
         console.error('Error fetching article:', error);
@@ -151,9 +153,9 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
   };
 
   const handlePublish = async () => {
-    // Validation : la section de destination est obligatoire
-    const finalSection = isEssentiel ? 'essentiel' : articleSection;
-    if (!finalSection) {
+    // Pour les résumés, pas de section requise (ils sont filtrés par contentType)
+    const finalSection = isSummary ? (articleSection || undefined) : (isEssentiel ? 'essentiel' : articleSection);
+    if (!isSummary && !finalSection) {
       setError('Veuillez sélectionner une section de destination avant de publier.');
       return;
     }
@@ -201,13 +203,36 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
         throw new Error(data.message || 'Erreur lors de la publication');
       }
 
-      const sectionLabel = finalSection === 'focus' ? 'Focus' 
+      const sectionLabel = isSummary ? 'Résumé de l\'actualité'
+        : finalSection === 'focus' ? 'Focus' 
         : finalSection === 'chronique' ? 'Chronique'
         : finalSection === 'essentiel' ? "L'Essentiel"
         : "Toute l'actualité";
 
       setSuccess(`Article publié avec succès dans la section "${sectionLabel}" (${isPremium ? 'Contenu Abonné' : 'Public'})`);
       setArticle(prev => prev ? { ...prev, status: ArticleStatus.PUBLISHED, isPremium, articleSection: finalSection as any } : null);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleUnpublish = async () => {
+    setActionLoading('unpublish');
+    setError(null);
+    try {
+      const response = await fetch(`/api/proxy/articles/${articleId}/unpublish`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Erreur lors de la dépublication');
+      }
+
+      setSuccess('Article dépublié avec succès');
+      setArticle(prev => prev ? { ...prev, status: ArticleStatus.APPROVED, isPublished: false } : null);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -238,6 +263,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
   const canApprove = article.status === ArticleStatus.PENDING;
   const canPublish = article.status === ArticleStatus.APPROVED;
   const isPublished = article.status === ArticleStatus.PUBLISHED;
+  const isSummary = article.contentType === 'summary';
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -367,66 +393,82 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Section de l'article */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Section de destination
-            </label>
-            <select
-              value={articleSection}
-              onChange={(e) => setArticleSection(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-            >
-              <option value="">Sélectionner une section</option>
-              <option value="toute-actualite">Toute l'actualité</option>
-              <option value="focus">Focus (Premium)</option>
-              <option value="chronique">Chronique (Premium)</option>
-            </select>
-          </div>
+          {/* Info pour les articles Résumé */}
+          {isSummary && (
+            <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
+              <p className="text-sm text-blue-800">
+                <strong>Article de type « Résumé de l'actualité »</strong> — Cet article sera automatiquement publié en tant que <strong>Contenu Abonné</strong> et sera visible dans la section « Résumé de l'actualité » de la page pays. Les options de section et de mise à la une ne sont pas disponibles pour ce type d'article.
+              </p>
+            </div>
+          )}
+
+          {/* Section de l'article — masquée pour les résumés */}
+          {!isSummary && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Section de destination
+              </label>
+              <select
+                value={articleSection}
+                onChange={(e) => setArticleSection(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+              >
+                <option value="">Sélectionner une section</option>
+                <option value="toute-actualite">Toute l'actualité</option>
+                <option value="focus">Focus (Premium)</option>
+                <option value="chronique">Chronique (Premium)</option>
+              </select>
+            </div>
+          )}
 
           {/* Options checkboxes */}
           <div className="space-y-3">
-            <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
-              <input
-                type="checkbox"
-                checked={isEssentiel}
-                onChange={(e) => setIsEssentiel(e.target.checked)}
-                className="h-5 w-5 rounded border-gray-300 text-green-500 focus:ring-green-500"
-              />
-              <Layers className="h-5 w-5 text-green-500" />
-              <div>
-                <span className="font-medium text-gray-900">L'Essentiel de l'actualité</span>
-                <p className="text-sm text-gray-500">Afficher dans la section "L'Essentiel"</p>
-              </div>
-            </label>
+            {!isSummary && (
+              <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={isEssentiel}
+                  onChange={(e) => setIsEssentiel(e.target.checked)}
+                  className="h-5 w-5 rounded border-gray-300 text-green-500 focus:ring-green-500"
+                />
+                <Layers className="h-5 w-5 text-green-500" />
+                <div>
+                  <span className="font-medium text-gray-900">L'Essentiel de l'actualité</span>
+                  <p className="text-sm text-gray-500">Afficher dans la section "L'Essentiel"</p>
+                </div>
+              </label>
+            )}
 
-            <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+            <label className={`flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 ${isSummary ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-100'} transition-colors`}>
               <input
                 type="checkbox"
                 checked={isPremium}
-                onChange={(e) => setIsPremium(e.target.checked)}
+                onChange={(e) => !isSummary && setIsPremium(e.target.checked)}
+                disabled={isSummary}
                 className="h-5 w-5 rounded border-gray-300 text-warning-500 focus:ring-warning-500"
               />
               <Crown className="h-5 w-5 text-warning-500" />
               <div>
                 <span className="font-medium text-gray-900">Contenu Abonné</span>
-                <p className="text-sm text-gray-500">Réservé aux abonnés payants</p>
+                <p className="text-sm text-gray-500">{isSummary ? 'Automatique pour les résumés' : 'Réservé aux abonnés payants'}</p>
               </div>
             </label>
 
-            <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
-              <input
-                type="checkbox"
-                checked={isFeaturedHome}
-                onChange={(e) => setIsFeaturedHome(e.target.checked)}
-                className="h-5 w-5 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
-              />
-              <Star className="h-5 w-5 text-primary-500" />
-              <div>
-                <span className="font-medium text-gray-900">À la une</span>
-                <p className="text-sm text-gray-500">Afficher dans le carrousel d'accueil (24h)</p>
-              </div>
-            </label>
+            {!isSummary && (
+              <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={isFeaturedHome}
+                  onChange={(e) => setIsFeaturedHome(e.target.checked)}
+                  className="h-5 w-5 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+                />
+                <Star className="h-5 w-5 text-primary-500" />
+                <div>
+                  <span className="font-medium text-gray-900">À la une</span>
+                  <p className="text-sm text-gray-500">Afficher dans le carrousel d'accueil (24h)</p>
+                </div>
+              </label>
+            )}
 
             <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
               <input
@@ -517,11 +559,21 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
               </div>
             )}
             {article.status === ArticleStatus.PUBLISHED && (
-              <div className="w-full rounded-lg bg-success-50 p-4">
-                <p className="font-medium text-success-700">Article publié</p>
-                <Link href={`/articles/${article.id}`} className="text-sm text-success-600 hover:underline">
-                  Voir l'article →
-                </Link>
+              <div className="w-full space-y-3">
+                <div className="rounded-lg bg-success-50 p-4">
+                  <p className="font-medium text-success-700">Article publié</p>
+                  <Link href={`/articles/${article.id}`} className="text-sm text-success-600 hover:underline">
+                    Voir l'article →
+                  </Link>
+                </div>
+                <Button
+                  variant="danger"
+                  onClick={handleUnpublish}
+                  isLoading={actionLoading === 'unpublish'}
+                  leftIcon={<EyeOff className="h-4 w-4" />}
+                >
+                  Dépublier l'article
+                </Button>
               </div>
             )}
           </div>
