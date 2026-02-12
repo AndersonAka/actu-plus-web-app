@@ -1,6 +1,6 @@
 /**
  * Service de paiement pour l'application web
- * Utilise CinetPay via le backend
+ * Utilise Paystack via le backend
  */
 
 export enum PaymentStatus {
@@ -128,10 +128,10 @@ class PaymentService {
   }
 
   /**
-   * Récupère l'URL de paiement CinetPay
+   * Récupère l'URL de paiement Paystack
    */
-  async getCinetPayUrl(paymentId: string): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/payments/${paymentId}/cinetpay-data`, {
+  async getPaymentUrl(paymentId: string): Promise<string> {
+    const response = await fetch(`${this.baseUrl}/payments/${paymentId}/payment-url`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -155,13 +155,61 @@ class PaymentService {
   }
 
   /**
-   * Initie le paiement CinetPay - ouvre la page de paiement
+   * Initie le paiement Paystack - ouvre la page de paiement
    */
   async initiatePayment(paymentId: string): Promise<void> {
-    const paymentUrl = await this.getCinetPayUrl(paymentId);
+    const paymentUrl = await this.getPaymentUrl(paymentId);
     
-    // Ouvrir la page de paiement CinetPay dans un nouvel onglet
+    // Ouvrir la page de paiement Paystack dans un nouvel onglet
     window.open(paymentUrl, '_blank');
+  }
+
+  /**
+   * Vérifie le statut d'un paiement Paystack
+   */
+  async checkPaystackStatus(paymentId: string): Promise<Payment> {
+    const response = await fetch(`${this.baseUrl}/payments/paystack/check-status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ paymentId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Erreur lors de la vérification du paiement');
+    }
+
+    const result = await response.json();
+    return result.data || result;
+  }
+
+  /**
+   * Récupère la clé publique Paystack
+   */
+  async getPaystackPublicKey(): Promise<string> {
+    const response = await fetch(`${this.baseUrl}/payments/paystack/public-key`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Erreur lors de la récupération de la clé publique Paystack');
+    }
+
+    const result = await response.json();
+    return result.publicKey || result.data?.publicKey;
+  }
+
+  /**
+   * @deprecated Utiliser getPaymentUrl() à la place
+   */
+  async getCinetPayUrl(paymentId: string): Promise<string> {
+    return this.getPaymentUrl(paymentId);
   }
 
   /**
