@@ -16,17 +16,35 @@ function PaymentCallbackContent() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
+    // Paystack redirige avec ?trxref=xxx&reference=xxx
+    // Notre backend ajoute aussi ?payment_id=xxx dans le callback_url
     const paymentId = searchParams.get('payment_id');
+    const trxref = searchParams.get('trxref');
+    const reference = searchParams.get('reference');
     
-    if (!paymentId) {
+    if (!paymentId && !trxref && !reference) {
       setStatus('failed');
       setMessage('ID de paiement manquant');
       return;
     }
 
+    let retryCount = 0;
+    const maxRetries = 5;
+
     const verifyPayment = async () => {
       try {
-        const payment = await paymentService.verifyPayment(paymentId);
+        let payment;
+
+        if (paymentId) {
+          // Vérifier via Paystack API et activer l'abonnement si succès
+          payment = await paymentService.checkPaystackStatus(paymentId);
+        } else {
+          // Si on n'a que la référence Paystack, on ne peut pas vérifier directement
+          // car checkPaystackStatus attend un paymentId
+          setStatus('failed');
+          setMessage('Impossible de vérifier le paiement. Veuillez contacter le support.');
+          return;
+        }
         
         switch (payment.status) {
           case PaymentStatus.COMPLETED:
@@ -42,10 +60,16 @@ function PaymentCallbackContent() {
             setMessage('Le paiement a été annulé.');
             break;
           default:
-            setStatus('pending');
-            setMessage('Votre paiement est en cours de traitement...');
-            // Revérifier après quelques secondes
-            setTimeout(verifyPayment, 3000);
+            retryCount++;
+            if (retryCount < maxRetries) {
+              setStatus('pending');
+              setMessage('Votre paiement est en cours de traitement...');
+              // Revérifier après quelques secondes
+              setTimeout(verifyPayment, 3000);
+            } else {
+              setStatus('pending');
+              setMessage('Le traitement prend plus de temps que prévu. Vous recevrez une notification dès confirmation.');
+            }
         }
       } catch (error) {
         console.error('Erreur lors de la vérification du paiement:', error);

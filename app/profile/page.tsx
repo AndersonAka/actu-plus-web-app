@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Header, Footer } from '@/components/organisms';
 import { Button, Input, Alert } from '@/components/atoms';
-import { User, Mail, Phone, Calendar, Crown, Heart, Archive, Bell, Shield, LogOut } from 'lucide-react';
+import { User, Mail, Phone, Calendar, Crown, Heart, Bell, Shield, LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -22,6 +22,8 @@ export default function ProfilePage() {
     email: '',
     phone: '',
   });
+  const [subscription, setSubscription] = useState<any>(null);
+  const [loadingSubscription, setLoadingSubscription] = useState(true);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -39,6 +41,34 @@ export default function ProfilePage() {
       });
     }
   }, [user]);
+
+  // Charger l'abonnement actif depuis l'API
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (!isAuthenticated) {
+        setLoadingSubscription(false);
+        return;
+      }
+      try {
+        const response = await fetch('/api/proxy/subscriptions/active', {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.hasActiveSubscription && data.subscription) {
+            setSubscription(data.subscription);
+          }
+        }
+      } catch (err) {
+        console.error('Erreur chargement abonnement:', err);
+      }
+      setLoadingSubscription(false);
+    };
+
+    if (!authLoading) {
+      fetchSubscription();
+    }
+  }, [isAuthenticated, authLoading]);
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -83,8 +113,6 @@ export default function ProfilePage() {
   if (!isAuthenticated || !user) {
     return null;
   }
-
-  const subscription = (user as any)?.subscription;
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
@@ -205,19 +233,6 @@ export default function ProfilePage() {
                   </button>
 
                   <button
-                    onClick={() => router.push('/archives')}
-                    className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
-                      <Archive className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-medium text-gray-900">Mes Archives</p>
-                      <p className="text-sm text-gray-500">Articles archivés</p>
-                    </div>
-                  </button>
-
-                  <button
                     onClick={() => router.push('/notifications')}
                     className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
                   >
@@ -255,7 +270,12 @@ export default function ProfilePage() {
                   <h3 className="text-lg font-semibold">Abonnement</h3>
                 </div>
                 
-                {subscription?.isActive ? (
+                {loadingSubscription ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"></div>
+                    <p className="text-sm text-primary-100">Chargement...</p>
+                  </div>
+                ) : subscription?.status === 'active' ? (
                   <>
                     <p className="mb-2 text-2xl font-bold">{subscription.plan?.name || 'Premium'}</p>
                     <p className="mb-4 text-sm text-primary-100">

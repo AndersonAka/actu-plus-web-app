@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -22,6 +22,7 @@ import {
   Home,
   Sparkles,
   Bell,
+  Crown,
 } from 'lucide-react';
 import { NotificationDropdown } from '@/components/molecules';
 
@@ -30,6 +31,28 @@ const Header = () => {
   const { user, isAuthenticated, isLoading, isVeilleur, isModerateur, isAdmin } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [subscription, setSubscription] = useState<any>(null);
+
+  // Charger l'abonnement actif
+  useEffect(() => {
+    if (!isAuthenticated || isLoading) return;
+    const fetchSubscription = async () => {
+      try {
+        const response = await fetch('/api/proxy/subscriptions/active', { credentials: 'include' });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.hasActiveSubscription && data.subscription) {
+            setSubscription(data.subscription);
+          }
+        }
+      } catch (err) {
+        // Silently fail
+      }
+    };
+    fetchSubscription();
+  }, [isAuthenticated, isLoading]);
+
+  const hasActiveSubscription = subscription?.status === 'active';
 
   const handleLogout = async () => {
     try {
@@ -96,11 +119,18 @@ const Header = () => {
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-gray-100"
                   >
-                  <Avatar
-                    src={user.avatar}
-                    name={`${user.firstName || ''} ${user.lastName || ''}`}
-                    size="sm"
-                  />
+                  <div className="relative">
+                    <Avatar
+                      src={user.avatar}
+                      name={`${user.firstName || ''} ${user.lastName || ''}`}
+                      size="sm"
+                    />
+                    {hasActiveSubscription && (
+                      <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 ring-2 ring-white" title={subscription?.plan?.name || 'Abonné'}>
+                        <Crown className="h-2.5 w-2.5 text-white" />
+                      </span>
+                    )}
+                  </div>
                   <ChevronDown className="h-4 w-4 text-gray-500" />
                 </button>
 
@@ -116,6 +146,12 @@ const Header = () => {
                           {user.firstName} {user.lastName}
                         </p>
                         <p className="text-sm text-gray-500">{user.email}</p>
+                        {hasActiveSubscription && (
+                          <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                            <Crown className="h-3 w-3" />
+                            {subscription?.plan?.name || 'Abonné'}
+                          </span>
+                        )}
                       </div>
 
                       <div className="py-1">
@@ -241,10 +277,16 @@ const Header = () => {
                 <div className="my-2 border-t border-gray-200" />
                 <Link
                   href="/profile"
-                  className="block rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-100"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-100"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Mon profil
+                  {hasActiveSubscription && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                      <Crown className="h-3 w-3" />
+                      {subscription?.plan?.name || 'Abonné'}
+                    </span>
+                  )}
                 </Link>
                 {isVeilleur() && (
                   <Link

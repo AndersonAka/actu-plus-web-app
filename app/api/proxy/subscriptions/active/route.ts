@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`${apiConfig.baseUrl}/api/subscriptions/active`, {
+    // Le backend expose GET /api/subscriptions/me qui retourne l'abonnement actif ou null
+    const response = await fetch(`${apiConfig.baseUrl}/api/subscriptions/me`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -25,12 +26,19 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      // Si l'endpoint n'existe pas ou erreur, considérer pas d'abonnement
-      return NextResponse.json({ hasActiveSubscription: false });
+      // Si l'endpoint retourne une erreur, considérer pas d'abonnement
+      return NextResponse.json({ hasActiveSubscription: false, subscription: null });
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    
+    // Le backend peut retourner { success, data: subscription } ou directement l'objet subscription
+    const subscription = data?.data || data;
+    const hasActiveSubscription = subscription !== null && subscription?.status === 'active';
+    return NextResponse.json({ 
+      hasActiveSubscription, 
+      subscription,
+    });
   } catch (error: any) {
     console.error('Check subscription error:', error);
     return NextResponse.json({ hasActiveSubscription: false });

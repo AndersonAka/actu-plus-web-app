@@ -245,7 +245,7 @@ const NotificationDropdown = ({ variant = 'header', className }: NotificationDro
           </div>
 
           <Link
-            href="/admin/notifications"
+            href={variant === 'header' ? '/notifications' : '/admin/notifications'}
             onClick={() => setIsOpen(false)}
             className="flex items-center justify-center gap-1 border-t border-gray-100 px-4 py-3 text-sm font-medium text-primary-600 hover:bg-gray-50"
           >

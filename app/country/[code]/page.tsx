@@ -62,16 +62,48 @@ export default function CountryPage() {
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<string>('essentiel');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [canAccessCountryPage, setCanAccessCountryPage] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
 
   // Check if user is staff (admin, veilleur, moderateur)
   const isStaff = user?.role && ['admin', 'veilleur', 'moderateur'].includes(user.role.toLowerCase());
-  
-  // Check if user has premium access (staff or premium subscription)
-  const hasPremiumAccess = isStaff || user?.subscription?.tier === 'premium' || user?.subscription?.tier === 'enterprise';
-  
-  // Check if user has active subscription or is staff
-  const hasActiveSubscription = user?.subscription?.status === 'active';
-  const canAccessCountryPage = isStaff || hasActiveSubscription;
+
+  // Vérifier l'accès via l'API (abonnement actif ou staff)
+  useEffect(() => {
+    const checkAccess = async () => {
+      // Staff a toujours accès
+      if (isStaff) {
+        setCanAccessCountryPage(true);
+        setCheckingAccess(false);
+        return;
+      }
+
+      // Non authentifié = pas d'accès
+      if (!isAuthenticated) {
+        setCanAccessCountryPage(false);
+        setCheckingAccess(false);
+        return;
+      }
+
+      // Vérifier l'abonnement via l'API
+      try {
+        const response = await fetch('/api/proxy/subscriptions/active', {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setCanAccessCountryPage(data.hasActiveSubscription || false);
+        } else {
+          setCanAccessCountryPage(false);
+        }
+      } catch {
+        setCanAccessCountryPage(false);
+      }
+      setCheckingAccess(false);
+    };
+
+    checkAccess();
+  }, [isAuthenticated, isStaff]);
 
   useEffect(() => {
     const fetchCountryData = async () => {
@@ -290,7 +322,7 @@ export default function CountryPage() {
         );
 
       case 'focus':
-        if (!hasPremiumAccess) return renderPremiumLock();
+        if (!canAccessCountryPage) return renderPremiumLock();
         return focusArticle ? (
           <FocusDetailCard
             article={focusArticle}
@@ -303,7 +335,7 @@ export default function CountryPage() {
         );
 
       case 'chronique':
-        if (!hasPremiumAccess) return renderPremiumLock();
+        if (!canAccessCountryPage) return renderPremiumLock();
         return chroniqueArticle ? (
           <FocusDetailCard
             article={chroniqueArticle}
@@ -339,7 +371,7 @@ export default function CountryPage() {
   };
 
   // Si l'utilisateur n'a pas accès, afficher un message de restriction
-  if (!loading && !canAccessCountryPage) {
+  if (!loading && !checkingAccess && !canAccessCountryPage) {
     return (
       <div className="flex min-h-screen flex-col bg-white">
         <Header />
@@ -474,7 +506,7 @@ export default function CountryPage() {
               >
                 <IconComponent className="h-4 w-4" />
                 {section.label}
-                {section.premium && !hasPremiumAccess && (
+                {section.premium && !canAccessCountryPage && (
                   <Lock className="h-3 w-3 text-gray-400" />
                 )}
               </button>
