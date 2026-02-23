@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button, Card, EmptyState, Input, Select } from '@/components/atoms';
 import { Pagination, StatusBadge } from '@/components/molecules';
 import { Article, ArticleStatus } from '@/types';
-import { Eye, Search, FileText, Trash2 } from 'lucide-react';
+import { Eye, Search, FileText, Trash2, BarChart3, Clock, CheckCircle, Crown } from 'lucide-react';
 
 export default function AdminArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -14,14 +14,82 @@ export default function AdminArticlesPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [stats, setStats] = useState({ total: 0, published: 0, pending: 0, premium: 0 });
+  const [statsLoaded, setStatsLoaded] = useState(false);
+
+  const fetchGlobalStats = async () => {
+    try {
+      // Fetch all articles page by page (backend max limit is 100)
+      let allArticles: any[] = [];
+      let currentPage = 1;
+      let totalPages = 1;
+      let globalTotal = 0;
+
+      // Fetch first page to get total count
+      const firstResponse = await fetch(`/api/proxy/articles/admin?page=1&limit=100`);
+      if (!firstResponse.ok) {
+        console.error('Error fetching stats - first page failed');
+        return;
+      }
+
+      const firstRes = await firstResponse.json();
+      const firstPayload = firstRes?.data ?? firstRes;
+      globalTotal = typeof firstPayload?.total === 'number' ? firstPayload.total : 0;
+      totalPages = typeof firstPayload?.totalPages === 'number' ? firstPayload.totalPages : 1;
+      
+      const firstArticles: any[] =
+        Array.isArray(firstPayload)
+          ? firstPayload
+          : Array.isArray(firstPayload?.data)
+            ? firstPayload.data
+            : Array.isArray(firstPayload?.articles)
+              ? firstPayload.articles
+              : [];
+      
+      allArticles = [...firstArticles];
+
+      // Fetch remaining pages (limit to 10 pages max for performance - 1000 articles)
+      const maxPages = Math.min(totalPages, 10);
+      for (let page = 2; page <= maxPages; page++) {
+        const response = await fetch(`/api/proxy/articles/admin?page=${page}&limit=100`);
+        if (response.ok) {
+          const res = await response.json();
+          const payload = res?.data ?? res;
+          const articles: any[] =
+            Array.isArray(payload)
+              ? payload
+              : Array.isArray(payload?.data)
+                ? payload.data
+                : Array.isArray(payload?.articles)
+                  ? payload.articles
+                  : [];
+          allArticles = [...allArticles, ...articles];
+        }
+      }
+
+      // Calculate stats from fetched articles
+      const published = allArticles.filter((a: any) => a.isPublished || a.status === 'published').length;
+      const pending = allArticles.filter((a: any) => a.status === 'pending').length;
+      const premium = allArticles.filter((a: any) => a.isPremium).length;
+      
+      setStats({ total: globalTotal, published, pending, premium });
+      setStatsLoaded(true);
+    } catch (error) {
+      console.error('Error fetching global stats:', error);
+    }
+  };
 
   const fetchArticles = async () => {
     setIsLoading(true);
     try {
       let url = `/api/proxy/articles/admin?page=${currentPage}&limit=10`;
       if (statusFilter) {
-        const isPublished = statusFilter === 'PUBLISHED';
-        url += `&isPublished=${isPublished}`;
+        // Map status filter to backend parameters
+        if (statusFilter === 'PUBLISHED') {
+          url += `&isPublished=true`;
+        } else if (statusFilter === 'DRAFT' || statusFilter === 'PENDING' || statusFilter === 'APPROVED' || statusFilter === 'REJECTED') {
+          url += `&status=${statusFilter.toLowerCase()}`;
+        }
       }
       if (search) url += `&search=${encodeURIComponent(search)}`;
 
@@ -55,6 +123,10 @@ export default function AdminArticlesPage() {
   };
 
   useEffect(() => {
+    fetchGlobalStats();
+  }, []);
+
+  useEffect(() => {
     fetchArticles();
   }, [currentPage, statusFilter]);
 
@@ -80,26 +152,98 @@ export default function AdminArticlesPage() {
         <p className="mt-1 text-gray-600">Gérez tous les articles de la plateforme</p>
       </div>
 
-      <Card className="mb-6" padding="md">
-        <form onSubmit={handleSearch} className="flex flex-col gap-4 sm:flex-row">
+      {/* Stats */}
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <Card padding="md" className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100">
+            <FileText className="h-5 w-5 text-primary-600" />
+          </div>
+          <div>
+            {statsLoaded ? (
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+            ) : (
+              <div className="h-7 w-10 animate-pulse rounded bg-gray-200" />
+            )}
+            <p className="text-xs text-gray-500">Total articles</p>
+          </div>
+        </Card>
+        <Card padding="md" className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success-100">
+            <CheckCircle className="h-5 w-5 text-success-600" />
+          </div>
+          <div>
+            {statsLoaded ? (
+              <p className="text-2xl font-bold text-gray-900">{stats.published}</p>
+            ) : (
+              <div className="h-7 w-10 animate-pulse rounded bg-gray-200" />
+            )}
+            <p className="text-xs text-gray-500">Publiés</p>
+          </div>
+        </Card>
+        <Card padding="md" className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning-100">
+            <Clock className="h-5 w-5 text-warning-600" />
+          </div>
+          <div>
+            {statsLoaded ? (
+              <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+            ) : (
+              <div className="h-7 w-10 animate-pulse rounded bg-gray-200" />
+            )}
+            <p className="text-xs text-gray-500">En attente</p>
+          </div>
+        </Card>
+        <Card padding="md" className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100">
+            <Crown className="h-5 w-5 text-amber-600" />
+          </div>
+          <div>
+            {statsLoaded ? (
+              <p className="text-2xl font-bold text-gray-900">{stats.premium}</p>
+            ) : (
+              <div className="h-7 w-10 animate-pulse rounded bg-gray-200" />
+            )}
+            <p className="text-xs text-gray-500">Contenu abonné</p>
+          </div>
+        </Card>
+      </div>
+
+      <Card className="mb-6" padding="lg">
+        <div className="mb-4">
+          <h3 className="text-sm font-semibold text-gray-700">Recherche et filtres</h3>
+          <p className="text-xs text-gray-500 mt-1">Recherchez et filtrez les articles par statut</p>
+        </div>
+        <form onSubmit={handleSearch} className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Recherche
+            </label>
             <Input
-              placeholder="Rechercher un article..."
+              placeholder="Rechercher par titre, extrait ou contenu..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               leftIcon={<Search className="h-4 w-4" />}
+              className="w-full"
             />
           </div>
-          <Select
-            options={statusOptions}
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="sm:w-48"
-          />
-          <Button type="submit" variant="primary">Rechercher</Button>
+          <div className="sm:w-56">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Statut
+            </label>
+            <Select
+              options={statusOptions}
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full"
+            />
+          </div>
+          <Button type="submit" variant="primary" className="sm:w-auto w-full">
+            <Search className="h-4 w-4 mr-2" />
+            Rechercher
+          </Button>
         </form>
       </Card>
 
@@ -126,7 +270,7 @@ export default function AdminArticlesPage() {
                     <th className="px-4 py-3">Auteur</th>
                     <th className="px-4 py-3">Catégorie</th>
                     <th className="px-4 py-3">Statut</th>
-                    <th className="px-4 py-3">Premium</th>
+                    <th className="px-4 py-3">Contenu abonné</th>
                     <th className="px-4 py-3">Date</th>
                     <th className="px-4 py-3">Actions</th>
                   </tr>
@@ -149,7 +293,7 @@ export default function AdminArticlesPage() {
                       <td className="px-4 py-3">
                         {article.isPremium ? (
                           <span className="inline-flex items-center rounded-full bg-warning-100 px-2 py-0.5 text-xs font-medium text-warning-700">
-                            Premium
+                            Contenu abonné
                           </span>
                         ) : (
                           <span className="text-sm text-gray-400">Public</span>

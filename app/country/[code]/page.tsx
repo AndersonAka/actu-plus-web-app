@@ -3,28 +3,27 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Article, ArticleSection, CountrySummary } from '@/types/article.types';
+import { Article, ArticleSection } from '@/types/article.types';
 import { ArticleCard, FocusDetailCard } from '@/components/molecules';
 import { Button } from '@/components/atoms';
 import { Header, Footer } from '@/components/organisms';
 import { 
   Lock, 
-  ChevronRight, 
   Newspaper, 
   TrendingUp, 
   BookOpen, 
-  Archive, 
   Star,
   Clock,
-  Eye,
   Globe2,
-  ArrowRight,
-  Megaphone,
   LayoutGrid,
-  List
+  List,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
+import dynamic from 'next/dynamic';
+import reportingAnimation from '@/public/reporting.json';
+
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 
 interface CountryData {
   id: string;
@@ -56,11 +55,10 @@ export default function CountryPage() {
   const [summary, setSummary] = useState<Article | null>(null);
   const [essentielArticles, setEssentielArticles] = useState<Article[]>([]);
   const [allArticles, setAllArticles] = useState<Article[]>([]);
-  const [archiveArticles, setArchiveArticles] = useState<Article[]>([]);
   const [focusArticle, setFocusArticle] = useState<Article | null>(null);
   const [chroniqueArticle, setChroniqueArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<string>('essentiel');
+  const [activeSection, setActiveSection] = useState<string>('resume');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [canAccessCountryPage, setCanAccessCountryPage] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
@@ -127,14 +125,13 @@ export default function CountryPage() {
           setAllCountries(Array.isArray(countriesData) ? countriesData : countriesData.data || []);
         }
 
-        // Fetch all sections in parallel
-        const [summaryRes, essentielRes, allRes, archivesRes, focusRes, chroniquesRes] = await Promise.all([
+        // Fetch all sections in parallel (today-only for daily sections)
+        const [summaryRes, essentielRes, allRes, focusRes, chroniquesRes] = await Promise.all([
           fetch(`/api/proxy/articles/country/${code}/summary`),
-          fetch(`/api/proxy/articles/country/${code}/essentiel?limit=6`),
-          fetch(`/api/proxy/articles/country/${code}/all?limit=10`),
-          fetch(`/api/proxy/articles/country/${code}/archives?limit=6`),
+          fetch(`/api/proxy/articles/country/${code}/essentiel?limit=6&publishedToday=true`),
+          fetch(`/api/proxy/articles/country/${code}/all?limit=10&publishedToday=true`),
           fetch(`/api/proxy/articles/country/${code}/focus`),
-          fetch(`/api/proxy/articles/country/${code}/chroniques?limit=6`),
+          fetch(`/api/proxy/articles/country/${code}/chroniques?limit=1`),
         ]);
 
         if (summaryRes.ok) {
@@ -152,24 +149,6 @@ export default function CountryPage() {
           // PaginatedResultDto: { data: [...], total, page, limit }
           const articles = data.data?.data || data.data?.items || data.data || [];
           setAllArticles(mapArticles(articles));
-        }
-
-        // Archives - support multiple response formats
-        if (archivesRes.ok) {
-          const data = await archivesRes.json();
-          console.log('[Country Page] Archives response:', data);
-          // Handle different response structures
-          let articles: any[] = [];
-          if (Array.isArray(data)) {
-            articles = data;
-          } else if (Array.isArray(data.data)) {
-            articles = data.data;
-          } else if (data.data?.data && Array.isArray(data.data.data)) {
-            articles = data.data.data;
-          } else if (data.data?.items && Array.isArray(data.data.items)) {
-            articles = data.data.items;
-          }
-          setArchiveArticles(mapArticles(articles));
         }
 
         // Focus - support single article or array response
@@ -234,11 +213,11 @@ export default function CountryPage() {
   }
 
   const sections = [
+    { id: 'resume', label: "Résumé de l'actualité", icon: FileText, premium: true },
     { id: 'essentiel', label: "L'Essentiel", icon: Star, premium: false },
     { id: 'focus', label: 'Focus', icon: TrendingUp, premium: true },
     { id: 'chronique', label: 'Chroniques', icon: BookOpen, premium: true },
     { id: 'toute-actualite', label: "Toute l'actualité", icon: Newspaper, premium: false },
-    { id: 'archives', label: 'Archives', icon: Archive, premium: false },
   ];
 
   const renderPremiumLock = () => (
@@ -313,11 +292,32 @@ export default function CountryPage() {
 
   const renderSection = () => {
     switch (activeSection) {
+      case 'resume':
+        if (!canAccessCountryPage) return renderPremiumLock();
+        return summary ? (
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-100">
+              <Newspaper className="h-6 w-6 text-primary-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="mb-3 text-xl font-bold text-gray-900">
+                Résumé de l'actualité
+              </h3>
+              <div 
+                className="article-content prose prose-gray max-w-none text-gray-600 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: summary.content }}
+              />
+            </div>
+          </div>
+        ) : (
+          <p className="text-center text-gray-500">Aucun résumé disponible pour aujourd'hui.</p>
+        );
+
       case 'essentiel':
         return (
           <>
             {renderViewToggle()}
-            {renderArticleList(essentielArticles, "Aucun article essentiel pour le moment.")}
+            {renderArticleList(essentielArticles, "Aucun article essentiel pour aujourd'hui.")}
           </>
         );
 
@@ -331,7 +331,7 @@ export default function CountryPage() {
             fromCountry={code}
           />
         ) : (
-          <p className="text-center text-gray-500">Aucun article Focus pour le moment.</p>
+          <p className="text-center text-gray-500">Aucun article Focus pour aujourd'hui.</p>
         );
 
       case 'chronique':
@@ -353,15 +353,7 @@ export default function CountryPage() {
         return (
           <>
             {renderViewToggle()}
-            {renderArticleList(allArticles, "Aucun article pour le moment.")}
-          </>
-        );
-
-      case 'archives':
-        return (
-          <>
-            {renderViewToggle()}
-            {renderArticleList(archiveArticles, "Aucune archive pour le moment.")}
+            {renderArticleList(allArticles, "Aucun article pour aujourd'hui.")}
           </>
         );
 
@@ -462,32 +454,13 @@ export default function CountryPage() {
 
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 -mt-6">
 
-        {/* Summary Section */}
-        {summary && (
-          <section className="mb-8 rounded-2xl bg-white p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-100">
-                <Newspaper className="h-6 w-6 text-primary-600" />
-              </div>
-              <div className="flex-1">
-                <h2 className="mb-3 text-xl font-bold text-gray-900">
-                  Résumé de l'actualité
-                </h2>
-                <div 
-                  className="article-content prose prose-gray max-w-none text-gray-600 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: summary.content }}
-                />
-              </div>
-            </div>
-          </section>
-        )}
-
         {/* Revue de la Presse Title */}
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-900">
-            <Eye className="h-5 w-5 text-white" />
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="w-24 h-24 sm:w-32 sm:h-32">
+            <Lottie animationData={reportingAnimation} loop={true} autoplay={true} style={{ width: '100%', height: '100%' }} />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Revue de la Presse</h2>
+          <h2 className="text-2xl font-bold text-gray-900 sm:text-4xl -mt-2">Revue de la Presse</h2>
+          <p className="mt-1 text-xl text-gray-500">Édition du {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
         </div>
 
         {/* Section Tabs */}

@@ -66,6 +66,7 @@ const Header = () => {
   const navLinks = [
     { href: '/', label: 'Accueil', icon: Home, exact: true },
     { href: '/articles', label: 'Articles', icon: Newspaper },
+    { href: '/archives', label: 'Archives', icon: Archive },
     { href: '/favorites', label: 'Favoris', icon: Heart },
   ];
 

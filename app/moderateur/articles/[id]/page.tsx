@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Button, Card, CardHeader, CardTitle, CardContent, Badge, Alert, TextArea } from '@/components/atoms';
 import { StatusBadge } from '@/components/molecules';
 import { Article, ArticleStatus } from '@/types';
-import { ArrowLeft, CheckCircle, XCircle, Send, Calendar, User, MapPin, Tag, Link as LinkIcon, Crown, Star, Archive, Clock, Layers, Save, EyeOff } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Send, Calendar, User, MapPin, Tag, Link as LinkIcon, Crown, Star, Clock, Layers, Save, EyeOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -24,10 +24,10 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
   const [success, setSuccess] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
   const [articleId, setArticleId] = useState<string>('');
   const [isPremium, setIsPremium] = useState(false);
   const [isFeaturedHome, setIsFeaturedHome] = useState(false);
-  const [isArchive, setIsArchive] = useState(false);
   const [isEssentiel, setIsEssentiel] = useState(false);
   const [articleSection, setArticleSection] = useState<string>('');
   const [scheduledPublishAt, setScheduledPublishAt] = useState<string>('');
@@ -48,7 +48,6 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
           const isSummaryType = articleData.contentType === 'summary';
           setIsPremium(isSummaryType ? true : (articleData.isPremium || false));
           setIsFeaturedHome(isSummaryType ? false : (articleData.isFeaturedHome || false));
-          setIsArchive(articleData.isArchive || false);
           setIsEssentiel(isSummaryType ? false : (articleData.articleSection === 'essentiel'));
           setArticleSection(isSummaryType ? '' : (articleData.articleSection === 'essentiel' ? '' : (articleData.articleSection || '')));
         }
@@ -62,7 +61,16 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
     init();
   }, [params]);
 
+  const confirmApprove = () => {
+    if (!isPremium) {
+      setShowApproveConfirm(true);
+      return;
+    }
+    handleApprove();
+  };
+
   const handleApprove = async () => {
+    setShowApproveConfirm(false);
     setActionLoading('approve');
     setError(null);
     try {
@@ -126,7 +134,6 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
         body: JSON.stringify({
           isPremium,
           isFeaturedHome,
-          isArchive,
           articleSection: isEssentiel ? 'essentiel' : (articleSection || undefined),
         }),
       });
@@ -142,7 +149,6 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
         ...prev,
         isPremium,
         isFeaturedHome,
-        isArchive,
         articleSection: articleSection as any,
       } : null);
     } catch (err: any) {
@@ -171,7 +177,6 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
         body: JSON.stringify({
           isPremium,
           isFeaturedHome,
-          isArchive,
           articleSection: finalSection,
         }),
       });
@@ -182,7 +187,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
         throw new Error(patchData.message || 'Erreur lors de la mise à jour des options');
       }
 
-      console.log('[Publish] Options updated via PATCH:', { articleSection, isPremium, isFeaturedHome, isArchive });
+      console.log('[Publish] Options updated via PATCH:', { articleSection, isPremium, isFeaturedHome });
 
       // Étape 2 : Publier l'article
       const response = await fetch(`/api/proxy/articles/${articleId}/publish`, {
@@ -191,7 +196,6 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
         body: JSON.stringify({ 
           isPremium,
           isFeaturedHome,
-          isArchive,
           articleSection: finalSection,
           scheduledPublishAt: isScheduled && scheduledPublishAt ? new Date(scheduledPublishAt).toISOString() : undefined,
           isScheduled,
@@ -470,19 +474,6 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
               </label>
             )}
 
-            <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
-              <input
-                type="checkbox"
-                checked={isArchive}
-                onChange={(e) => setIsArchive(e.target.checked)}
-                className="h-5 w-5 rounded border-gray-300 text-gray-500 focus:ring-gray-500"
-              />
-              <Archive className="h-5 w-5 text-gray-500" />
-              <div>
-                <span className="font-medium text-gray-900">Archive</span>
-                <p className="text-sm text-gray-500">Déplacer dans la section Archives</p>
-              </div>
-            </label>
           </div>
 
           {/* Publication programmée - seulement pour les articles non publiés */}
@@ -539,7 +530,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
           <div className="flex flex-wrap gap-3">
             {canApprove && (
               <>
-                <Button variant="success" onClick={handleApprove} isLoading={actionLoading === 'approve'} leftIcon={<CheckCircle className="h-4 w-4" />}>
+                <Button variant="success" onClick={confirmApprove} isLoading={actionLoading === 'approve'} leftIcon={<CheckCircle className="h-4 w-4" />}>
                   Valider {isPremium ? '(Contenu Abonné)' : ''}
                 </Button>
                 <Button variant="danger" onClick={() => setShowRejectModal(true)} leftIcon={<XCircle className="h-4 w-4" />}>
@@ -579,6 +570,31 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
           </div>
         </CardContent>
       </Card>
+
+      {showApproveConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-lg bg-white p-6">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warning-100">
+                <Crown className="h-5 w-5 text-warning-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Contenu public</h3>
+            </div>
+            <p className="mb-2 text-gray-700">
+              L'option <strong>"Contenu Abonné"</strong> n'est pas cochée. Cet article sera accessible <strong>gratuitement</strong> par tous les utilisateurs.
+            </p>
+            <p className="mb-6 text-sm text-gray-500">
+              Souhaitez-vous continuer la validation en tant que contenu public ?
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="ghost" onClick={() => setShowApproveConfirm(false)}>Annuler</Button>
+              <Button variant="success" onClick={handleApprove} leftIcon={<CheckCircle className="h-4 w-4" />}>
+                Valider en public
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showRejectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

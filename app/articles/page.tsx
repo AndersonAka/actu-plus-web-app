@@ -20,6 +20,7 @@ function ArticlesContent() {
   const categoryFilter = searchParams.get('category') || '';
   const sectionFilter = searchParams.get('section') || '';
   const searchQuery = searchParams.get('search') || searchParams.get('q') || '';
+  const contentTypeFilter = searchParams.get('contentType') || '';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,6 +33,14 @@ function ArticlesContent() {
         if (categoryFilter) params.set('categoryId', categoryFilter);
         if (sectionFilter) params.set('articleSection', sectionFilter);
         if (searchQuery) params.set('search', searchQuery);
+        // Exclude summary articles by default; allow explicit contentType filter
+        if (contentTypeFilter) {
+          params.set('contentType', contentTypeFilter);
+        } else {
+          params.set('contentType', 'article');
+        }
+        // Load only articles published today
+        params.set('publishedToday', 'true');
 
         const [articlesRes, categoriesRes] = await Promise.all([
           fetch(`/api/proxy/articles?${params.toString()}`),

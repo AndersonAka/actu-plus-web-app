@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/atoms';
 import { Article } from '@/types';
-import { ChevronLeft, ChevronRight, Heart, Share2, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, Share2, Clock, Globe } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -78,6 +78,7 @@ const FeaturedCarousel = ({ articles, className }: FeaturedCarouselProps) => {
       >
         {articles.map((article, index) => {
           const articleImage = article.coverImage || article.imageUrl;
+          const scopeLabel = article.scope === 'international' ? 'International' : article.scope === 'national' ? 'National' : null;
           return (
           <div
             key={article.id}
@@ -104,9 +105,17 @@ const FeaturedCarousel = ({ articles, className }: FeaturedCarouselProps) => {
                 
                 {/* Content */}
                 <div className="absolute top-0 left-0 p-4 sm:p-5 max-w-xl">
-                  <Badge variant="primary" className="mb-2">
-                    {article.category?.name || 'Actualité'}
-                  </Badge>
+                  <div className="mb-2 flex gap-2 flex-wrap">
+                    <Badge variant="primary">
+                      {article.category?.name || 'Actualité'}
+                    </Badge>
+                    {scopeLabel && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
+                        <Globe className="h-3 w-3" />
+                        {scopeLabel}
+                      </span>
+                    )}
+                  </div>
                   <h3 className="mb-1 text-lg font-bold text-white line-clamp-2 sm:text-xl">
                     {article.title}
                   </h3>

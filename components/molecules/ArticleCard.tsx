@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/atoms';
-import { Calendar, Eye, Heart } from 'lucide-react';
+import { Calendar, Eye, Heart, Globe } from 'lucide-react';
 import { Article, ArticleStatus } from '@/types';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -46,6 +46,8 @@ const ArticleCard = ({
     ? format(new Date(article.publishedAt), 'dd MMM yyyy', { locale: fr })
     : format(new Date(article.createdAt), 'dd MMM yyyy', { locale: fr });
 
+  const scopeLabel = article.scope === 'international' ? 'International' : article.scope === 'national' ? 'National' : null;
+
   if (variant === 'compact') {
     return (
       <Link
@@ -77,7 +79,15 @@ const ArticleCard = ({
           <h4 className="line-clamp-2 text-sm font-medium text-gray-900">
             {article.title}
           </h4>
-          <p className="mt-1 text-xs text-gray-500">{formattedDate}</p>
+          <div className="mt-1 flex items-center gap-2">
+            <p className="text-xs text-gray-500">{formattedDate}</p>
+            {scopeLabel && (
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-50 px-1.5 py-0 text-[10px] font-medium text-blue-700">
+                <Globe className="h-2.5 w-2.5" />
+                {scopeLabel}
+              </span>
+            )}
+          </div>
         </div>
       </Link>
     );
@@ -115,10 +125,16 @@ const ArticleCard = ({
         </Link>
         <div className="flex flex-1 flex-col justify-between py-0.5 min-w-0">
           <div>
-            <div className="mb-1.5 flex items-center gap-2">
+            <div className="mb-1.5 flex items-center gap-2 flex-wrap">
               <Badge variant="secondary" size="sm">
                 {article.category.name}
               </Badge>
+              {scopeLabel && (
+                <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700">
+                  <Globe className="h-2.5 w-2.5" />
+                  {scopeLabel}
+                </span>
+              )}
               {showStatus && (
                 <Badge variant={statusLabels[article.status].variant} size="sm">
                   {statusLabels[article.status].label}
@@ -193,10 +209,16 @@ const ArticleCard = ({
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="mb-2 flex gap-2">
+          <div className="mb-2 flex gap-2 flex-wrap">
             <Badge variant="primary">
               {article.category.name}
             </Badge>
+            {scopeLabel && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
+                <Globe className="h-3 w-3" />
+                {scopeLabel}
+              </span>
+            )}
             {article.isPremium && (
               <Badge variant="warning" className="bg-amber-500 text-white">
                 Contenu abonné
@@ -248,7 +270,7 @@ const ArticleCard = ({
               <span className="text-gray-400">Pas d'image</span>
             </div>
           )}
-          <div className="absolute left-2 top-2 flex gap-2">
+          <div className="absolute left-2 top-2 flex gap-2 flex-wrap">
             {showStatus && (
               <Badge variant={statusLabels[article.status].variant}>
                 {statusLabels[article.status].label}
@@ -256,6 +278,12 @@ const ArticleCard = ({
             )}
             {article.isFeatured && !showStatus && (
               <Badge variant="primary">À la une</Badge>
+            )}
+            {scopeLabel && (
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+                <Globe className="h-3 w-3" />
+                {scopeLabel}
+              </span>
             )}
             {article.isPremium && (
               <Badge variant="warning" className="bg-amber-500 text-white">

@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { Button, Input, TextArea, Select, Card, CardHeader, CardTitle, CardContent, Alert } from '@/components/atoms';
 import { RichTextEditor, ImageUpload } from '@/components/molecules';
 import { Category, Country } from '@/types';
-import { ArrowLeft, Save, Send, Wand2, Plus, Trash2, Link as LinkIcon, FileText, Newspaper, Sparkles } from 'lucide-react';
+import { ArrowLeft, Save, Send, Wand2, Plus, Trash2, Link as LinkIcon, FileText, Newspaper, Sparkles, Globe } from 'lucide-react';
 import Link from 'next/link';
 
 const sourceSchema = z.object({
@@ -22,11 +22,15 @@ const articleSchema = z.object({
   content: z.string().min(50, 'Le contenu doit contenir au moins 50 caractères'),
   categoryId: z.string().min(1, 'Veuillez sélectionner une catégorie'),
   countryId: z.string().min(1, 'Veuillez sélectionner un pays'),
+  scope: z.enum(['national', 'international'], { message: 'Veuillez indiquer la portée de l\'article' }),
   contentType: z.enum(['article', 'summary']),
   articleSection: z.string().optional(),
   coverImage: z.string().optional().or(z.literal('')),
   sources: z.array(sourceSchema).optional(),
-});
+}).refine(
+  (data) => data.contentType !== 'article' || (data.coverImage && data.coverImage.trim() !== ''),
+  { message: 'L\'image de couverture est obligatoire pour un article standard', path: ['coverImage'] }
+);
 
 interface Source {
   name: string;
@@ -61,6 +65,7 @@ export default function CreateArticlePage() {
       categoryId: '',
       countryId: '',
       contentType: 'article',
+      scope: '' as any,
       articleSection: 'toute-actualite',
       coverImage: '',
       sources: [],
@@ -126,6 +131,7 @@ export default function CreateArticlePage() {
         body: JSON.stringify({
           ...articleData,
           contentType: contentType,
+          scope: articleData.scope,
           articleSection: contentType === 'article' ? articleData.articleSection : undefined,
           imageUrl: contentType === 'article' ? (coverImage || undefined) : undefined,
           sources: sources.filter(s => s.name.trim() !== ''),
@@ -198,6 +204,7 @@ export default function CreateArticlePage() {
     setValue('content', randomContent);
     setValue('categoryId', randomCategory);
     setValue('countryId', randomCountry);
+    setValue('scope', 'national');
     setValue('contentType', 'article');
     setValue('articleSection', 'toute-actualite');
     setSources([
@@ -396,14 +403,25 @@ export default function CreateArticlePage() {
               />
             </div>
 
+            <Select
+              label="Portée de l'article *"
+              options={[
+                { value: '', label: 'Sélectionner la portée' },
+                { value: 'national', label: 'National' },
+                { value: 'international', label: 'International' },
+              ]}
+              error={errors.scope?.message}
+              {...register('scope')}
+            />
+
           </CardContent>
         </Card>
 
-        {/* Image de couverture (seulement pour les articles) */}
+        {/* Image de couverture (seulement pour les articles - obligatoire) */}
         {contentType === 'article' && (
           <Card>
             <CardHeader>
-              <CardTitle>Image de couverture</CardTitle>
+              <CardTitle>Image de couverture *</CardTitle>
             </CardHeader>
             <CardContent>
               <Controller
