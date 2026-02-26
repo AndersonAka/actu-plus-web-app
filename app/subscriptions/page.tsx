@@ -7,7 +7,7 @@ import { Header, Footer } from '@/components/organisms';
 import { Button } from '@/components/atoms';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { paymentService } from '@/lib/services/payment.service';
-import { Check, Star, Building2, Zap, Crown, ArrowRight, Loader2 } from 'lucide-react';
+import { Check, Star, Building2, Zap, Crown, ArrowRight, Loader2, X, Users } from 'lucide-react';
 import { Suspense } from 'react';
 
 interface SubscriptionPlan {
@@ -19,7 +19,6 @@ interface SubscriptionPlan {
   duration: number;
   features: string[];
   isPopular: boolean;
-  requiresQuote: boolean;
   isActive: boolean;
 }
 
@@ -33,6 +32,18 @@ function SubscriptionsContent() {
   const [standardDuration, setStandardDuration] = useState<number>(1);
   const [premiumDuration, setPremiumDuration] = useState<number>(1);
   const [error, setError] = useState<string | null>(null);
+
+  const [showEnterpriseForm, setShowEnterpriseForm] = useState(false);
+  const [enterpriseDuration, setEnterpriseDuration] = useState<number>(3);
+  const [enterpriseHeadcount, setEnterpriseHeadcount] = useState<number>(5);
+  const [enterpriseForm, setEnterpriseForm] = useState({
+    companyName: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+  });
+  const [enterpriseFormError, setEnterpriseFormError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -71,7 +82,6 @@ function SubscriptionsContent() {
         'Accès mobile et web',
       ],
       isPopular: false,
-      requiresQuote: false,
       isActive: true,
     },
     {
@@ -90,7 +100,6 @@ function SubscriptionsContent() {
         'Support prioritaire',
       ],
       isPopular: true,
-      requiresQuote: false,
       isActive: true,
     },
     {
@@ -110,7 +119,6 @@ function SubscriptionsContent() {
         'SLA garanti',
       ],
       isPopular: false,
-      requiresQuote: true,
       isActive: true,
     },
   ];
@@ -162,12 +170,57 @@ function SubscriptionsContent() {
   };
 
   const formatPrice = (price: number, currency: string) => {
-    if (price === 0) return 'Sur devis';
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: currency,
       minimumFractionDigits: 0,
     }).format(price);
+  };
+
+  const getEnterprisePlan = () => {
+    return plans.find(
+      p => p.category === 'enterprise'
+        && p.duration === enterpriseDuration
+        && (p as any).headcount === enterpriseHeadcount
+    );
+  };
+
+  const getEnterprisePrice = (): number => {
+    const plan = getEnterprisePlan();
+    return plan?.price ?? 0;
+  };
+
+  const handleEnterpriseSubmit = async () => {
+    setEnterpriseFormError(null);
+    const { companyName, firstName, lastName, email, phone } = enterpriseForm;
+    if (!companyName || !firstName || !lastName || !email) {
+      setEnterpriseFormError('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+
+    const plan = getEnterprisePlan();
+    if (!plan) {
+      setEnterpriseFormError(`Aucune formule entreprise disponible pour ${enterpriseHeadcount} personne(s) sur ${enterpriseDuration} mois.`);
+      return;
+    }
+
+    setProcessingPayment(true);
+    setSelectedPlan(plan.id);
+    try {
+      const price = getEnterprisePrice();
+      const payment = await paymentService.createPayment({
+        subscriptionPlanId: plan.id,
+        amount: price,
+        currency: 'XOF',
+        paymentMethod: 'mobile_money',
+      });
+      const paystackUrl = await paymentService.getPaymentUrl(payment.id);
+      window.location.href = paystackUrl;
+    } catch (err: any) {
+      setEnterpriseFormError(err.message || 'Erreur lors de l\'initialisation du paiement.');
+      setProcessingPayment(false);
+      setSelectedPlan(null);
+    }
   };
 
   const handleSubscribe = async (planId: string, category: string) => {
@@ -179,7 +232,11 @@ function SubscriptionsContent() {
     }
 
     if (category === 'enterprise') {
-      window.location.href = '/contact?type=enterprise';
+      if (!isAuthenticated) {
+        window.location.href = `/login?redirect=/subscriptions`;
+        return;
+      }
+      setShowEnterpriseForm(true);
       return;
     }
 
@@ -407,49 +464,246 @@ function SubscriptionsContent() {
             {/* Enterprise Plan */}
             {(() => {
               const enterprisePlans = plans.filter(p => p.category === 'enterprise');
-              if (enterprisePlans.length === 0) return null;
-              
-              const enterprisePlan = enterprisePlans[0];
               const colors = getPlanColors('enterprise');
+              const samplePlan = enterprisePlans[0];
+              // Build dynamic pricing summary from saved plans
+              const headcountSet = [...new Set(enterprisePlans.map(p => (p as any).headcount as number).filter(Boolean))].sort((a, b) => a - b);
+              const durationSet = [...new Set(enterprisePlans.map(p => p.duration))].sort((a, b) => a - b);
+              // Show cheapest per duration
+              const cheapestByDuration = durationSet.map(d => {
+                const dPlans = enterprisePlans.filter(p => p.duration === d).sort((a, b) => a.price - b.price);
+                return dPlans[0];
+              }).filter(Boolean);
               
               return (
-                <div className={`relative rounded-2xl border-2 p-8 ${colors.bg} ${colors.border} transition-transform hover:scale-105`}>
-                  <div className={`mb-6 ${colors.icon}`}>
+                <div className={`relative rounded-2xl border-2 p-8 ${colors.bg} ${colors.border}`}>
+                  <div className={`mb-4 ${colors.icon}`}>
                     <Building2 className="h-8 w-8" />
                   </div>
 
-                  <h3 className="mb-2 text-2xl font-bold text-white">
-                    Entreprises
-                  </h3>
+                  <h3 className="mb-2 text-2xl font-bold text-white">Entreprises</h3>
+                  <p className="mb-4 text-sm text-gray-400">Tarification selon le nombre de collaborateurs</p>
 
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold text-white">
-                      Sur devis
-                    </span>
-                  </div>
+                  {/* Pricing grid summary — dynamic from saved plans */}
+                  {cheapestByDuration.length > 0 ? (
+                    <div className="mb-5 rounded-xl bg-white/10 p-4">
+                      <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-gray-300 uppercase tracking-wide">
+                        <Users className="h-3.5 w-3.5" /> Tarifs à partir de
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        {cheapestByDuration.map(plan => (
+                          <div key={plan!.id} className="contents">
+                            <div className="text-gray-300">{(plan as any).headcount} pers. / {plan!.duration} mois</div>
+                            <div className="text-right font-semibold text-white">{Number(plan!.price).toLocaleString('fr-FR')} FCFA</div>
+                          </div>
+                        ))}
+                      </div>
+                      {headcountSet.length > 0 && (
+                        <p className="mt-2 text-xs text-gray-400">
+                          De {headcountSet[0]} à {headcountSet[headcountSet.length - 1]} collaborateurs
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="mb-5 rounded-xl bg-white/10 p-4 text-center">
+                      <p className="text-sm text-gray-400">Formules bientôt disponibles</p>
+                    </div>
+                  )}
 
-                  <ul className="mb-8 space-y-3">
-                    {enterprisePlan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-400" />
-                        <span className="text-sm text-gray-300">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {samplePlan && (
+                    <ul className="mb-6 space-y-2">
+                      {samplePlan.features.map((feature, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-400" />
+                          <span className="text-sm text-gray-300">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
 
                   <button
-                    onClick={() => handleSubscribe(enterprisePlan.id, 'enterprise')}
-                    disabled={processingPayment}
+                    onClick={() => handleSubscribe(samplePlan?.id || 'enterprise', 'enterprise')}
+                    disabled={processingPayment || enterprisePlans.length === 0}
                     className={`flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3 font-medium transition-colors ${colors.button} text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
-                    Demander un devis
-                    <ArrowRight className="h-4 w-4" />
+                    {processingPayment && selectedPlan?.startsWith('enterprise') ? (
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Traitement...</>
+                    ) : (
+                      <>Souscrire une formule <ArrowRight className="h-4 w-4" /></>
+                    )}
                   </button>
                 </div>
               );
             })()}
           </div>
         </section>
+
+        {/* Enterprise Form Modal */}
+        {showEnterpriseForm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+            <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-8 shadow-2xl">
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Formule Entreprise</h2>
+                  <p className="text-sm text-gray-500">Renseignez vos informations pour finaliser la souscription</p>
+                </div>
+                <button onClick={() => setShowEnterpriseForm(false)} className="text-gray-400 hover:text-gray-600">
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              {enterpriseFormError && (
+                <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">{enterpriseFormError}</div>
+              )}
+
+              {/* Configurator */}
+              {(() => {
+                const entPlans = plans.filter(p => p.category === 'enterprise');
+                const availableHeadcounts = [...new Set(entPlans.map(p => (p as any).headcount as number).filter(Boolean))].sort((a, b) => a - b);
+                const availableDurations = [...new Set(entPlans.filter(p => (p as any).headcount === enterpriseHeadcount).map(p => p.duration))].sort((a, b) => a - b);
+                const matchedPlan = getEnterprisePlan();
+                return (
+                  <div className="mb-6 rounded-xl bg-gray-50 p-4">
+                    <h3 className="mb-3 text-sm font-semibold text-gray-700">Configuration de votre formule</h3>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-gray-600">Nombre de collaborateurs</label>
+                        <select
+                          value={enterpriseHeadcount}
+                          onChange={e => {
+                            const hc = Number(e.target.value);
+                            setEnterpriseHeadcount(hc);
+                            // Reset duration if not available for new headcount
+                            const durationsForHc = [...new Set(entPlans.filter(p => (p as any).headcount === hc).map(p => p.duration))];
+                            if (!durationsForHc.includes(enterpriseDuration) && durationsForHc.length > 0) {
+                              setEnterpriseDuration(durationsForHc[0]);
+                            }
+                          }}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                        >
+                          {availableHeadcounts.length > 0 ? (
+                            availableHeadcounts.map(n => (
+                              <option key={n} value={n}>{n} personne{n > 1 ? 's' : ''}</option>
+                            ))
+                          ) : (
+                            <option value={0} disabled>Aucune formule disponible</option>
+                          )}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-gray-600">Durée</label>
+                        <select
+                          value={enterpriseDuration}
+                          onChange={e => setEnterpriseDuration(Number(e.target.value))}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                        >
+                          {availableDurations.length > 0 ? (
+                            availableDurations.map(d => (
+                              <option key={d} value={d}>{d} mois</option>
+                            ))
+                          ) : (
+                            <option value={0} disabled>—</option>
+                          )}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="mt-4 rounded-lg bg-primary-50 border border-primary-200 p-3 text-center">
+                      {matchedPlan ? (
+                        <>
+                          <p className="text-xs text-primary-600">Montant</p>
+                          <p className="text-2xl font-bold text-primary-700">
+                            {Number(matchedPlan.price).toLocaleString('fr-FR')} FCFA
+                          </p>
+                          <p className="text-xs text-gray-500">pour {enterpriseHeadcount} pers. / {enterpriseDuration} mois</p>
+                        </>
+                      ) : (
+                        <p className="text-sm text-gray-500">Sélectionnez une combinaison valide</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Company info */}
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Nom de l'entreprise <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    value={enterpriseForm.companyName}
+                    onChange={e => setEnterpriseForm(f => ({ ...f, companyName: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                    placeholder="Nom de votre entreprise"
+                  />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">Prénom <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={enterpriseForm.firstName}
+                      onChange={e => setEnterpriseForm(f => ({ ...f, firstName: e.target.value }))}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                      placeholder="Prénom du responsable"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">Nom <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={enterpriseForm.lastName}
+                      onChange={e => setEnterpriseForm(f => ({ ...f, lastName: e.target.value }))}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                      placeholder="Nom du responsable"
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
+                    <input
+                      type="email"
+                      value={enterpriseForm.email}
+                      onChange={e => setEnterpriseForm(f => ({ ...f, email: e.target.value }))}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                      placeholder="email@entreprise.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">Téléphone</label>
+                    <input
+                      type="tel"
+                      value={enterpriseForm.phone}
+                      onChange={e => setEnterpriseForm(f => ({ ...f, phone: e.target.value }))}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                      placeholder="+225 07 00 00 00"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={() => setShowEnterpriseForm(false)}
+                  className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleEnterpriseSubmit}
+                  disabled={processingPayment}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-3 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+                >
+                  {processingPayment ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Traitement...</>
+                  ) : (
+                    <>Procéder au paiement <ArrowRight className="h-4 w-4" /></>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* FAQ Section */}
         <section className="border-t border-gray-200 bg-gray-50 py-16">

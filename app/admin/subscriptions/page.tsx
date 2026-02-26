@@ -1,9 +1,34 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Button, Card, EmptyState, Badge, Select, Alert } from '@/components/atoms';
+import React, { useState, useEffect } from 'react';
+import { Button, Card, EmptyState, Badge, Select, Alert, Input } from '@/components/atoms';
 import { Pagination } from '@/components/molecules';
-import { CreditCard, CheckCircle, XCircle, Trash2, X } from 'lucide-react';
+import { CreditCard, CheckCircle, XCircle, Trash2, X, Plus, Pencil, Zap, Crown, Building2, LayoutList } from 'lucide-react';
+
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  category: 'standard' | 'premium' | 'enterprise';
+  duration: number;
+  price: number;
+  currency: string;
+  features: string[];
+  isPopular: boolean;
+  isActive: boolean;
+  headcount?: number;
+}
+
+const PLAN_CATEGORY_LABELS: Record<string, string> = {
+  standard: 'Particuliers Standard',
+  premium: 'Particuliers Premium',
+  enterprise: 'Entreprises',
+};
+
+const PLAN_CATEGORY_ICONS: Record<string, React.ReactElement> = {
+  standard: <Zap className="h-4 w-4 text-gray-500" />,
+  premium: <Crown className="h-4 w-4 text-primary-600" />,
+  enterprise: <Building2 className="h-4 w-4 text-gray-700" />,
+};
 
 interface Subscription {
   id: string;
@@ -24,7 +49,23 @@ interface Subscription {
   endDate?: string | null;
 }
 
+const EMPTY_PLAN_FORM = {
+  id: '',
+  name: '',
+  category: 'standard' as 'standard' | 'premium' | 'enterprise',
+  duration: 3,
+  price: 0,
+  currency: 'XOF',
+  features: [''],
+  isPopular: false,
+  isActive: true,
+  headcount: 5,
+};
+
 export default function AdminSubscriptionsPage() {
+  const [activeTab, setActiveTab] = useState<'subscriptions' | 'formulas'>('subscriptions');
+
+  // ── Subscriptions state ──
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,6 +75,17 @@ export default function AdminSubscriptionsPage() {
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // ── Formulas state ──
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [plansLoading, setPlansLoading] = useState(false);
+  const [showPlanForm, setShowPlanForm] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
+  const [planForm, setPlanForm] = useState(EMPTY_PLAN_FORM);
+  const [planSaving, setPlanSaving] = useState(false);
+  const [planError, setPlanError] = useState<string | null>(null);
+  const [planSuccess, setPlanSuccess] = useState<string | null>(null);
+  const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
@@ -209,6 +261,162 @@ export default function AdminSubscriptionsPage() {
     fetchSubscriptions();
   }, [currentPage, statusFilter]);
 
+  // ── Formula management ──
+  const fetchPlans = async () => {
+    setPlansLoading(true);
+    try {
+      const res = await fetch('/api/proxy/subscriptions/plans?all=true');
+      if (res.ok) {
+        const data = await res.json();
+        const list = data?.data ?? data;
+        setPlans(Array.isArray(list) ? list : list?.data ?? []);
+      }
+    } catch (err) {
+      console.error('Error fetching plans:', err);
+    } finally {
+      setPlansLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'formulas') fetchPlans();
+  }, [activeTab]);
+
+  const openCreatePlan = () => {
+    setEditingPlan(null);
+    setPlanForm(EMPTY_PLAN_FORM);
+    setShowPlanForm(true);
+    setPlanError(null);
+  };
+
+  const openEditPlan = (plan: SubscriptionPlan) => {
+    setEditingPlan(plan);
+    setPlanForm({
+      id: plan.id,
+      name: plan.name,
+      category: plan.category,
+      duration: plan.duration,
+      price: plan.price,
+      currency: plan.currency,
+      features: plan.features?.length ? plan.features : [''],
+      isPopular: plan.isPopular,
+      isActive: plan.isActive,
+      headcount: plan.headcount ?? 5,
+    });
+    setShowPlanForm(true);
+    setPlanError(null);
+  };
+
+  const savePlan = async () => {
+    setPlanSaving(true);
+    setPlanError(null);
+    try {
+      // ── Client-side validation ──
+      if (!planForm.name.trim()) {
+        throw new Error('Veuillez saisir un nom pour la formule.');
+      }
+      if (Number(planForm.price) <= 0 && planForm.category !== 'enterprise') {
+        throw new Error('Le prix doit être supérieur à 0.');
+      }
+      const isEnterprise = planForm.category === 'enterprise';
+      if (isEnterprise) {
+        if (!planForm.headcount || planForm.headcount < 1) {
+          throw new Error('Veuillez indiquer le nombre de personnes pour cette formule entreprise.');
+        }
+        if (Number(planForm.price) <= 0) {
+          throw new Error('Veuillez saisir le prix de la formule entreprise.');
+        }
+      }
+
+      const payload: Record<string, any> = {
+        name: planForm.name.trim(),
+        category: planForm.category,
+        duration: Number(planForm.duration),
+        price: Number(planForm.price),
+        currency: planForm.currency,
+        features: planForm.features.filter((f) => f.trim() !== ''),
+        isPopular: planForm.isPopular,
+        isActive: planForm.isActive,
+      };
+      if (isEnterprise) {
+        payload.headcount = planForm.headcount;
+        // Duplicate check: same category + duration + headcount
+        const duplicate = plans.find(
+          p => p.category === 'enterprise'
+            && p.duration === Number(planForm.duration)
+            && p.headcount === planForm.headcount
+            && p.id !== planForm.id
+        );
+        if (duplicate) {
+          throw new Error(
+            `Une formule entreprise pour ${planForm.headcount} personne(s) sur ${planForm.duration} mois existe déjà ("${duplicate.name}").`
+          );
+        }
+      }
+      const isEdit = Boolean(editingPlan);
+      const url = isEdit
+        ? `/api/proxy/subscriptions/plans/${editingPlan!.id}`
+        : '/api/proxy/subscriptions/plans';
+      const method = isEdit ? 'PATCH' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        // Translate common backend errors to friendly messages
+        const raw = Array.isArray(data?.message) ? data.message.join(', ') : (data?.message || '');
+        const friendly = raw.includes('not-null constraint')
+          ? 'Certains champs obligatoires sont manquants. Veuillez vérifier le formulaire.'
+          : raw.includes('duplicate key') || raw.includes('already exists')
+            ? 'Une formule similaire existe déjà.'
+            : raw.includes('should not exist')
+              ? 'Le formulaire contient des champs non autorisés. Veuillez réessayer.'
+              : raw || 'Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.';
+        throw new Error(friendly);
+      }
+      setPlanSuccess(isEdit ? 'Formule modifiée avec succès' : 'Formule créée avec succès');
+      setShowPlanForm(false);
+      fetchPlans();
+      setTimeout(() => setPlanSuccess(null), 3000);
+    } catch (err: any) {
+      setPlanError(err.message);
+    } finally {
+      setPlanSaving(false);
+    }
+  };
+
+  const deletePlan = async (id: string) => {
+    if (!confirm('Supprimer cette formule ?')) return;
+    setDeletingPlanId(id);
+    try {
+      const res = await fetch(`/api/proxy/subscriptions/plans/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.message || 'Erreur');
+      }
+      setPlanSuccess('Formule supprimée');
+      fetchPlans();
+      setTimeout(() => setPlanSuccess(null), 3000);
+    } catch (err: any) {
+      setPlanError(err.message);
+    } finally {
+      setDeletingPlanId(null);
+    }
+  };
+
+  const updateFeature = (index: number, value: string) => {
+    const updated = [...planForm.features];
+    updated[index] = value;
+    setPlanForm((f) => ({ ...f, features: updated }));
+  };
+
+  const addFeature = () => setPlanForm((f) => ({ ...f, features: [...f.features, ''] }));
+
+  const removeFeature = (index: number) =>
+    setPlanForm((f) => ({ ...f, features: f.features.filter((_, i) => i !== index) }));
+
   const statusOptions = [
     { value: '', label: 'Tous les statuts' },
     { value: 'pending', label: 'En attente' },
@@ -230,14 +438,337 @@ export default function AdminSubscriptionsPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Gestion des abonnements</h1>
-        <p className="mt-1 text-gray-600">Gérez les abonnements des utilisateurs</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Abonnements</h1>
+          <p className="mt-1 text-gray-600">Gérez les abonnements et les formules tarifaires</p>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="mb-6 flex gap-1 rounded-xl bg-gray-100 p-1 w-fit">
+        <button
+          onClick={() => setActiveTab('subscriptions')}
+          className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${activeTab === 'subscriptions' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          <LayoutList className="h-4 w-4" />
+          Abonnements
+        </button>
+        <button
+          onClick={() => setActiveTab('formulas')}
+          className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${activeTab === 'formulas' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          <CreditCard className="h-4 w-4" />
+          Formules tarifaires
+        </button>
       </div>
 
       {error && <Alert variant="error" className="mb-6" onClose={() => setError(null)}>{error}</Alert>}
       {success && <Alert variant="success" className="mb-6" onClose={() => setSuccess(null)}>{success}</Alert>}
 
+      {/* ── FORMULAS TAB ── */}
+      {activeTab === 'formulas' && (
+        <div>
+          {planError && <Alert variant="error" className="mb-4" onClose={() => setPlanError(null)}>{planError}</Alert>}
+          {planSuccess && <Alert variant="success" className="mb-4" onClose={() => setPlanSuccess(null)}>{planSuccess}</Alert>}
+
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Formules tarifaires</h2>
+              <p className="text-sm text-gray-500">Configurez les formules Particuliers et Entreprises</p>
+            </div>
+            <Button variant="primary" onClick={openCreatePlan} leftIcon={<Plus className="h-4 w-4" />}>
+              Nouvelle formule
+            </Button>
+          </div>
+
+          {plansLoading ? (
+            <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-20 animate-pulse rounded-lg bg-gray-100" />)}</div>
+          ) : (
+            <>
+              {/* Standard & Premium: card grid per plan */}
+              {(['standard', 'premium'] as const).map((cat) => {
+                const catPlans = plans.filter(p => p.category === cat);
+                return (
+                  <div key={cat} className="mb-8">
+                    <div className="mb-3 flex items-center gap-2">
+                      {PLAN_CATEGORY_ICONS[cat]}
+                      <h3 className="font-semibold text-gray-800">{PLAN_CATEGORY_LABELS[cat]}</h3>
+                      <span className="ml-auto text-xs text-gray-400">{catPlans.length} formule(s)</span>
+                    </div>
+                    {catPlans.length === 0 ? (
+                      <p className="rounded-lg bg-gray-50 py-6 text-center text-sm text-gray-400">Aucune formule configurée</p>
+                    ) : (
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        {catPlans.map(plan => (
+                          <Card key={plan.id} padding="md" className="relative">
+                            <div className="mb-1 flex items-center justify-between">
+                              <span className="text-sm font-semibold text-gray-900">{plan.duration} mois</span>
+                              <div className="flex gap-1">
+                                {plan.isPopular && <span className="rounded-full bg-primary-100 px-2 py-0.5 text-xs font-medium text-primary-700">Populaire</span>}
+                                {!plan.isActive && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">Inactif</span>}
+                              </div>
+                            </div>
+                            <p className="text-xl font-bold text-gray-900">
+                              {`${Number(plan.price).toLocaleString('fr-FR')} FCFA`}
+                            </p>
+                            <ul className="mt-2 space-y-1">
+                              {(plan.features || []).slice(0, 3).map((f, i) => (
+                                <li key={i} className="text-xs text-gray-500 truncate">• {f}</li>
+                              ))}
+                              {(plan.features || []).length > 3 && (
+                                <li className="text-xs text-gray-400">+{plan.features.length - 3} autres</li>
+                              )}
+                            </ul>
+                            <div className="mt-3 flex gap-2">
+                              <button onClick={() => openEditPlan(plan)} className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800">
+                                <Pencil className="h-3 w-3" /> Modifier
+                              </button>
+                              <button onClick={() => deletePlan(plan.id)} disabled={deletingPlanId === plan.id} className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 disabled:opacity-50">
+                                <Trash2 className="h-3 w-3" /> Supprimer
+                              </button>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Enterprise: dynamic pricing grid from saved plans */}
+              {(() => {
+                const entPlans = plans.filter(p => p.category === 'enterprise');
+                // Build grid from saved enterprise plans: rows = headcount, columns = duration
+                const headcountSet = [...new Set(entPlans.map(p => p.headcount ?? 0).filter(n => n > 0))].sort((a, b) => a - b);
+                const durationSet = [...new Set(entPlans.map(p => p.duration))].sort((a, b) => a - b);
+                // Build lookup: { headcount -> { duration -> plan } }
+                const lookup: Record<number, Record<number, SubscriptionPlan>> = {};
+                for (const p of entPlans) {
+                  const hc = p.headcount ?? 0;
+                  if (!lookup[hc]) lookup[hc] = {};
+                  lookup[hc][p.duration] = p;
+                }
+                return (
+                  <div className="mb-8">
+                    <div className="mb-3 flex items-center gap-2">
+                      {PLAN_CATEGORY_ICONS['enterprise']}
+                      <h3 className="font-semibold text-gray-800">{PLAN_CATEGORY_LABELS['enterprise']}</h3>
+                      <span className="ml-auto text-xs text-gray-400">{entPlans.length} formule(s)</span>
+                    </div>
+
+                    {/* Grille tarifaire dynamique */}
+                    {headcountSet.length > 0 && durationSet.length > 0 ? (
+                      <div className="mb-4 overflow-x-auto rounded-xl border border-gray-200 bg-white">
+                        <table className="min-w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-gray-100 bg-gray-50">
+                              <th className="px-4 py-3 text-left font-medium text-gray-500">Personnes</th>
+                              {durationSet.map(d => (
+                                <th key={d} className="px-4 py-3 text-right font-medium text-gray-700">{d} mois</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {headcountSet.map(n => (
+                              <tr key={n} className="hover:bg-gray-50">
+                                <td className="px-4 py-2.5 font-medium text-gray-900">{n} pers.</td>
+                                {durationSet.map(d => {
+                                  const plan = lookup[n]?.[d];
+                                  return (
+                                    <td key={d} className="px-4 py-2.5 text-right text-gray-700">
+                                      {plan
+                                        ? `${Number(plan.price).toLocaleString('fr-FR')} FCFA`
+                                        : <span className="text-gray-300">—</span>}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="mb-4 rounded-lg bg-gray-50 py-4 text-center text-sm text-gray-400">
+                        Aucune formule entreprise configurée. Créez-en une pour voir la grille tarifaire.
+                      </p>
+                    )}
+
+                    {/* Plan cards for edit/delete */}
+                    {entPlans.length > 0 && (
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {entPlans.map(plan => (
+                          <Card key={plan.id} padding="md" className="relative">
+                            <div className="mb-1 flex items-center justify-between">
+                              <span className="text-sm font-semibold text-gray-900">{plan.duration} mois</span>
+                              <div className="flex gap-1">
+                                {plan.isPopular && <span className="rounded-full bg-primary-100 px-2 py-0.5 text-xs font-medium text-primary-700">Populaire</span>}
+                                {!plan.isActive && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">Inactif</span>}
+                              </div>
+                            </div>
+                            <p className="text-sm text-gray-500">
+                              {plan.headcount ?? '–'} personne(s)
+                            </p>
+                            <p className="mt-1 text-lg font-bold text-gray-900">
+                              {`${Number(plan.price).toLocaleString('fr-FR')} FCFA`}
+                            </p>
+                            <ul className="mt-2 space-y-1">
+                              {(plan.features || []).slice(0, 2).map((f, i) => (
+                                <li key={i} className="text-xs text-gray-500 truncate">• {f}</li>
+                              ))}
+                            </ul>
+                            <div className="mt-3 flex gap-2">
+                              <button onClick={() => openEditPlan(plan)} className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800">
+                                <Pencil className="h-3 w-3" /> Modifier
+                              </button>
+                              <button onClick={() => deletePlan(plan.id)} disabled={deletingPlanId === plan.id} className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 disabled:opacity-50">
+                                <Trash2 className="h-3 w-3" /> Supprimer
+                              </button>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </>
+          )}
+
+          {/* Plan Form Modal */}
+          {showPlanForm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+              <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    {editingPlan ? 'Modifier la formule' : 'Nouvelle formule'}
+                  </h2>
+                  <button onClick={() => setShowPlanForm(false)} className="text-gray-400 hover:text-gray-600"><X className="h-5 w-5" /></button>
+                </div>
+
+                {planError && <Alert variant="error" className="mb-4" onClose={() => setPlanError(null)}>{planError}</Alert>}
+
+                <div className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">Catégorie</label>
+                      <select
+                        value={planForm.category}
+                        onChange={e => setPlanForm(f => ({ ...f, category: e.target.value as any }))}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                      >
+                        <option value="standard">Particuliers Standard</option>
+                        <option value="premium">Particuliers Premium</option>
+                        <option value="enterprise">Entreprises</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">Durée (mois)</label>
+                      <select
+                        value={planForm.duration}
+                        onChange={e => setPlanForm(f => ({ ...f, duration: Number(e.target.value) }))}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                      >
+                        <option value={1}>1 mois</option>
+                        <option value={3}>3 mois</option>
+                        <option value={6}>6 mois</option>
+                        <option value={12}>12 mois</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">Prix (FCFA)</label>
+                      <input
+                        type="number"
+                        value={planForm.price}
+                        onChange={e => setPlanForm(f => ({ ...f, price: Number(e.target.value) }))}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                        placeholder="Ex: 3000"
+                        min={0}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">Nom interne</label>
+                      <input
+                        type="text"
+                        value={planForm.name}
+                        onChange={e => setPlanForm(f => ({ ...f, name: e.target.value }))}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                        placeholder="Ex: Standard 1 mois"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Nombre de personnes — enterprise only */}
+                  {planForm.category === 'enterprise' && (
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">Nombre de personnes</label>
+                      <input
+                        type="number"
+                        value={planForm.headcount}
+                        onChange={e => setPlanForm(f => ({ ...f, headcount: Math.max(1, Number(e.target.value) || 1) }))}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                        placeholder="Ex: 5"
+                        min={1}
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Nombre exact de collaborateurs pour cette formule
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">Avantages / Fonctionnalités</label>
+                    <div className="space-y-2">
+                      {planForm.features.map((feat, i) => (
+                        <div key={i} className="flex gap-2">
+                          <input
+                            type="text"
+                            value={feat}
+                            onChange={e => updateFeature(i, e.target.value)}
+                            className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                            placeholder={`Avantage ${i + 1}`}
+                          />
+                          <button onClick={() => removeFeature(i)} className="text-gray-400 hover:text-red-500">
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={addFeature} className="mt-2 flex items-center gap-1 text-sm text-primary-600 hover:text-primary-800">
+                      <Plus className="h-4 w-4" /> Ajouter un avantage
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-4">
+                    <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                      <input type="checkbox" checked={planForm.isPopular} onChange={e => setPlanForm(f => ({ ...f, isPopular: e.target.checked }))} />
+                      Populaire
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                      <input type="checkbox" checked={planForm.isActive} onChange={e => setPlanForm(f => ({ ...f, isActive: e.target.checked }))} />
+                      Actif
+                    </label>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-end gap-3">
+                  <Button variant="outline" onClick={() => setShowPlanForm(false)} disabled={planSaving}>Annuler</Button>
+                  <Button variant="primary" onClick={savePlan} isLoading={planSaving}>
+                    {editingPlan ? 'Enregistrer' : 'Créer'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── SUBSCRIPTIONS TAB ── */}
+      {activeTab === 'subscriptions' && (
+      <div>
       <div className="mb-6 grid gap-4 sm:grid-cols-4">
         <Card padding="md">
           <div className="flex items-center gap-3">
@@ -490,6 +1021,8 @@ export default function AdminSubscriptionsPage() {
             </div>
           </div>
         </div>
+      )}
+      </div>
       )}
     </div>
   );

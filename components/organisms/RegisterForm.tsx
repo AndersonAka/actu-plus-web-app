@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Input, Alert, Divider } from '@/components/atoms';
 import { SocialLoginButtons } from '@/components/molecules';
-import { Mail, Lock, User, Phone } from 'lucide-react';
+import { Mail, Lock, User, Phone, Building2 } from 'lucide-react';
 
 const registerSchema = z.object({
   civility: z.enum(['M.', 'Mme'], { message: 'La civilité est requise' }),
@@ -18,6 +18,7 @@ const registerSchema = z.object({
   phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Numéro de téléphone invalide (format: +225XXXXXXXXX)').optional().or(z.literal('')),
   password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
   confirmPassword: z.string(),
+  enterpriseReferenceCode: z.string().optional().or(z.literal('')),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Les mots de passe ne correspondent pas',
   path: ['confirmPassword'],
@@ -43,7 +44,11 @@ const RegisterForm = () => {
     setError(null);
 
     try {
-      const { confirmPassword, ...registerData } = data;
+      const { confirmPassword, enterpriseReferenceCode, ...baseData } = data;
+      const registerData = {
+        ...baseData,
+        ...(enterpriseReferenceCode?.trim() && { enterpriseReferenceCode: enterpriseReferenceCode.trim() }),
+      };
       
       const response = await fetch('/api/proxy/auth/register', {
         method: 'POST',
@@ -57,8 +62,7 @@ const RegisterForm = () => {
         throw new Error(result.message || "Erreur lors de l'inscription");
       }
 
-      router.push('/');
-      router.refresh();
+      router.push(`/verify-email?email=${encodeURIComponent(registerData.email)}`);
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue');
     } finally {
@@ -145,6 +149,18 @@ const RegisterForm = () => {
           {...register('phone')}
           hint="Format international sans espaces (ex: +2250700000000)"
         />
+
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <p className="mb-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Vous êtes un employé d'entreprise ?</p>
+          <Input
+            label="Code de référence entreprise (optionnel)"
+            placeholder="ENT-XXXX-XXXX"
+            leftIcon={<Building2 className="h-5 w-5" />}
+            error={errors.enterpriseReferenceCode?.message}
+            {...register('enterpriseReferenceCode')}
+            hint="Renseignez le code transmis par votre entreprise pour bénéficier de l'abonnement inclus"
+          />
+        </div>
 
         <Input
           label="Mot de passe"

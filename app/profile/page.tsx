@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Header, Footer } from '@/components/organisms';
 import { Button, Input, Alert } from '@/components/atoms';
-import { User, Mail, Phone, Calendar, Crown, Heart, Bell, Shield, LogOut } from 'lucide-react';
+import { User, Mail, Phone, Calendar, Crown, Heart, Bell, Shield, LogOut, Trash2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -24,6 +24,10 @@ export default function ProfilePage() {
   });
   const [subscription, setSubscription] = useState<any>(null);
   const [loadingSubscription, setLoadingSubscription] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -70,6 +74,31 @@ export default function ProfilePage() {
     }
   }, [isAuthenticated, authLoading]);
 
+  const handleDeleteAccount = async () => {
+    if (!deletePassword.trim()) {
+      setDeleteError('Veuillez saisir votre mot de passe');
+      return;
+    }
+    setIsDeletingAccount(true);
+    setDeleteError(null);
+    try {
+      const response = await fetch('/api/proxy/users/me', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: deletePassword }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Erreur lors de la suppression');
+      }
+      router.push('/login');
+    } catch (err: any) {
+      setDeleteError(err.message || 'Une erreur est survenue');
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
+
   const handleSave = async () => {
     setIsLoading(true);
     setError(null);
@@ -115,6 +144,7 @@ export default function ProfilePage() {
   }
 
   return (
+    <>
     <div className="flex min-h-screen flex-col bg-gray-50">
       <Header />
       <main className="flex-1 py-8">
@@ -342,11 +372,90 @@ export default function ProfilePage() {
                 <LogOut className="h-5 w-5" />
                 <span className="font-medium">Se déconnecter</span>
               </button>
+
+              {/* Delete Account */}
+              <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                  <h3 className="font-semibold text-red-900">Zone de danger</h3>
+                </div>
+                <p className="mb-3 text-sm text-red-700">
+                  La suppression de votre compte est irréversible. Toutes vos données seront définitivement effacées.
+                </p>
+                <button
+                  onClick={() => { setShowDeleteModal(true); setDeleteError(null); setDeletePassword(''); }}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-400 bg-white p-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-600 hover:text-white"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Supprimer mon compte
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </main>
       <Footer />
     </div>
+
+    {/* Modal de confirmation de suppression */}
+    {showDeleteModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+        <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+              <AlertTriangle className="h-6 w-6 text-red-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Supprimer mon compte</h3>
+              <p className="text-sm text-gray-500">Cette action est irréversible</p>
+            </div>
+          </div>
+
+          <p className="mb-4 text-sm text-gray-600">
+            Vous êtes sur le point de supprimer définitivement votre compte et toutes vos données.
+            Pour confirmer, entrez votre mot de passe.
+          </p>
+
+          {deleteError && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {deleteError}
+            </div>
+          )}
+
+          <div className="mb-6">
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">
+              Mot de passe
+            </label>
+            <input
+              type="password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleDeleteAccount()}
+              placeholder="Votre mot de passe actuel"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+              autoFocus
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => { setShowDeleteModal(false); setDeletePassword(''); setDeleteError(null); }}
+              disabled={isDeletingAccount}
+              className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={handleDeleteAccount}
+              disabled={isDeletingAccount || !deletePassword.trim()}
+              className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isDeletingAccount ? 'Suppression...' : 'Supprimer définitivement'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

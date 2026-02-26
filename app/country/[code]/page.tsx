@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Article, ArticleSection } from '@/types/article.types';
@@ -47,6 +47,7 @@ function mapArticles(articles: any): Article[] {
 
 export default function CountryPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const code = params.code as string;
   const { user, isAuthenticated } = useAuth();
   
@@ -58,7 +59,9 @@ export default function CountryPage() {
   const [focusArticle, setFocusArticle] = useState<Article | null>(null);
   const [chroniqueArticle, setChroniqueArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<string>('resume');
+  const [activeSection, setActiveSection] = useState<string>(
+    searchParams.get('tab') || 'resume'
+  );
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [canAccessCountryPage, setCanAccessCountryPage] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
@@ -488,7 +491,7 @@ export default function CountryPage() {
         </div>
 
         {/* Active Section Content */}
-        <section className="rounded-2xl bg-white p-6 shadow-lg border border-gray-100 animate-fade-in">
+        <section className="rounded-2xl p-6  animate-fade-in">
           {renderSection()}
         </section>
 

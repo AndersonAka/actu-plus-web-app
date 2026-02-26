@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button, Card, CardHeader, CardTitle, CardContent, Input, TextArea, Alert } from '@/components/atoms';
-import { Save, Globe, Mail, Shield, Loader2 } from 'lucide-react';
+import { Save, Globe, Mail, Shield, Clock } from 'lucide-react';
 
 export default function AdminSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -18,6 +18,7 @@ export default function AdminSettingsPage() {
     enableNotifications: true,
     enablePremiumContent: true,
     maintenanceMode: false,
+    cutOffTime: '07:30',
   });
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export default function AdminSettingsPage() {
             enableNotifications: data.enableNotifications ?? true,
             enablePremiumContent: data.enablePremiumContent ?? true,
             maintenanceMode: data.maintenanceMode ?? false,
+            cutOffTime: data.cutOffTime || '07:30',
           });
         }
       } catch (err) {
@@ -188,6 +190,33 @@ export default function AdminSettingsPage() {
                 <p className="text-sm text-warning-700">Affiche une page de maintenance aux visiteurs</p>
               </div>
             </label>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary-600" />
+              <CardTitle>Cut-off time éditorial</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                Heure de début de la journée
+              </label>
+              <input
+                type="time"
+                value={settings.cutOffTime}
+                onChange={(e) => setSettings(prev => ({ ...prev, cutOffTime: e.target.value }))}
+                className="rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+              <p className="mt-2 text-sm text-gray-500">
+                Avant cette heure, la page d'accueil affiche les articles de la journée précédente.
+                Après cette heure, elle affiche uniquement les articles du jour en cours.
+                Actuellement : <strong>{settings.cutOffTime}</strong>
+              </p>
+            </div>
           </CardContent>
         </Card>
 

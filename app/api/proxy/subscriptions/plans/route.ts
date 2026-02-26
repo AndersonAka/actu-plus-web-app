@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { apiConfig } from '@/config/api.config';
+import { authConfig } from '@/lib/auth/config';
 
 // GET /api/proxy/subscriptions/plans - Liste des plans d'abonnement (public)
 export async function GET(request: NextRequest) {
@@ -28,5 +30,26 @@ export async function GET(request: NextRequest) {
       { message: error.message || 'Erreur lors de la récupération des plans' },
       { status: 500 },
     );
+  }
+}
+
+// POST /api/proxy/subscriptions/plans - Créer un plan (Admin)
+export async function POST(request: NextRequest) {
+  try {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get(authConfig.cookies.accessToken)?.value;
+    if (!accessToken) return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
+
+    const body = await request.json();
+    const response = await fetch(`${apiConfig.baseUrl}/api/subscriptions/plans`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    if (!response.ok) return NextResponse.json(data, { status: response.status });
+    return NextResponse.json(data, { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json({ message: error.message || 'Erreur' }, { status: 500 });
   }
 }

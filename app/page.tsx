@@ -107,7 +107,6 @@ async function getSummaryArticles(): Promise<Article[]> {
 }
 
 export default async function HomePage() {
-  
   const [featuredArticles, focusArticles, summaryArticles] = await Promise.all([
     getFeaturedArticles(),
     getFocusArticles(),
@@ -182,7 +181,7 @@ export default async function HomePage() {
                       {focusArticles.map((article) => (
                         <Link
                           key={article.id}
-                          href={`/articles/${article.id}${article.country?.code ? `?from=${article.country.code.toLowerCase()}` : ''}`}
+                          href={article.country?.code ? `/country/${article.country.code.toLowerCase()}?tab=focus` : `/articles/${article.id}`}
                           className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
                         >
                           <div className="relative aspect-[16/10] w-full overflow-hidden">

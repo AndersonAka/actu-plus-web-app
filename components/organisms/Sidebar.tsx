@@ -23,6 +23,8 @@ import {
   LogOut,
   BarChart3,
   Eye,
+  MessageSquare,
+  Building2,
 } from 'lucide-react';
 
 export interface SidebarProps {
@@ -35,22 +37,29 @@ const Sidebar = ({ variant }: SidebarProps) => {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchUnreadCount = async () => {
       try {
-        const response = await fetch('/api/proxy/notifications/unread-count');
+        const response = await fetch('/api/proxy/notifications/unread-count', {
+          signal: controller.signal,
+        });
         if (response.ok) {
           const data = await response.json();
           setUnreadCount(data.count || 0);
         }
-      } catch (error) {
-        console.error('Error fetching unread count:', error);
+      } catch {
+        // Silently ignore (réseau indisponible ou composant démonté)
       }
     };
 
     fetchUnreadCount();
     // Rafraîchir toutes les 30 secondes
     const interval = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      controller.abort();
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -86,6 +95,8 @@ const Sidebar = ({ variant }: SidebarProps) => {
       { href: '/admin/categories', label: 'Catégories', icon: Tag },
       { href: '/admin/countries', label: 'Pays', icon: Globe },
       { href: '/admin/subscriptions', label: 'Abonnements', icon: CreditCard },
+      { href: '/admin/enterprise-subscriptions', label: 'Comptes Entreprise', icon: Building2 },
+      { href: '/admin/messages', label: 'Messages', icon: MessageSquare },
       { href: '/admin/notifications', label: 'Notifications', icon: Bell },
       { href: '/admin/settings', label: 'Paramètres', icon: Settings },
     ],

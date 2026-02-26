@@ -82,29 +82,36 @@ const NotificationDropdown = ({ variant = 'header', className }: NotificationDro
         const notifList = Array.isArray(payload) ? payload : (payload?.data || []);
         setNotifications(notifList);
       }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
+    } catch {
+      // Silently ignore
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fetchUnreadCount = async () => {
-    try {
-      const response = await fetch('/api/proxy/notifications/unread-count');
-      if (response.ok) {
-        const data = await response.json();
-        setUnreadCount(data.count || 0);
-      }
-    } catch (error) {
-      console.error('Error fetching unread count:', error);
-    }
-  };
-
   useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await fetch('/api/proxy/notifications/unread-count', {
+          signal: controller.signal,
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setUnreadCount(data.count || 0);
+        }
+      } catch {
+        // Silently ignore (réseau indisponible ou composant démonté)
+      }
+    };
+
     fetchUnreadCount();
     const interval = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      controller.abort();
+    };
   }, []);
 
   useEffect(() => {

@@ -58,7 +58,7 @@ export default function ArchivesPage() {
       setError(null);
       
       // Charger les articles archivés via l'API articles avec status=archived
-      const response = await fetch('/api/proxy/articles?status=archived&limit=50');
+      const response = await fetch('/api/proxy/articles?isArchive=true&limit=50');
       
       if (!response.ok) {
         throw new Error('Erreur lors du chargement des archives');

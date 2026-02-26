@@ -30,6 +30,7 @@ import {
 const contactSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
   email: z.string().email('Email invalide'),
+  phone: z.string().optional(),
   subject: z.string().min(5, 'Le sujet doit contenir au moins 5 caractères'),
   message: z.string().min(20, 'Le message doit contenir au moins 20 caractères'),
   type: z.enum(['general', 'support', 'partnership', 'press']),
@@ -276,6 +277,20 @@ export default function ContactPage() {
                       </div>
                     </div>
 
+                    {/* Phone */}
+                    <div>
+                      <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-gray-700">
+                        Téléphone <span className="text-gray-400 font-normal">(optionnel)</span>
+                      </label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        {...register('phone')}
+                        className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                        placeholder="+225 07 00 00 00 00"
+                      />
+                    </div>
+
                     {/* Subject */}
                     <div>
                       <label htmlFor="subject" className="mb-1.5 block text-sm font-medium text-gray-700">
@@ -382,7 +397,7 @@ export default function ContactPage() {
                 </div>
 
                 {/* FAQ Link */}
-                <div className="rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 p-8 text-white shadow-lg">
+                {/* <div className="rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 p-8 text-white shadow-lg">
                   <h3 className="mb-2 text-xl font-bold">
                     Questions fréquentes ?
                   </h3>
@@ -394,7 +409,7 @@ export default function ContactPage() {
                       Voir la FAQ
                     </Button>
                   </Link>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

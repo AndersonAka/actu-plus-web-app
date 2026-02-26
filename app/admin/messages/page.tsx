@@ -10,6 +10,7 @@ import {
   X,
   Clock,
   User,
+  Phone,
   MessageSquare,
   RefreshCw,
   Filter,
@@ -19,6 +20,7 @@ interface ContactMessage {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   subject: string;
   message: string;
   type: 'general' | 'support' | 'partnership' | 'press';
@@ -308,12 +310,18 @@ export default function AdminMessagesPage() {
                     <h3 className="text-lg font-semibold text-gray-900">
                       {selectedMessage.subject}
                     </h3>
-                    <div className="mt-1 flex items-center gap-3 text-sm text-gray-500">
+                    <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-gray-500">
                       <span className="flex items-center gap-1">
                         <User className="h-4 w-4" />
                         {selectedMessage.name}
                       </span>
                       <span>{selectedMessage.email}</span>
+                      {selectedMessage.phone && (
+                        <span className="flex items-center gap-1">
+                          <Phone className="h-4 w-4" />
+                          {selectedMessage.phone}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => setSelectedMessage(null)}>
