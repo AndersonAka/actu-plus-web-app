@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { Button, Card, EmptyState } from '@/components/atoms';
 import { Pagination, StatusBadge } from '@/components/molecules';
 import { Article, ArticleStatus } from '@/types';
-import { Plus, Filter } from 'lucide-react';
+import { Plus, Search, X, RefreshCw } from 'lucide-react';
 
 const getArticleStatus = (article: Article): ArticleStatus => {
   if (article.status) return article.status;
@@ -13,50 +13,93 @@ const getArticleStatus = (article: Article): ArticleStatus => {
   return ArticleStatus.DRAFT;
 };
 
+const statusOptions = [
+  { value: '', label: 'Tous les statuts' },
+  { value: ArticleStatus.DRAFT, label: 'Brouillons' },
+  { value: ArticleStatus.PENDING, label: 'En attente' },
+  { value: ArticleStatus.APPROVED, label: 'Validés' },
+  { value: ArticleStatus.REJECTED, label: 'Rejetés' },
+  { value: ArticleStatus.PUBLISHED, label: 'Publiés' },
+];
+
 export default function VeilleurArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [search, setSearch] = useState<string>('');
+  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounce la recherche (400ms)
+  useEffect(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedSearch(search);
+      setCurrentPage(1);
+    }, 400);
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, [search]);
+
+  const fetchArticles = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // Récupérer tous les articles sans filtrage backend (compatibilité prod)
+      const response = await fetch('/api/proxy/articles/my?page=1&limit=1000');
+      if (response.ok) {
+        const result = await response.json();
+        const responseData = result.data || result;
+        let allArticles: Article[] = responseData.data || responseData.articles || responseData;
+        if (!Array.isArray(allArticles)) allArticles = [];
+
+        // Filtrage côté client
+        if (statusFilter) {
+          allArticles = allArticles.filter((a) => getArticleStatus(a) === statusFilter);
+        }
+        if (debouncedSearch) {
+          const q = debouncedSearch.toLowerCase();
+          allArticles = allArticles.filter((a) => a.title?.toLowerCase().includes(q));
+        }
+
+        // Pagination côté client
+        const pageSize = 10;
+        const totalFiltered = allArticles.length;
+        const totalPagesCalc = Math.max(1, Math.ceil(totalFiltered / pageSize));
+        const start = (currentPage - 1) * pageSize;
+        const paginated = allArticles.slice(start, start + pageSize);
+
+        setArticles(paginated);
+        setTotal(totalFiltered);
+        setTotalPages(totalPagesCalc);
+      }
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, statusFilter, debouncedSearch]);
 
   useEffect(() => {
-    const fetchArticles = async () => {
-      setIsLoading(true);
-      try {
-        const params = new URLSearchParams();
-        params.set('page', String(currentPage));
-        params.set('limit', '10');
-        if (statusFilter) params.set('status', statusFilter);
-
-        const response = await fetch(`/api/proxy/articles/my?${params.toString()}`);
-        if (response.ok) {
-          const result = await response.json();
-          // Le backend enveloppe la réponse dans { success, data, timestamp }
-          // data contient { data: articles[], meta: { page, limit, total, totalPages } }
-          const responseData = result.data || result;
-          const articlesData = responseData.data || responseData.articles || responseData;
-          setArticles(Array.isArray(articlesData) ? articlesData : []);
-          setTotalPages(responseData.meta?.totalPages || responseData.totalPages || 1);
-        }
-      } catch (error) {
-        console.error('Error fetching articles:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchArticles();
-  }, [currentPage, statusFilter]);
+  }, [fetchArticles]);
 
-  const statusOptions = [
-    { value: '', label: 'Tous les statuts' },
-    { value: ArticleStatus.DRAFT, label: 'Brouillons' },
-    { value: ArticleStatus.PENDING, label: 'En attente' },
-    { value: ArticleStatus.APPROVED, label: 'Validés' },
-    { value: ArticleStatus.REJECTED, label: 'Rejetés' },
-    { value: ArticleStatus.PUBLISHED, label: 'Publiés' },
-  ];
+  const handleStatusChange = (value: string) => {
+    setStatusFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handleReset = () => {
+    setSearch('');
+    setDebouncedSearch('');
+    setStatusFilter('');
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = search !== '' || statusFilter !== '';
 
   return (
     <div>
@@ -72,99 +115,140 @@ export default function VeilleurArticlesPage() {
         </Link>
       </div>
 
-      <Card className="mb-6" padding="md">
-        <div className="flex items-center gap-4">
-          <Filter className="h-5 w-5 text-gray-400" />
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-          >
-            {statusOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </Card>
+      <Card padding="none">
+        {/* Barre de filtres */}
+        <div className="flex flex-col gap-2 border-b border-gray-200 px-4 py-3 sm:flex-row sm:items-center">
+          {/* Champ de recherche */}
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Rechercher par titre..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-8 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
 
-      {isLoading ? (
-        <div className="space-y-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-20 animate-pulse rounded-lg bg-gray-100" />
-          ))}
+          <div className="flex items-center gap-2">
+            {/* Filtre par statut */}
+            <select
+              value={statusFilter}
+              onChange={(e) => handleStatusChange(e.target.value)}
+              className="rounded-lg border border-gray-200 bg-gray-50 py-2 pl-3 pr-8 text-sm text-gray-700 focus:border-primary-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            >
+              {statusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+
+            {/* Bouton réinitialiser */}
+            {hasActiveFilters && (
+              <button
+                onClick={handleReset}
+                className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Réinitialiser
+              </button>
+            )}
+
+            {/* Compteur */}
+            {!isLoading && (
+              <span className="whitespace-nowrap text-sm text-gray-400">
+                {total} article{total !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
         </div>
-      ) : articles.length === 0 ? (
-        <EmptyState
-          title="Aucun article"
-          description="Vous n'avez pas encore créé d'article."
-          action={{
-            label: 'Créer un article',
-            onClick: () => window.location.href = '/veilleur/articles/create',
-          }}
-        />
-      ) : (
-        <>
-          <Card padding="none">
-            <div className="divide-y divide-gray-100">
-              {articles.map((article) => {
-                const status = getArticleStatus(article);
-                const canEdit = status === ArticleStatus.DRAFT;
-                
-                return (
-                  <div
-                    key={article.id}
-                    className="flex items-center justify-between p-4 hover:bg-gray-50"
-                  >
-                    <div className="min-w-0 flex-1">
-                      {canEdit ? (
-                        <Link
-                          href={`/veilleur/articles/${article.id}/edit`}
-                          className="font-medium text-gray-900 hover:text-primary-600"
-                        >
-                          {article.title}
-                        </Link>
-                      ) : (
-                        <span className="font-medium text-gray-900">{article.title}</span>
-                      )}
-                      <div className="mt-1 flex items-center gap-3 text-sm text-gray-500">
-                        <span>{article.category?.name || 'Sans catégorie'}</span>
-                        <span>•</span>
-                        <span>{new Date(article.createdAt).toLocaleDateString('fr-FR')}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <StatusBadge status={status} />
-                      {canEdit ? (
-                        <Link href={`/veilleur/articles/${article.id}/edit`}>
-                          <Button variant="ghost" size="sm">Modifier</Button>
-                        </Link>
-                      ) : (
-                        <Link href={`/veilleur/articles/${article.id}`}>
-                          <Button variant="ghost" size="sm">Voir</Button>
-                        </Link>
-                      )}
+
+        {/* Liste des articles */}
+        {isLoading ? (
+          <div className="divide-y divide-gray-100">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-16 animate-pulse bg-gray-50 px-4 py-4">
+                <div className="h-4 w-2/3 rounded bg-gray-200" />
+                <div className="mt-2 h-3 w-1/3 rounded bg-gray-100" />
+              </div>
+            ))}
+          </div>
+        ) : articles.length === 0 ? (
+          <div className="py-12">
+            <EmptyState
+              title={hasActiveFilters ? 'Aucun résultat' : 'Aucun article'}
+              description={
+                hasActiveFilters
+                  ? 'Aucun article ne correspond à vos critères de recherche.'
+                  : "Vous n'avez pas encore créé d'article."
+              }
+              action={
+                hasActiveFilters
+                  ? { label: 'Réinitialiser les filtres', onClick: handleReset }
+                  : { label: 'Créer un article', onClick: () => (window.location.href = '/veilleur/articles/create') }
+              }
+            />
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {articles.map((article) => {
+              const status = getArticleStatus(article);
+              const canEdit = status === ArticleStatus.DRAFT || status === ArticleStatus.REJECTED;
+
+              return (
+                <div
+                  key={article.id}
+                  className="flex items-center justify-between p-4 hover:bg-gray-50"
+                >
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      href={canEdit ? `/veilleur/articles/${article.id}/edit` : `/veilleur/articles/${article.id}`}
+                      className="font-medium text-gray-900 hover:text-primary-600"
+                    >
+                      {article.title}
+                    </Link>
+                    <div className="mt-1 flex items-center gap-3 text-sm text-gray-500">
+                      <span>{article.category?.name || 'Sans catégorie'}</span>
+                      <span>•</span>
+                      <span>{new Date(article.createdAt).toLocaleDateString('fr-FR')}</span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </Card>
+                  <div className="flex items-center gap-3">
+                    <StatusBadge status={status} />
+                    {canEdit ? (
+                      <Link href={`/veilleur/articles/${article.id}/edit`}>
+                        <Button variant="ghost" size="sm">Modifier</Button>
+                      </Link>
+                    ) : (
+                      <Link href={`/veilleur/articles/${article.id}`}>
+                        <Button variant="ghost" size="sm">Voir</Button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
 
-          {totalPages > 1 && (
-            <div className="mt-6">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-              />
-            </div>
-          )}
-        </>
+      {totalPages > 1 && !isLoading && (
+        <div className="mt-6">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
       )}
     </div>
   );

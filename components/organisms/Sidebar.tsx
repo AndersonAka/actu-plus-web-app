@@ -25,6 +25,7 @@ import {
   Eye,
   MessageSquare,
   Building2,
+  HelpCircle,
 } from 'lucide-react';
 
 export interface SidebarProps {
@@ -77,6 +78,7 @@ const Sidebar = ({ variant }: SidebarProps) => {
       { href: '/veilleur/articles', label: 'Mes articles', icon: FileText },
       { href: '/veilleur/articles/create', label: 'Nouvel article', icon: Send },
       { href: '/veilleur/notifications', label: 'Notifications', icon: Bell },
+      { href: '/veilleur/aide', label: 'Aide', icon: HelpCircle },
     ],
     moderateur: [
       { href: '/moderateur', label: 'Tableau de bord', icon: LayoutDashboard, exact: true },
@@ -85,6 +87,7 @@ const Sidebar = ({ variant }: SidebarProps) => {
       { href: '/moderateur/rejected', label: 'Rejetés', icon: XCircle },
       { href: '/moderateur/published', label: 'Publiés', icon: FileText },
       { href: '/moderateur/notifications', label: 'Notifications', icon: Bell },
+      { href: '/moderateur/aide', label: 'Aide', icon: HelpCircle },
     ],
     admin: [
       { href: '/admin', label: 'Tableau de bord', icon: LayoutDashboard, exact: true },
@@ -99,6 +102,7 @@ const Sidebar = ({ variant }: SidebarProps) => {
       { href: '/admin/messages', label: 'Messages', icon: MessageSquare },
       { href: '/admin/notifications', label: 'Notifications', icon: Bell },
       { href: '/admin/settings', label: 'Paramètres', icon: Settings },
+      { href: '/admin/aide', label: 'Aide', icon: HelpCircle },
     ],
   };
 

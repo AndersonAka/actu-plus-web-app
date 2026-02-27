@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Button, Card, CardHeader, CardTitle, CardContent, Badge, Alert, TextArea } from '@/components/atoms';
 import { StatusBadge } from '@/components/molecules';
 import { Article, ArticleStatus } from '@/types';
-import { ArrowLeft, CheckCircle, XCircle, Send, Calendar, User, MapPin, Tag, Link as LinkIcon, Crown, Star, Clock, Layers, Save, EyeOff } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Send, Calendar, User, MapPin, Tag, Link as LinkIcon, Crown, Star, Clock, Layers, Save, EyeOff, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -536,6 +536,11 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
                 <Button variant="danger" onClick={() => setShowRejectModal(true)} leftIcon={<XCircle className="h-4 w-4" />}>
                   Rejeter
                 </Button>
+                <Link href={`/moderateur/articles/${articleId}/edit`}>
+                  <Button variant="secondary" leftIcon={<Pencil className="h-4 w-4" />}>
+                    Modifier l'article
+                  </Button>
+                </Link>
               </>
             )}
             {canPublish && (

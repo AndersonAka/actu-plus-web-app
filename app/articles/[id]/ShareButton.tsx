@@ -56,12 +56,12 @@ export function ShareButton({ title, excerpt, articleId }: ShareButtonProps) {
   };
 
   const shareLinks = [
-    {
-      name: 'Facebook',
-      icon: Facebook,
-      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-      color: 'hover:bg-blue-600 hover:text-white',
-    },
+    // {
+    //   name: 'Facebook',
+    //   icon: Facebook,
+    //   url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+    //   color: 'hover:bg-blue-600 hover:text-white',
+    // },
     {
       name: 'Twitter',
       icon: Twitter,

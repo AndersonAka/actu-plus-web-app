@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { Button, Input, TextArea, Select, Card, CardHeader, CardTitle, CardContent, Alert } from '@/components/atoms';
 import { RichTextEditor, ImageUpload } from '@/components/molecules';
 import { Category, Country } from '@/types';
-import { ArrowLeft, Save, Send, Plus, Trash2, Link as LinkIcon, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Link as LinkIcon, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 const sourceSchema = z.object({
@@ -33,26 +33,23 @@ interface Source {
 
 type ArticleFormData = z.infer<typeof articleSchema>;
 
-export default function EditArticlePage({ params }: { params: Promise<{ id: string }> }) {
+export default function ModerateurEditArticlePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [isLoadingArticle, setIsLoadingArticle] = useState(true);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [sources, setSources] = useState<Source[]>([]);
   const [articleData, setArticleData] = useState<any>(null);
-  const [showSubmitModal, setShowSubmitModal] = useState(false);
-  const [pendingFormData, setPendingFormData] = useState<ArticleFormData | null>(null);
 
   const {
     register,
     handleSubmit,
     control,
-    setValue,
     reset,
     formState: { errors },
   } = useForm<ArticleFormData>({
@@ -103,26 +100,21 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
         if (response.ok) {
           const result = await response.json();
           const article = result.data || result;
-          
-          console.log('Article loaded:', article);
-          console.log('Sources:', article.sources);
-          
-          // Vérifier si l'article est modifiable (seulement brouillon ou rejeté)
+
           const status = article.status || 'draft';
-          if (status !== 'draft' && status !== 'rejected') {
-            setError('Cet article ne peut plus être modifié car il est en attente de validation ou déjà publié.');
-            router.push('/veilleur/articles');
+          if (status !== 'pending') {
+            setError('Seuls les articles en attente de validation peuvent être modifiés par le modérateur.');
+            router.push(`/moderateur/articles/${id}`);
             return;
           }
-          // Pour un article rejeté, conserver le statut rejected jusqu'à re-soumission
-          
+
           setArticleData(article);
         } else {
           setError('Article non trouvé');
         }
       } catch (error) {
         console.error('Error fetching article:', error);
-        setError('Erreur lors du chargement de l\'article');
+        setError("Erreur lors du chargement de l'article");
       } finally {
         setIsLoadingArticle(false);
       }
@@ -133,7 +125,6 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
     }
   }, [id, router]);
 
-  // Initialiser le formulaire une fois que les données et les catégories/pays sont chargés
   useEffect(() => {
     if (articleData && isDataLoaded) {
       reset({
@@ -144,7 +135,7 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
         countryId: articleData.countryId || '',
         coverImage: articleData.imageUrl || '',
       });
-      
+
       if (articleData.sources) {
         let sourcesData = articleData.sources;
         if (typeof sourcesData === 'string') {
@@ -159,13 +150,13 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
     }
   }, [articleData, isDataLoaded, reset]);
 
-  const onSubmit = async (data: ArticleFormData, submitForReview: boolean = false) => {
+  const onSubmit = async (data: ArticleFormData) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const { coverImage, ...formData } = data;
-      
+
       const payload = {
         title: formData.title,
         excerpt: formData.excerpt || undefined,
@@ -173,12 +164,9 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
         categoryId: formData.categoryId,
         countryId: formData.countryId || undefined,
         imageUrl: coverImage || undefined,
-        sources: sources.filter(s => s && s.name && s.name.trim() !== ''),
+        sources: sources.filter((s) => s && s.name && s.name.trim() !== ''),
       };
-      
-      console.log('Submitting article update:', payload);
-      console.log('Form data received:', data);
-      
+
       const response = await fetch(`/api/proxy/articles/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -188,20 +176,13 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || "Erreur lors de la modification");
+        throw new Error(result.message || 'Erreur lors de la modification');
       }
 
-      if (submitForReview) {
-        const submitResponse = await fetch(`/api/proxy/articles/${id}/submit`, { method: 'POST' });
-        const submitResult = await submitResponse.json();
-        console.log('Submit response:', submitResult);
-        
-        if (!submitResponse.ok) {
-          throw new Error(submitResult.message || "Erreur lors de la soumission pour validation");
-        }
-      }
-
-      router.push('/veilleur/articles');
+      setSuccess('Article modifié avec succès. Retour à la page d\'examen...');
+      setTimeout(() => {
+        router.push(`/moderateur/articles/${id}`);
+      }, 1500);
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue');
     } finally {
@@ -209,25 +190,7 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
     }
   };
 
-  const handleSaveDraft = handleSubmit((data) => onSubmit(data, false));
-  
-  const handleSubmitForReview = handleSubmit((data) => {
-    setPendingFormData(data);
-    setShowSubmitModal(true);
-  });
-
-  const confirmSubmitForReview = async () => {
-    if (pendingFormData) {
-      setShowSubmitModal(false);
-      await onSubmit(pendingFormData, true);
-      setPendingFormData(null);
-    }
-  };
-
-  const cancelSubmitForReview = () => {
-    setShowSubmitModal(false);
-    setPendingFormData(null);
-  };
+  const handleSave = handleSubmit((data) => onSubmit(data));
 
   const addSource = () => {
     setSources([...sources, { name: '', url: '' }]);
@@ -255,22 +218,27 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
     <div>
       <div className="mb-6">
         <Link
-          href="/veilleur/articles"
+          href={`/moderateur/articles/${id}`}
           className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600"
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour aux articles
+          Retour à l'examen de l'article
         </Link>
       </div>
 
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Modifier l'article</h1>
-        <p className="mt-1 text-gray-600">Modifiez les informations de votre article</p>
+        <p className="mt-1 text-gray-600">Apportez vos corrections avant la validation</p>
       </div>
 
       {error && (
         <Alert variant="error" className="mb-6" onClose={() => setError(null)}>
           {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert variant="success" className="mb-6">
+          {success}
         </Alert>
       )}
 
@@ -429,59 +397,23 @@ export default function EditArticlePage({ params }: { params: Promise<{ id: stri
           </CardContent>
         </Card>
 
-        <div className="flex items-center justify-end gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleSaveDraft}
-            isLoading={isSaving}
-            leftIcon={<Save className="h-4 w-4" />}
-          >
-            Enregistrer
-          </Button>
+        <div className="flex items-center justify-between">
+          <Link href={`/moderateur/articles/${id}`}>
+            <Button type="button" variant="outline">
+              Annuler
+            </Button>
+          </Link>
           <Button
             type="button"
             variant="primary"
-            onClick={handleSubmitForReview}
+            onClick={handleSave}
             isLoading={isLoading}
-            leftIcon={<Send className="h-4 w-4" />}
+            leftIcon={<Save className="h-4 w-4" />}
           >
-            Soumettre pour validation
+            Enregistrer les modifications
           </Button>
         </div>
       </form>
-
-      {/* Modal de confirmation pour soumission */}
-      {showSubmitModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Soumettre pour validation ?
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Êtes-vous sûr de vouloir soumettre cet article pour validation ? 
-              Une fois soumis, l'article ne sera plus modifiable jusqu'à ce qu'un modérateur le valide ou le rejette.
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={cancelSubmitForReview}
-              >
-                Annuler
-              </Button>
-              <Button
-                type="button"
-                variant="primary"
-                onClick={confirmSubmitForReview}
-                isLoading={isLoading}
-              >
-                Confirmer la soumission
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
