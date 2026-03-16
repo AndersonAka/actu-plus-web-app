@@ -4,7 +4,7 @@ import { apiConfig } from '@/config/api.config';
 // GET /api/proxy/articles/summaries-by-country - Récupérer les résumés par pays
 export async function GET() {
   try {
-    const response = await fetch(`${apiConfig.baseUrl}/api/articles/summaries-by-country`, {
+    const response = await fetch(`${apiConfig.baseUrl}/api/articles/summaries-by-country?publishedToday=true`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
