@@ -32,6 +32,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
   const [articleSection, setArticleSection] = useState<string>('');
   const [scheduledPublishAt, setScheduledPublishAt] = useState<string>('');
   const [isScheduled, setIsScheduled] = useState(false);
+  const [chronicleVisibilityDays, setChronicleVisibilityDays] = useState<number>(7);
 
   useEffect(() => {
     const init = async () => {
@@ -50,6 +51,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
           setIsFeaturedHome(isSummaryType ? false : (articleData.isFeaturedHome || false));
           setIsEssentiel(isSummaryType ? false : (articleData.articleSection === 'essentiel'));
           setArticleSection(isSummaryType ? '' : (articleData.articleSection === 'essentiel' ? '' : (articleData.articleSection || '')));
+          setChronicleVisibilityDays(articleData.chronicleVisibilityDays || 7);
         }
       } catch (error) {
         console.error('Error fetching article:', error);
@@ -199,6 +201,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
           articleSection: finalSection,
           scheduledPublishAt: isScheduled && scheduledPublishAt ? new Date(scheduledPublishAt).toISOString() : undefined,
           isScheduled,
+          chronicleVisibilityDays: finalSection === 'chronique' ? chronicleVisibilityDays : undefined,
         }),
       });
 
@@ -414,7 +417,14 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
               </label>
               <select
                 value={articleSection}
-                onChange={(e) => setArticleSection(e.target.value)}
+                onChange={(e) => {
+                  const newSection = e.target.value;
+                  setArticleSection(newSection);
+                  // Désactiver "À la une" si section Focus sélectionnée
+                  if (newSection === 'focus') {
+                    setIsFeaturedHome(false);
+                  }
+                }}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               >
                 <option value="">Sélectionner une section</option>
@@ -422,6 +432,28 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
                 <option value="focus">Focus (Premium)</option>
                 <option value="chronique">Chronique (Premium)</option>
               </select>
+
+              {/* Durée de visibilité pour les chroniques */}
+              {articleSection === 'chronique' && (
+                <div className="mt-3 rounded-lg bg-purple-50 border border-purple-200 p-4">
+                  <label className="block text-sm font-medium text-purple-800 mb-2">
+                    Durée de visibilité (jours)
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      min={1}
+                      max={30}
+                      value={chronicleVisibilityDays}
+                      onChange={(e) => setChronicleVisibilityDays(Math.max(1, Math.min(30, parseInt(e.target.value) || 7)))}
+                      className="w-24 rounded-lg border border-purple-300 px-3 py-2 text-center focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-purple-700">
+                      L'article sera visible pendant {chronicleVisibilityDays} jour{chronicleVisibilityDays > 1 ? 's' : ''} après publication
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -459,17 +491,22 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
             </label>
 
             {!isSummary && (
-              <label className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors">
+              <label className={`flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 ${articleSection === 'focus' ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-100'} transition-colors`}>
                 <input
                   type="checkbox"
                   checked={isFeaturedHome}
-                  onChange={(e) => setIsFeaturedHome(e.target.checked)}
+                  onChange={(e) => articleSection !== 'focus' && setIsFeaturedHome(e.target.checked)}
+                  disabled={articleSection === 'focus'}
                   className="h-5 w-5 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
                 />
                 <Star className="h-5 w-5 text-primary-500" />
                 <div>
                   <span className="font-medium text-gray-900">À la une</span>
-                  <p className="text-sm text-gray-500">Afficher dans le carrousel d'accueil (24h)</p>
+                  <p className="text-sm text-gray-500">
+                    {articleSection === 'focus' 
+                      ? 'Non disponible pour les articles Focus' 
+                      : 'Afficher dans le carrousel d\'accueil (24h)'}
+                  </p>
                 </div>
               </label>
             )}
