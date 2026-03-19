@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button, Card, EmptyState } from '@/components/atoms';
 import { Pagination, StatusBadge } from '@/components/molecules';
 import { Article } from '@/types';
-import { Eye, Clock } from 'lucide-react';
+import { Eye, Clock, Archive } from 'lucide-react';
 
 export default function ModerateurPendingPage() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -13,8 +13,7 @@ export default function ModerateurPendingPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    const fetchArticles = async () => {
+  const fetchArticles = async () => {
       setIsLoading(true);
       try {
         const response = await fetch(
@@ -45,8 +44,25 @@ export default function ModerateurPendingPage() {
       }
     };
 
+  useEffect(() => {
     fetchArticles();
   }, [currentPage]);
+
+  const handleArchive = async (articleId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir archiver cet article ?')) return;
+    try {
+      const response = await fetch(`/api/proxy/articles/${articleId}/archive`, { method: 'POST' });
+      if (response.ok) {
+        fetchArticles();
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Erreur lors de l\'archivage');
+      }
+    } catch (error) {
+      console.error('Archive error:', error);
+      alert('Erreur lors de l\'archivage');
+    }
+  };
 
   return (
     <div>
@@ -93,6 +109,15 @@ export default function ModerateurPendingPage() {
                         Examiner
                       </Button>
                     </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleArchive(article.id)}
+                      title="Archiver"
+                      className="text-gray-500 hover:text-warning-600"
+                    >
+                      <Archive className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               ))}

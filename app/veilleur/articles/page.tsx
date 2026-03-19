@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button, Card, EmptyState } from '@/components/atoms';
 import { Pagination, StatusBadge } from '@/components/molecules';
 import { Article, ArticleStatus } from '@/types';
-import { Plus, Search, X, RefreshCw } from 'lucide-react';
+import { Plus, Search, X, RefreshCw, Archive, ArchiveRestore } from 'lucide-react';
 
 const getArticleStatus = (article: Article): ArticleStatus => {
   if (article.status) return article.status;
@@ -20,6 +20,7 @@ const statusOptions = [
   { value: ArticleStatus.APPROVED, label: 'Validés' },
   { value: ArticleStatus.REJECTED, label: 'Rejetés' },
   { value: ArticleStatus.PUBLISHED, label: 'Publiés' },
+  { value: 'ARCHIVED', label: 'Archivés' },
 ];
 
 export default function VeilleurArticlesPage() {
@@ -57,8 +58,13 @@ export default function VeilleurArticlesPage() {
         if (!Array.isArray(allArticles)) allArticles = [];
 
         // Filtrage côté client
-        if (statusFilter) {
-          allArticles = allArticles.filter((a) => getArticleStatus(a) === statusFilter);
+        if (statusFilter === 'ARCHIVED') {
+          allArticles = allArticles.filter((a) => a.isArchive === true);
+        } else if (statusFilter) {
+          allArticles = allArticles.filter((a) => getArticleStatus(a) === statusFilter && !a.isArchive);
+        } else {
+          // Par défaut, ne pas afficher les archivés
+          allArticles = allArticles.filter((a) => !a.isArchive);
         }
         if (debouncedSearch) {
           const q = debouncedSearch.toLowerCase();
@@ -100,6 +106,38 @@ export default function VeilleurArticlesPage() {
   };
 
   const hasActiveFilters = search !== '' || statusFilter !== '';
+
+  const handleArchive = async (articleId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir archiver cet article ?')) return;
+    try {
+      const response = await fetch(`/api/proxy/articles/${articleId}/archive`, { method: 'POST' });
+      if (response.ok) {
+        fetchArticles();
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Erreur lors de l\'archivage');
+      }
+    } catch (error) {
+      console.error('Archive error:', error);
+      alert('Erreur lors de l\'archivage');
+    }
+  };
+
+  const handleUnarchive = async (articleId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir désarchiver cet article ?')) return;
+    try {
+      const response = await fetch(`/api/proxy/articles/${articleId}/unarchive`, { method: 'POST' });
+      if (response.ok) {
+        fetchArticles();
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Erreur lors du désarchivage');
+      }
+    } catch (error) {
+      console.error('Unarchive error:', error);
+      alert('Erreur lors du désarchivage');
+    }
+  };
 
   return (
     <div>
@@ -203,18 +241,21 @@ export default function VeilleurArticlesPage() {
             {articles.map((article) => {
               const status = getArticleStatus(article);
               const canEdit = status === ArticleStatus.DRAFT || status === ArticleStatus.REJECTED;
+              const canArchive = status === ArticleStatus.DRAFT && !article.isArchive;
+              const isArchived = article.isArchive === true;
 
               return (
                 <div
                   key={article.id}
-                  className="flex items-center justify-between p-4 hover:bg-gray-50"
+                  className={`flex items-center justify-between p-4 hover:bg-gray-50 ${isArchived ? 'bg-gray-50/50' : ''}`}
                 >
                   <div className="min-w-0 flex-1">
                     <Link
-                      href={canEdit ? `/veilleur/articles/${article.id}/edit` : `/veilleur/articles/${article.id}`}
+                      href={canEdit && !isArchived ? `/veilleur/articles/${article.id}/edit` : `/veilleur/articles/${article.id}`}
                       className="font-medium text-gray-900 hover:text-primary-600"
                     >
                       {article.title}
+                      {isArchived && <span className="ml-2 text-xs text-gray-400">(Archivé)</span>}
                     </Link>
                     <div className="mt-1 flex items-center gap-3 text-sm text-gray-500">
                       <span>{article.category?.name || 'Sans catégorie'}</span>
@@ -223,8 +264,40 @@ export default function VeilleurArticlesPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <StatusBadge status={status} />
-                    {canEdit ? (
+                    {isArchived ? (
+                      <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                        <Archive className="mr-1 h-3 w-3" />
+                        Archivé
+                      </span>
+                    ) : (
+                      <StatusBadge status={status} />
+                    )}
+                    {isArchived ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleUnarchive(article.id)}
+                        title="Désarchiver"
+                      >
+                        <ArchiveRestore className="h-4 w-4 mr-1" />
+                        Désarchiver
+                      </Button>
+                    ) : canArchive ? (
+                      <>
+                        <Link href={`/veilleur/articles/${article.id}/edit`}>
+                          <Button variant="ghost" size="sm">Modifier</Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleArchive(article.id)}
+                          title="Archiver"
+                          className="text-gray-500 hover:text-warning-600"
+                        >
+                          <Archive className="h-4 w-4" />
+                        </Button>
+                      </>
+                    ) : canEdit ? (
                       <Link href={`/veilleur/articles/${article.id}/edit`}>
                         <Button variant="ghost" size="sm">Modifier</Button>
                       </Link>

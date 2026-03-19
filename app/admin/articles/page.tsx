@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button, Card, EmptyState, Input, Select } from '@/components/atoms';
 import { Pagination, StatusBadge } from '@/components/molecules';
 import { Article, ArticleStatus } from '@/types';
-import { Eye, Search, FileText, Trash2, BarChart3, Clock, CheckCircle, Crown } from 'lucide-react';
+import { Eye, Search, FileText, Trash2, BarChart3, Clock, CheckCircle, Crown, XCircle } from 'lucide-react';
 
 export default function AdminArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -14,7 +14,7 @@ export default function AdminArticlesPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [stats, setStats] = useState({ total: 0, published: 0, pending: 0, premium: 0 });
+  const [stats, setStats] = useState({ total: 0, published: 0, pending: 0, rejected: 0, premium: 0 });
   const [statsLoaded, setStatsLoaded] = useState(false);
 
   const fetchGlobalStats = async () => {
@@ -70,9 +70,10 @@ export default function AdminArticlesPage() {
       // Calculate stats from fetched articles
       const published = allArticles.filter((a: any) => a.isPublished || a.status === 'published').length;
       const pending = allArticles.filter((a: any) => a.status === 'pending').length;
+      const rejected = allArticles.filter((a: any) => a.status === 'rejected').length;
       const premium = allArticles.filter((a: any) => a.isPremium).length;
       
-      setStats({ total: globalTotal, published, pending, premium });
+      setStats({ total: globalTotal, published, pending, rejected, premium });
       setStatsLoaded(true);
     } catch (error) {
       console.error('Error fetching global stats:', error);
@@ -153,7 +154,7 @@ export default function AdminArticlesPage() {
       </div>
 
       {/* Stats */}
-      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-5">
         <Card padding="md" className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100">
             <FileText className="h-5 w-5 text-primary-600" />
@@ -191,6 +192,19 @@ export default function AdminArticlesPage() {
               <div className="h-7 w-10 animate-pulse rounded bg-gray-200" />
             )}
             <p className="text-xs text-gray-500">En attente</p>
+          </div>
+        </Card>
+        <Card padding="md" className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-error-100">
+            <XCircle className="h-5 w-5 text-error-600" />
+          </div>
+          <div>
+            {statsLoaded ? (
+              <p className="text-2xl font-bold text-gray-900">{stats.rejected}</p>
+            ) : (
+              <div className="h-7 w-10 animate-pulse rounded bg-gray-200" />
+            )}
+            <p className="text-xs text-gray-500">Rejetés</p>
           </div>
         </Card>
         <Card padding="md" className="flex items-center gap-3">
