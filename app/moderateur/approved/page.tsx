@@ -5,19 +5,22 @@ import Link from 'next/link';
 import { Button, Card, EmptyState } from '@/components/atoms';
 import { Pagination, StatusBadge } from '@/components/molecules';
 import { Article } from '@/types';
-import { Eye, CheckCircle, Archive } from 'lucide-react';
+import { Eye, CheckCircle, Archive, Search } from 'lucide-react';
 
 export default function ModerateurApprovedPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState('');
 
   const fetchArticles = async () => {
       setIsLoading(true);
       try {
+        const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : '';
         const response = await fetch(
-          `/api/proxy/articles?status=approved&page=${currentPage}&limit=10`
+          `/api/proxy/articles?status=approved&page=${currentPage}&limit=10${searchParam}`
         );
         if (response.ok) {
           const result = await response.json();
@@ -46,7 +49,13 @@ export default function ModerateurApprovedPage() {
 
   useEffect(() => {
     fetchArticles();
-  }, [currentPage]);
+  }, [currentPage, searchQuery]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1);
+    setSearchQuery(searchInput.trim());
+  };
 
   const handleArchive = async (articleId: string) => {
     if (!confirm('Êtes-vous sûr de vouloir archiver cet article ?')) return;
@@ -66,9 +75,26 @@ export default function ModerateurApprovedPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Articles validés</h1>
-        <p className="mt-1 text-gray-600">Articles validés en attente de publication</p>
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Articles validés</h1>
+          <p className="mt-1 text-gray-600">Articles validés en attente de publication</p>
+        </div>
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Rechercher..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="w-64 rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            />
+          </div>
+          <Button type="submit" variant="outline" size="sm">
+            Rechercher
+          </Button>
+        </form>
       </div>
 
       {isLoading ? (

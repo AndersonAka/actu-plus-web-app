@@ -10,7 +10,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { Article, ArticleStatus } from '@/types';
 import { Archive, ArrowLeft, Loader2 } from 'lucide-react';
 
-type ContentFilter = 'all' | 'summary' | 'article';
+type ContentFilter = 'all' | 'chronique' | 'focus' | 'article';
 
 // Mapper les données du backend
 function mapArticle(data: any): Article {
@@ -67,11 +67,18 @@ export default function ArchivesPage() {
       const result = await response.json();
       let fetchedArticles = (result.data?.data || result.data || []).map(mapArticle);
       
-      // Filtrer par type de contenu si nécessaire
-      if (contentFilter === 'summary') {
-        fetchedArticles = fetchedArticles.filter((a: Article) => a.content?.length < 500);
+      // Filtrer par type de contenu/section
+      if (contentFilter === 'chronique') {
+        fetchedArticles = fetchedArticles.filter((a: any) => a.articleSection === 'chronique');
+      } else if (contentFilter === 'focus') {
+        fetchedArticles = fetchedArticles.filter((a: any) => a.articleSection === 'focus');
       } else if (contentFilter === 'article') {
-        fetchedArticles = fetchedArticles.filter((a: Article) => a.content?.length >= 500);
+        // Articles standards : exclure Focus, Chronique et Résumés
+        fetchedArticles = fetchedArticles.filter((a: any) => 
+          a.articleSection !== 'focus' && 
+          a.articleSection !== 'chronique' && 
+          a.contentType !== 'summary'
+        );
       }
       
       setArticles(fetchedArticles);
@@ -89,26 +96,10 @@ export default function ArchivesPage() {
     }
   }, [isAuthenticated, authLoading, loadArchives]);
 
-  const handleRemoveArchive = async (articleId: string) => {
-    try {
-      // Désarchiver l'article en changeant son statut
-      const response = await fetch(`/api/proxy/articles/${articleId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'published' }),
-      });
-      
-      if (response.ok) {
-        setArticles((prev) => prev.filter((a) => a.id !== articleId));
-      }
-    } catch (err) {
-      console.error('Erreur lors du désarchivage:', err);
-    }
-  };
-
   const filters = [
     { label: 'Tous', value: 'all' },
-    { label: 'Résumés', value: 'summary' },
+    { label: 'Chroniques', value: 'chronique' },
+    { label: 'Focus', value: 'focus' },
     { label: 'Articles', value: 'article' },
   ];
 
@@ -209,16 +200,7 @@ export default function ArchivesPage() {
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {articles.map((article) => (
-                <div key={article.id} className="relative">
-                  <ArticleCard article={article} variant="compact" />
-                  <button
-                    onClick={() => handleRemoveArchive(article.id)}
-                    className="absolute right-3 top-3 rounded-full bg-white p-2 shadow-md transition-colors hover:bg-blue-50"
-                    title="Désarchiver"
-                  >
-                    <Archive className="h-4 w-4 text-blue-500" />
-                  </button>
-                </div>
+                <ArticleCard key={article.id} article={article} variant="compact" />
               ))}
             </div>
           )}
