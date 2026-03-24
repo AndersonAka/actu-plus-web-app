@@ -149,7 +149,7 @@ export default async function HomePage() {
                   {featuredArticles.length > 0 ? (
                     <FeaturedCarousel articles={featuredArticles} />
                   ) : (
-                    <div className="aspect-[16/9] rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+                    <div className="aspect-video rounded-xl bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center">
                       <div className="text-center text-white">
                         <span className="text-6xl font-bold opacity-20">A+</span>
                         <p className="mt-4 text-lg">Aucun article à la une</p>
@@ -159,7 +159,7 @@ export default async function HomePage() {
                 </div>
 
                 {/* Focus */}
-                <div className="rounded-2xl bg-gray-50 p-6">
+                <div className="p-6">
                   <div className="mb-6 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-100">
@@ -169,12 +169,12 @@ export default async function HomePage() {
                       </div>
                       <h2 className="text-xl font-bold text-gray-900">Focus</h2>
                     </div>
-                    <Link
+                    {/* <Link
                       href="/articles?section=focus"
                       className="text-sm font-medium text-primary-600 hover:text-primary-700"
                     >
                       Voir tout →
-                    </Link>
+                    </Link> */}
                   </div>
                   {focusArticles.length > 0 ? (
                     <div className="grid gap-5 sm:grid-cols-2">
@@ -184,7 +184,7 @@ export default async function HomePage() {
                           href={article.country?.code ? `/country/${article.country.code.toLowerCase()}?tab=focus` : `/articles/${article.id}`}
                           className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
                         >
-                          <div className="relative aspect-[16/10] w-full overflow-hidden">
+                          <div className="relative aspect-video w-full overflow-hidden">
                             {(article.coverImage || article.imageUrl) ? (
                               <img
                                 src={article.coverImage || article.imageUrl}
@@ -192,7 +192,7 @@ export default async function HomePage() {
                                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                               />
                             ) : (
-                              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-red-50 to-red-100">
+                              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-red-50 to-red-100">
                                 <span className="text-3xl font-bold text-red-200">F</span>
                               </div>
                             )}
