@@ -85,12 +85,8 @@ export default function AdminArticlesPage() {
     try {
       let url = `/api/proxy/articles/admin?page=${currentPage}&limit=10`;
       if (statusFilter) {
-        // Map status filter to backend parameters
-        if (statusFilter === 'PUBLISHED') {
-          url += `&isPublished=true`;
-        } else if (statusFilter === 'DRAFT' || statusFilter === 'PENDING' || statusFilter === 'APPROVED' || statusFilter === 'REJECTED') {
-          url += `&status=${statusFilter.toLowerCase()}`;
-        }
+        // Tous les statuts utilisent le paramètre status
+        url += `&status=${statusFilter.toLowerCase()}`;
       }
       if (search) url += `&search=${encodeURIComponent(search)}`;
 

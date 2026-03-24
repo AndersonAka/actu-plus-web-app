@@ -24,15 +24,17 @@ export default function ModerateurApprovedPage() {
         );
         if (response.ok) {
           const result = await response.json();
-          // Parser la réponse API
+          // Parser la réponse API - Backend retourne PaginatedResultDto { data, total, page, limit, totalPages }
           let articlesList: Article[] = [];
           let total = 0;
           if (result.data?.data && Array.isArray(result.data.data)) {
+            // Structure: { data: { data: [...], total, totalPages } }
             articlesList = result.data.data;
-            total = result.data.meta?.total || articlesList.length;
+            total = result.data.total || result.data.meta?.total || articlesList.length;
           } else if (result.data && Array.isArray(result.data)) {
+            // Structure: { data: [...], total, totalPages }
             articlesList = result.data;
-            total = articlesList.length;
+            total = result.total || articlesList.length;
           } else if (Array.isArray(result)) {
             articlesList = result;
             total = articlesList.length;
