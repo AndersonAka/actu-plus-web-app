@@ -13,7 +13,7 @@ import { Suspense } from 'react';
 interface SubscriptionPlan {
   id: string;
   name: string;
-  category: 'standard' | 'premium' | 'enterprise';
+  category: 'standard' | 'enterprise';
   price: number;
   currency: string;
   duration: number;
@@ -30,7 +30,6 @@ function SubscriptionsContent() {
   const [processingPayment, setProcessingPayment] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [standardDuration, setStandardDuration] = useState<number>(1);
-  const [premiumDuration, setPremiumDuration] = useState<number>(1);
   const [error, setError] = useState<string | null>(null);
 
   const [showEnterpriseForm, setShowEnterpriseForm] = useState(false);
@@ -78,26 +77,9 @@ function SubscriptionsContent() {
       features: [
         'Accès aux articles publics',
         'Résumés quotidiens',
+        'Focus et Chroniques',
         'Newsletter hebdomadaire',
         'Accès mobile et web',
-      ],
-      isPopular: false,
-      isActive: true,
-    },
-    {
-      id: 'premium-1',
-      name: 'Premium',
-      category: 'premium',
-      price: 5000,
-      currency: 'XOF',
-      duration: 1,
-      features: [
-        'Tout le contenu Standard',
-        'Articles Premium exclusifs',
-        'Focus et Chroniques',
-        'Archives complètes',
-        'Alertes personnalisées',
-        'Support prioritaire',
       ],
       isPopular: true,
       isActive: true,
@@ -110,7 +92,7 @@ function SubscriptionsContent() {
       currency: 'XOF',
       duration: 12,
       features: [
-        'Tout le contenu Premium',
+        'Tout le contenu Standard',
         'Accès multi-utilisateurs',
         'Tableau de bord analytique',
         'API dédiée',
@@ -127,8 +109,6 @@ function SubscriptionsContent() {
     switch (category) {
       case 'standard':
         return <Zap className="h-8 w-8" />;
-      case 'premium':
-        return <Crown className="h-8 w-8" />;
       case 'enterprise':
         return <Building2 className="h-8 w-8" />;
       default:
@@ -139,13 +119,6 @@ function SubscriptionsContent() {
   const getPlanColors = (category: string) => {
     switch (category) {
       case 'standard':
-        return {
-          bg: 'bg-gray-50',
-          border: 'border-gray-200',
-          icon: 'text-gray-600',
-          button: 'bg-gray-900 hover:bg-gray-800',
-        };
-      case 'premium':
         return {
           bg: 'bg-primary-50',
           border: 'border-primary-300 ring-2 ring-primary-500',
@@ -280,8 +253,8 @@ function SubscriptionsContent() {
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="animate-pulse space-y-8">
               <div className="mx-auto h-12 w-64 rounded bg-gray-200" />
-              <div className="grid gap-8 md:grid-cols-3">
-                {[1, 2, 3].map((i) => (
+              <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
+                {[1, 2].map((i) => (
                   <div key={i} className="h-96 rounded-xl bg-gray-200" />
                 ))}
               </div>
@@ -298,7 +271,7 @@ function SubscriptionsContent() {
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-primary-600 to-primary-800 py-16 text-white">
+        <section className="bg-linear-to-br from-primary-600 to-primary-800 py-16 text-white">
           <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
             <h1 className="mb-4 text-4xl font-bold sm:text-5xl">
               Choisissez votre formule
@@ -327,7 +300,7 @@ function SubscriptionsContent() {
 
         {/* Plans Grid */}
         <section className="mx-auto max-w-7xl mt-16 px-4 pb-16 sm:px-6 lg:px-8">
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
             {/* Standard Plan */}
             {(() => {
               const standardPlans = plans.filter(p => p.category === 'standard');
@@ -338,6 +311,13 @@ function SubscriptionsContent() {
               
               return (
                 <div className={`relative rounded-2xl border-2 p-8 ${colors.bg} ${colors.border} transition-transform hover:scale-105`}>
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary-600 px-4 py-1 text-sm font-medium text-white">
+                      <Star className="h-4 w-4 fill-current" />
+                      Populaire
+                    </span>
+                  </div>
+
                   <div className={`mb-6 ${colors.icon}`}>
                     <Zap className="h-8 w-8" />
                   </div>
@@ -364,7 +344,7 @@ function SubscriptionsContent() {
                   <ul className="mb-8 space-y-3">
                     {selectedStandardPlan.features.map((feature, index) => (
                       <li key={index} className="flex items-start gap-2">
-                        <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
+                        <Check className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />
                         <span className="text-sm text-gray-600">{feature}</span>
                       </li>
                     ))}
@@ -376,76 +356,6 @@ function SubscriptionsContent() {
                     className={`flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3 font-medium transition-colors ${colors.button} text-white disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {processingPayment && selectedPlan === selectedStandardPlan.id ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Traitement...
-                      </>
-                    ) : (
-                      <>
-                        Souscrire
-                        <ArrowRight className="h-4 w-4" />
-                      </>
-                    )}
-                  </button>
-                </div>
-              );
-            })()}
-
-            {/* Premium Plan */}
-            {(() => {
-              const premiumPlans = plans.filter(p => p.category === 'premium');
-              if (premiumPlans.length === 0) return null;
-              
-              const selectedPremiumPlan = premiumPlans.find(p => p.duration === premiumDuration) || premiumPlans[0];
-              const colors = getPlanColors('premium');
-              
-              return (
-                <div className={`relative rounded-2xl border-2 p-8 ${colors.bg} ${colors.border} transition-transform hover:scale-105`}>
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary-600 px-4 py-1 text-sm font-medium text-white">
-                      <Star className="h-4 w-4 fill-current" />
-                      Populaire
-                    </span>
-                  </div>
-
-                  <div className={`mb-6 ${colors.icon}`}>
-                    <Crown className="h-8 w-8" />
-                  </div>
-
-                  <h3 className="mb-2 text-2xl font-bold text-gray-900">
-                    Particuliers Premium
-                  </h3>
-
-                  <div className="mb-4">
-                    <label className="mb-2 block text-sm font-medium text-gray-700">Durée</label>
-                    <select
-                      value={premiumDuration}
-                      onChange={(e) => setPremiumDuration(Number(e.target.value))}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-xl font-medium focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                    >
-                      {premiumPlans.map(plan => (
-                        <option key={plan.id} value={plan.duration}>
-                          {plan.duration} mois - {formatPrice(plan.price, plan.currency)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <ul className="mb-8 space-y-3">
-                    {selectedPremiumPlan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
-                        <span className="text-sm text-gray-600">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button
-                    onClick={() => handleSubscribe(selectedPremiumPlan.id, 'premium')}
-                    disabled={processingPayment}
-                    className={`flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3 font-medium transition-colors ${colors.button} text-white disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {processingPayment && selectedPlan === selectedPremiumPlan.id ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Traitement...
@@ -514,7 +424,7 @@ function SubscriptionsContent() {
                     <ul className="mb-6 space-y-2">
                       {samplePlan.features.map((feature, index) => (
                         <li key={index} className="flex items-start gap-2">
-                          <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-400" />
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-400" />
                           <span className="text-sm text-gray-300">{feature}</span>
                         </li>
                       ))}
@@ -719,7 +629,7 @@ function SubscriptionsContent() {
                   <span className="ml-2 transition-transform group-open:rotate-180">▼</span>
                 </summary>
                 <p className="mt-3 text-gray-600">
-                  Nous offrons 7 jours d'essai gratuit pour les formules Standard et Premium. 
+                  Nous offrons 7 jours d'essai gratuit pour la formule Standard. 
                   Vous pouvez annuler à tout moment pendant cette période sans être facturé.
                 </p>
               </details> */}

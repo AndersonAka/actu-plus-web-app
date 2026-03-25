@@ -8,7 +8,7 @@ import { CreditCard, CheckCircle, XCircle, Trash2, X, Plus, Pencil, Zap, Crown, 
 interface SubscriptionPlan {
   id: string;
   name: string;
-  category: 'standard' | 'premium' | 'enterprise';
+  category: 'standard' | 'enterprise';
   duration: number;
   price: number;
   currency: string;
@@ -20,13 +20,11 @@ interface SubscriptionPlan {
 
 const PLAN_CATEGORY_LABELS: Record<string, string> = {
   standard: 'Particuliers Standard',
-  premium: 'Particuliers Premium',
   enterprise: 'Entreprises',
 };
 
 const PLAN_CATEGORY_ICONS: Record<string, React.ReactElement> = {
   standard: <Zap className="h-4 w-4 text-gray-500" />,
-  premium: <Crown className="h-4 w-4 text-primary-600" />,
   enterprise: <Building2 className="h-4 w-4 text-gray-700" />,
 };
 
@@ -52,7 +50,7 @@ interface Subscription {
 const EMPTY_PLAN_FORM = {
   id: '',
   name: '',
-  category: 'standard' as 'standard' | 'premium' | 'enterprise',
+  category: 'standard' as 'standard' | 'enterprise',
   duration: 3,
   price: 0,
   currency: 'XOF',
@@ -486,8 +484,8 @@ export default function AdminSubscriptionsPage() {
             <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-20 animate-pulse rounded-lg bg-gray-100" />)}</div>
           ) : (
             <>
-              {/* Standard & Premium: card grid per plan */}
-              {(['standard', 'premium'] as const).map((cat) => {
+              {/* Standard: card grid per plan */}
+              {(['standard'] as const).map((cat) => {
                 const catPlans = plans.filter(p => p.category === cat);
                 return (
                   <div key={cat} className="mb-8">
@@ -658,7 +656,6 @@ export default function AdminSubscriptionsPage() {
                         className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
                       >
                         <option value="standard">Particuliers Standard</option>
-                        <option value="premium">Particuliers Premium</option>
                         <option value="enterprise">Entreprises</option>
                       </select>
                     </div>

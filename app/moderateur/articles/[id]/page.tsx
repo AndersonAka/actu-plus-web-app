@@ -429,8 +429,8 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
               >
                 <option value="">Sélectionner une section</option>
                 <option value="toute-actualite">Toute l'actualité</option>
-                <option value="focus">Focus (Premium)</option>
-                <option value="chronique">Chronique (Premium)</option>
+                <option value="focus">Focus</option>
+                <option value="chronique">Chronique</option>
               </select>
 
               {/* Durée de visibilité pour les chroniques */}
