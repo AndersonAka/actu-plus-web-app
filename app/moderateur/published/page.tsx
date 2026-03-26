@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button, Card, EmptyState } from '@/components/atoms';
 import { Pagination, StatusBadge } from '@/components/molecules';
 import { Article } from '@/types';
-import { Eye, Send, ExternalLink, Search } from 'lucide-react';
+import { Eye, Send, ExternalLink, Search, Clock } from 'lucide-react';
 
 export default function ModerateurPublishedPage() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -120,6 +120,12 @@ export default function ModerateurPublishedPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
+                    {article.isScheduled && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                        <Clock className="h-3 w-3" />
+                        Programmé
+                      </span>
+                    )}
                     {article.isPremium && (
                       <span className="inline-flex items-center rounded-full bg-warning-100 px-2 py-0.5 text-xs font-medium text-warning-700">
                         Premium

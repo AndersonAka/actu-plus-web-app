@@ -35,7 +35,7 @@ function mapArticle(data: any): Article {
 async function getFeaturedArticles(): Promise<Article[]> {
   try {
     const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles?isFeatured=true&limit=5&publishedToday=true&contentType=article`,
+      `${apiConfig.baseUrl}/api/articles?isFeatured=true&limit=10&publishedToday=true&contentType=article`,
       { cache: 'no-store' }
     );
     if (!response.ok) return [];
