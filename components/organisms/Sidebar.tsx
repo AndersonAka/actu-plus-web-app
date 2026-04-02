@@ -26,6 +26,7 @@ import {
   MessageSquare,
   Building2,
   HelpCircle,
+  Archive,
 } from 'lucide-react';
 
 export interface SidebarProps {
