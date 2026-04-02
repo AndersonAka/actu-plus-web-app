@@ -55,6 +55,9 @@ export default function CountryPage() {
   const [allCountries, setAllCountries] = useState<CountryData[]>([]);
   const [summary, setSummary] = useState<Article | null>(null);
   const [essentielArticles, setEssentielArticles] = useState<Article[]>([]);
+  const [essentielPage, setEssentielPage] = useState(1);
+  const [essentielTotal, setEssentielTotal] = useState(0);
+  const [essentielLoading, setEssentielLoading] = useState(false);
   const [allArticles, setAllArticles] = useState<Article[]>([]);
   const [focusArticle, setFocusArticle] = useState<Article | null>(null);
   const [chroniqueArticle, setChroniqueArticle] = useState<Article | null>(null);
@@ -65,6 +68,8 @@ export default function CountryPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [canAccessCountryPage, setCanAccessCountryPage] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
+  
+  const ESSENTIEL_LIMIT = 12;
 
   // Check if user is staff (admin, veilleur, moderateur)
   const isStaff = user?.role && ['admin', 'veilleur', 'moderateur'].includes(user.role.toLowerCase());
@@ -131,7 +136,7 @@ export default function CountryPage() {
         // Fetch all sections in parallel (today-only for daily sections)
         const [summaryRes, essentielRes, allRes, focusRes, chroniquesRes] = await Promise.all([
           fetch(`/api/proxy/articles/country/${code}/summary`),
-          fetch(`/api/proxy/articles/country/${code}/essentiel?limit=6&publishedToday=true`),
+          fetch(`/api/proxy/articles/country/${code}/essentiel?limit=${ESSENTIEL_LIMIT}&page=1&publishedToday=true`),
           fetch(`/api/proxy/articles/country/${code}/all?limit=10&publishedToday=true`),
           fetch(`/api/proxy/articles/country/${code}/focus`),
           fetch(`/api/proxy/articles/country/${code}/chroniques?limit=1`),
@@ -144,7 +149,10 @@ export default function CountryPage() {
 
         if (essentielRes.ok) {
           const data = await essentielRes.json();
-          setEssentielArticles(mapArticles(data.data || []));
+          const articles = data.data?.data || data.data || [];
+          setEssentielArticles(mapArticles(articles));
+          setEssentielTotal(data.data?.total || data.total || articles.length);
+          setEssentielPage(1);
         }
 
         if (allRes.ok) {
@@ -197,6 +205,32 @@ export default function CountryPage() {
 
     fetchCountryData();
   }, [code]);
+
+  // Fonction pour charger plus d'articles L'Essentiel
+  const loadMoreEssentiel = async () => {
+    if (essentielLoading) return;
+    
+    setEssentielLoading(true);
+    try {
+      const nextPage = essentielPage + 1;
+      const res = await fetch(
+        `/api/proxy/articles/country/${code}/essentiel?limit=${ESSENTIEL_LIMIT}&page=${nextPage}&publishedToday=true`
+      );
+      
+      if (res.ok) {
+        const data = await res.json();
+        const newArticles = data.data?.data || data.data || [];
+        setEssentielArticles(prev => [...prev, ...mapArticles(newArticles)]);
+        setEssentielPage(nextPage);
+      }
+    } catch (error) {
+      console.error('Error loading more essentiel articles:', error);
+    } finally {
+      setEssentielLoading(false);
+    }
+  };
+
+  const hasMoreEssentiel = essentielArticles.length < essentielTotal;
 
   if (loading) {
     return (
@@ -319,8 +353,25 @@ export default function CountryPage() {
       case 'essentiel':
         return (
           <>
-            {renderViewToggle()}
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-gray-500">
+                {essentielTotal > 0 ? `${essentielArticles.length} sur ${essentielTotal} articles` : ''}
+              </p>
+              {renderViewToggle()}
+            </div>
             {renderArticleList(essentielArticles, "Aucun article essentiel pour aujourd'hui.")}
+            {hasMoreEssentiel && (
+              <div className="mt-6 flex justify-center">
+                <Button
+                  variant="outline"
+                  onClick={loadMoreEssentiel}
+                  disabled={essentielLoading}
+                  className="min-w-[200px]"
+                >
+                  {essentielLoading ? 'Chargement...' : 'Voir plus d\'articles'}
+                </Button>
+              </div>
+            )}
           </>
         );
 
@@ -409,7 +460,7 @@ export default function CountryPage() {
       <Header />
       <main className="flex-1 bg-gray-50">
         {/* Hero Banner */}
-        <div className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 text-white overflow-hidden">
+        <div className="relative bg-linear-to-br from-primary-600 via-primary-700 to-primary-900 text-white overflow-hidden">
           <div className="absolute inset-0 bg-[url('/images/pattern-dots.svg')] opacity-10" />
           
           <div className="relative mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">

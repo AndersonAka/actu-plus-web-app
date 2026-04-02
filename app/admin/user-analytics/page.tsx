@@ -36,31 +36,19 @@ interface ArticleData {
   status?: string;
 }
 
-// Fetch paginated data — backend max 100 per page
-async function fetchAllArticles(): Promise<ArticleData[]> {
-  const allArticles: ArticleData[] = [];
-  let page = 1;
-  const limit = 100;
-  let totalPages = 1;
-
-  while (page <= totalPages) {
-    const res = await fetch(`/api/proxy/articles/admin?limit=${limit}&page=${page}`);
-    if (!res.ok) break;
-    const json = await res.json();
-    // Backend response: { success, data: { data: T[], total, page, limit, totalPages } }
-    const payload = json.data || json;
-    const items: ArticleData[] = Array.isArray(payload.data)
-      ? payload.data
-      : Array.isArray(payload)
-        ? payload
-        : [];
-    if (items.length === 0) break;
-    allArticles.push(...items);
-    totalPages = payload.totalPages || json.totalPages || 1;
-    page++;
-  }
-
-  return allArticles;
+interface ArticleStats {
+  totalArticles: number;
+  totalViews: number;
+  avgViews: number;
+  premiumCount: number;
+  premiumViews: number;
+  publicCount: number;
+  publicViews: number;
+  recentCount: number;
+  byCategory: { name: string; count: number; views: number }[];
+  byCountry: { name: string; code: string; flag: string; count: number; views: number }[];
+  bySection: { section: string; count: number }[];
+  topByViews: ArticleData[];
 }
 
 interface KpiCard {
@@ -73,7 +61,7 @@ interface KpiCard {
 }
 
 export default function UserAnalyticsPage() {
-  const [articles, setArticles] = useState<ArticleData[]>([]);
+  const [stats, setStats] = useState<ArticleStats | null>(null);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalSubscriptions, setTotalSubscriptions] = useState({ active: 0, expired: 0, premium: 0 });
   const [mostFavorited, setMostFavorited] = useState<{ articleId: string; count: number; article: any }[]>([]);
@@ -82,15 +70,18 @@ export default function UserAnalyticsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch all articles with pagination (backend max 100/page)
-        const [allArticles, usersRes, subsRes, favRes] = await Promise.all([
-          fetchAllArticles(),
+        // Utiliser l'endpoint stats optimisé au lieu de fetcher tous les articles
+        const [statsRes, usersRes, subsRes, favRes] = await Promise.all([
+          fetch('/api/proxy/articles/stats'),
           fetch('/api/proxy/users?limit=1'),
           fetch('/api/proxy/subscriptions/stats'),
           fetch('/api/proxy/favorites/most-favorited?limit=10'),
         ]);
 
-        setArticles(allArticles);
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setStats(statsData.data || statsData);
+        }
 
         if (favRes.ok) {
           const favData = await favRes.json();
@@ -100,7 +91,6 @@ export default function UserAnalyticsPage() {
 
         if (usersRes.ok) {
           const res = await usersRes.json();
-          // Backend: { success, data: { data, total, ... } }
           const usersPayload = res.data || res;
           setTotalUsers(usersPayload.total || 0);
         }
@@ -123,58 +113,25 @@ export default function UserAnalyticsPage() {
     fetchData();
   }, []);
 
-  // Computed analytics
-  const publishedArticles = articles.filter(a => a.status === 'published' || a.publishedAt);
-  const totalViews = publishedArticles.reduce((sum, a) => sum + (a.views || 0), 0);
-  const avgViews = publishedArticles.length > 0 ? Math.round(totalViews / publishedArticles.length) : 0;
-  const premiumArticles = publishedArticles.filter(a => a.isPremium);
-  const publicArticles = publishedArticles.filter(a => !a.isPremium);
-
-  // Top articles by views
-  const topByViews = [...publishedArticles]
-    .sort((a, b) => (b.views || 0) - (a.views || 0))
-    .slice(0, 10);
+  // Utiliser les stats du backend (optimisé)
+  const totalViews = stats?.totalViews || 0;
+  const avgViews = stats?.avgViews || 0;
+  const totalArticles = stats?.totalArticles || 0;
+  const premiumCount = stats?.premiumCount || 0;
+  const premiumViews = stats?.premiumViews || 0;
+  const publicCount = stats?.publicCount || 0;
+  const publicViews = stats?.publicViews || 0;
+  const recentCount = stats?.recentCount || 0;
+  const topByViews = stats?.topByViews || [];
+  const categoryStats = stats?.byCategory || [];
+  const countryStats = stats?.byCountry || [];
+  const bySection = stats?.bySection?.reduce((acc, s) => {
+    acc[s.section] = s.count;
+    return acc;
+  }, {} as Record<string, number>) || {};
 
   // Top articles by favorites (from dedicated endpoint)
   const topByFavorites = mostFavorited.filter(f => f.count > 0);
-
-  // Articles by category
-  const byCategory = publishedArticles.reduce((acc, a) => {
-    const cat = a.category?.name || 'Sans catégorie';
-    acc[cat] = (acc[cat] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-  const categoryStats = Object.entries(byCategory)
-    .sort(([, a], [, b]) => b - a);
-
-  // Articles by country
-  const byCountry = publishedArticles.reduce((acc, a) => {
-    const key = a.country?.name || 'Non défini';
-    if (!acc[key]) {
-      acc[key] = { count: 0, views: 0, flag: a.country?.flag || '', code: a.country?.code || '' };
-    }
-    acc[key].count += 1;
-    acc[key].views += a.views || 0;
-    return acc;
-  }, {} as Record<string, { count: number; views: number; flag: string; code: string }>);
-  const countryStats = Object.entries(byCountry)
-    .sort(([, a], [, b]) => b.views - a.views);
-
-  // Views by category
-  const viewsByCategory = publishedArticles.reduce((acc, a) => {
-    const cat = a.category?.name || 'Sans catégorie';
-    acc[cat] = (acc[cat] || 0) + (a.views || 0);
-    return acc;
-  }, {} as Record<string, number>);
-  const viewsByCategoryStats = Object.entries(viewsByCategory)
-    .sort(([, a], [, b]) => b - a);
-
-  // Articles by section
-  const bySection = publishedArticles.reduce((acc, a) => {
-    const sec = a.articleSection || 'non défini';
-    acc[sec] = (acc[sec] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
 
   const sectionLabels: Record<string, string> = {
     'essentiel': "L'Essentiel",
@@ -185,25 +142,15 @@ export default function UserAnalyticsPage() {
     'non défini': 'Non défini',
   };
 
-  // Recent articles (last 7 days)
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const recentArticles = publishedArticles.filter(a => {
-    const date = new Date(a.publishedAt || a.createdAt);
-    return date >= sevenDaysAgo;
-  });
-
   // Premium engagement
-  const premiumViews = premiumArticles.reduce((sum, a) => sum + (a.views || 0), 0);
-  const publicViews = publicArticles.reduce((sum, a) => sum + (a.views || 0), 0);
-  const avgPremiumViews = premiumArticles.length > 0 ? Math.round(premiumViews / premiumArticles.length) : 0;
-  const avgPublicViews = publicArticles.length > 0 ? Math.round(publicViews / publicArticles.length) : 0;
+  const avgPremiumViews = premiumCount > 0 ? Math.round(premiumViews / premiumCount) : 0;
+  const avgPublicViews = publicCount > 0 ? Math.round(publicViews / publicCount) : 0;
 
   const kpis: KpiCard[] = [
     { label: 'Total vues', value: totalViews.toLocaleString('fr-FR'), icon: Eye, color: 'text-blue-600', bg: 'bg-blue-100', subtitle: `${avgViews} vues/article en moyenne` },
-    { label: 'Articles publiés', value: publishedArticles.length, icon: Newspaper, color: 'text-green-600', bg: 'bg-green-100', subtitle: `${recentArticles.length} cette semaine` },
+    { label: 'Articles publiés', value: totalArticles, icon: Newspaper, color: 'text-green-600', bg: 'bg-green-100', subtitle: `${recentCount} cette semaine` },
     { label: 'Utilisateurs', value: totalUsers, icon: Users, color: 'text-purple-600', bg: 'bg-purple-100', subtitle: `${totalSubscriptions.active} abonnés actifs` },
-    { label: 'Contenu Premium', value: premiumArticles.length, icon: Crown, color: 'text-amber-600', bg: 'bg-amber-100', subtitle: `${avgPremiumViews} vues moy. vs ${avgPublicViews} public` },
+    { label: 'Contenu Premium', value: premiumCount, icon: Crown, color: 'text-amber-600', bg: 'bg-amber-100', subtitle: `${avgPremiumViews} vues moy. vs ${avgPublicViews} public` },
   ];
 
   const maxViews = topByViews[0]?.views || 1;
@@ -371,16 +318,15 @@ export default function UserAnalyticsPage() {
           <CardContent>
             {categoryStats.length > 0 ? (
               <div className="space-y-3">
-                {categoryStats.map(([cat, count]) => {
-                  const views = viewsByCategory[cat] || 0;
-                  const percentage = Math.round((count / publishedArticles.length) * 100);
+                {categoryStats.map((cat) => {
+                  const percentage = totalArticles > 0 ? Math.round((cat.count / totalArticles) * 100) : 0;
                   return (
-                    <div key={cat}>
+                    <div key={cat.name}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium text-gray-700">{cat}</span>
+                        <span className="text-sm font-medium text-gray-700">{cat.name}</span>
                         <div className="flex items-center gap-3">
-                          <span className="text-xs text-gray-400">{views.toLocaleString('fr-FR')} vues</span>
-                          <span className="text-sm font-semibold text-gray-900">{count} <span className="text-xs font-normal text-gray-400">({percentage}%)</span></span>
+                          <span className="text-xs text-gray-400">{cat.views.toLocaleString('fr-FR')} vues</span>
+                          <span className="text-sm font-semibold text-gray-900">{cat.count} <span className="text-xs font-normal text-gray-400">({percentage}%)</span></span>
                         </div>
                       </div>
                       <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
@@ -410,19 +356,19 @@ export default function UserAnalyticsPage() {
           <CardContent>
             {countryStats.length > 0 ? (
               <div className="space-y-3">
-                {countryStats.map(([country, data]) => {
-                  const maxCountryViews = countryStats[0]?.[1]?.views || 1;
-                  const percentage = Math.round((data.views / maxCountryViews) * 100);
+                {countryStats.map((country) => {
+                  const maxCountryViews = countryStats[0]?.views || 1;
+                  const percentage = Math.round((country.views / maxCountryViews) * 100);
                   return (
-                    <div key={country}>
+                    <div key={country.name}>
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
-                          {data.flag && <span className="text-lg">{data.flag}</span>}
-                          <span className="text-sm font-medium text-gray-700">{country}</span>
+                          {country.flag && <span className="text-lg">{country.flag}</span>}
+                          <span className="text-sm font-medium text-gray-700">{country.name}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="text-xs text-gray-400">{data.count} articles</span>
-                          <span className="text-sm font-semibold text-indigo-600">{data.views.toLocaleString('fr-FR')} <span className="text-xs font-normal text-gray-400">vues</span></span>
+                          <span className="text-xs text-gray-400">{country.count} articles</span>
+                          <span className="text-sm font-semibold text-indigo-600">{country.views.toLocaleString('fr-FR')} <span className="text-xs font-normal text-gray-400">vues</span></span>
                         </div>
                       </div>
                       <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
@@ -477,14 +423,14 @@ export default function UserAnalyticsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-4 text-center">
                   <Crown className="mx-auto h-6 w-6 text-amber-500 mb-1" />
-                  <p className="text-2xl font-bold text-gray-900">{premiumArticles.length}</p>
+                  <p className="text-2xl font-bold text-gray-900">{premiumCount}</p>
                   <p className="text-xs text-gray-500">Articles Premium</p>
                   <p className="mt-1 text-sm font-semibold text-amber-600">{premiumViews.toLocaleString('fr-FR')} vues</p>
                   <p className="text-xs text-gray-400">{avgPremiumViews} moy./article</p>
                 </div>
                 <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-4 text-center">
                   <Newspaper className="mx-auto h-6 w-6 text-blue-500 mb-1" />
-                  <p className="text-2xl font-bold text-gray-900">{publicArticles.length}</p>
+                  <p className="text-2xl font-bold text-gray-900">{publicCount}</p>
                   <p className="text-xs text-gray-500">Articles Publics</p>
                   <p className="mt-1 text-sm font-semibold text-blue-600">{publicViews.toLocaleString('fr-FR')} vues</p>
                   <p className="text-xs text-gray-400">{avgPublicViews} moy./article</p>
@@ -493,25 +439,25 @@ export default function UserAnalyticsPage() {
               <div>
                 <p className="text-xs text-gray-500 mb-1.5">Ratio Premium / Public</p>
                 <div className="flex h-4 rounded-full overflow-hidden bg-gray-100">
-                  {publishedArticles.length > 0 && (
+                  {totalArticles > 0 && (
                     <>
                       <div
                         className="bg-amber-500 transition-all duration-500"
-                        style={{ width: `${(premiumArticles.length / publishedArticles.length) * 100}%` }}
+                        style={{ width: `${(premiumCount / totalArticles) * 100}%` }}
                       />
                       <div
                         className="bg-blue-500 transition-all duration-500"
-                        style={{ width: `${(publicArticles.length / publishedArticles.length) * 100}%` }}
+                        style={{ width: `${(publicCount / totalArticles) * 100}%` }}
                       />
                     </>
                   )}
                 </div>
                 <div className="flex justify-between mt-1">
                   <span className="text-xs text-amber-600 font-medium">
-                    {publishedArticles.length > 0 ? Math.round((premiumArticles.length / publishedArticles.length) * 100) : 0}% Premium
+                    {totalArticles > 0 ? Math.round((premiumCount / totalArticles) * 100) : 0}% Premium
                   </span>
                   <span className="text-xs text-blue-600 font-medium">
-                    {publishedArticles.length > 0 ? Math.round((publicArticles.length / publishedArticles.length) * 100) : 0}% Public
+                    {totalArticles > 0 ? Math.round((publicCount / totalArticles) * 100) : 0}% Public
                   </span>
                 </div>
               </div>
