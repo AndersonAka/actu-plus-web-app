@@ -14,7 +14,9 @@ import {
   Calendar,
   TrendingUp,
   FileText,
-  RotateCcw
+  RotateCcw,
+  Search,
+  X
 } from 'lucide-react';
 import { Article, ArticleStatus } from '@/types';
 
@@ -62,12 +64,15 @@ export default function AdminArchivesPage() {
   const [stats, setStats] = useState<ArchiveStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState('');
 
   // Charger les archives système
-  const loadSystemArchives = useCallback(async () => {
+  const loadSystemArchives = useCallback(async (search?: string) => {
     try {
+      const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
       // Articles archivés automatiquement (archivedById IS NULL) - via endpoint admin
-      const response = await fetch('/api/proxy/articles/admin?isArchive=true&archivedBySystem=true&limit=50');
+      const response = await fetch(`/api/proxy/articles/admin?isArchive=true&archivedBySystem=true&limit=50${searchParam}`);
       
       if (!response.ok) {
         throw new Error('Erreur lors du chargement des archives système');
@@ -83,10 +88,11 @@ export default function AdminArchivesPage() {
   }, []);
 
   // Charger les archives veilleur
-  const loadWatcherArchives = useCallback(async () => {
+  const loadWatcherArchives = useCallback(async (search?: string) => {
     try {
+      const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
       // Articles archivés par les veilleurs (archivedById IS NOT NULL) - via endpoint admin
-      const response = await fetch('/api/proxy/articles/admin?isArchive=true&archivedByWatcher=true&limit=50');
+      const response = await fetch(`/api/proxy/articles/admin?isArchive=true&archivedByWatcher=true&limit=50${searchParam}`);
       
       if (!response.ok) {
         throw new Error('Erreur lors du chargement des archives veilleur');
@@ -116,18 +122,32 @@ export default function AdminArchivesPage() {
   }, []);
 
   // Charger toutes les données
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (search?: string) => {
     setLoading(true);
     setError(null);
     
     await Promise.all([
-      loadSystemArchives(),
-      loadWatcherArchives(),
+      loadSystemArchives(search),
+      loadWatcherArchives(search),
       loadStats()
     ]);
     
     setLoading(false);
   }, [loadSystemArchives, loadWatcherArchives, loadStats]);
+
+  // Rechercher
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchQuery(searchInput.trim());
+    loadData(searchInput.trim());
+  };
+
+  // Effacer la recherche
+  const clearSearch = () => {
+    setSearchInput('');
+    setSearchQuery('');
+    loadData('');
+  };
 
   // Désarchiver un article
   const handleUnarchive = async (articleId: string) => {
@@ -283,6 +303,43 @@ export default function AdminArchivesPage() {
           })}
         </nav>
       </div>
+
+      {/* Search */}
+      <form onSubmit={handleSearch} className="flex gap-3">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Rechercher un article archivé..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-10 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+          />
+          {searchInput && (
+            <button
+              type="button"
+              onClick={clearSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        <Button type="submit" variant="primary" size="sm">
+          Rechercher
+        </Button>
+      </form>
+
+      {/* Résultat de recherche */}
+      {searchQuery && (
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span>Résultats pour</span>
+          <Badge variant="secondary">"{searchQuery}"</Badge>
+          <button onClick={clearSearch} className="text-primary-600 hover:underline">
+            Effacer
+          </button>
+        </div>
+      )}
 
       {/* Tab Description */}
       {currentTab && (
