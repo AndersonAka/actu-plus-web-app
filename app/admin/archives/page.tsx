@@ -13,7 +13,8 @@ import {
   Filter,
   Calendar,
   TrendingUp,
-  FileText
+  FileText,
+  RotateCcw
 } from 'lucide-react';
 import { Article, ArticleStatus } from '@/types';
 
@@ -127,6 +128,28 @@ export default function AdminArchivesPage() {
     
     setLoading(false);
   }, [loadSystemArchives, loadWatcherArchives, loadStats]);
+
+  // Désarchiver un article
+  const handleUnarchive = async (articleId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir désarchiver cet article ?')) return;
+    
+    try {
+      const response = await fetch(`/api/proxy/articles/${articleId}/unarchive`, {
+        method: 'POST',
+      });
+      
+      if (response.ok) {
+        // Recharger les données
+        loadData();
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Erreur lors du désarchivage');
+      }
+    } catch (err) {
+      console.error('Erreur lors du désarchivage:', err);
+      alert('Erreur lors du désarchivage');
+    }
+  };
 
   useEffect(() => {
     loadData();
@@ -319,11 +342,11 @@ export default function AdminArchivesPage() {
               
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {currentArticles.map((article) => (
-                  <div key={article.id} className="relative">
-                    <ArticleCard key={article.id} article={article} variant="compact" />
+                  <div key={article.id} className="relative group">
+                    <ArticleCard article={article} variant="compact" />
                     
                     {/* Badge d'archivage */}
-                    <div className="absolute top-2 right-2">
+                    <div className="absolute top-2 right-2 flex items-center gap-2">
                       <Badge variant="secondary" size="sm" className="bg-gray-900 text-white">
                         {activeTab === 'system' ? (
                           <>
@@ -337,6 +360,19 @@ export default function AdminArchivesPage() {
                           </>
                         )}
                       </Badge>
+                    </div>
+                    
+                    {/* Bouton désarchiver (visible au survol) */}
+                    <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleUnarchive(article.id)}
+                        className="bg-white shadow-md hover:bg-primary-50"
+                      >
+                        <RotateCcw className="mr-1 h-3 w-3" />
+                        Désarchiver
+                      </Button>
                     </div>
                   </div>
                 ))}
