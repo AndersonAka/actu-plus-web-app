@@ -65,8 +65,8 @@ export default function AdminArchivesPage() {
   // Charger les archives système
   const loadSystemArchives = useCallback(async () => {
     try {
-      // Articles archivés automatiquement (archivedById IS NULL)
-      const response = await fetch('/api/proxy/articles?isArchive=true&archivedBySystem=true&limit=50');
+      // Articles archivés automatiquement (archivedById IS NULL) - via endpoint admin
+      const response = await fetch('/api/proxy/articles/admin?isArchive=true&archivedBySystem=true&limit=50');
       
       if (!response.ok) {
         throw new Error('Erreur lors du chargement des archives système');
@@ -84,8 +84,8 @@ export default function AdminArchivesPage() {
   // Charger les archives veilleur
   const loadWatcherArchives = useCallback(async () => {
     try {
-      // Articles archivés par les veilleurs (archivedById IS NOT NULL)
-      const response = await fetch('/api/proxy/articles?isArchive=true&archivedByWatcher=true&limit=50');
+      // Articles archivés par les veilleurs (archivedById IS NOT NULL) - via endpoint admin
+      const response = await fetch('/api/proxy/articles/admin?isArchive=true&archivedByWatcher=true&limit=50');
       
       if (!response.ok) {
         throw new Error('Erreur lors du chargement des archives veilleur');
