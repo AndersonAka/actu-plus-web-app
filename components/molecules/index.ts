@@ -22,7 +22,7 @@ export type { StatusBadgeProps } from './StatusBadge';
 
 export { SocialLoginButtons } from './SocialLoginButtons';
 
-export { CountryTabs, COUNTRIES } from './CountryTabs';
+export { CountryTabs } from './CountryTabs';
 export type { CountryTabsProps, CountryCode, Country } from './CountryTabs';
 
 export { FeaturedCarousel } from './FeaturedCarousel';

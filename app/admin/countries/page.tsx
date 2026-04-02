@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button, Card, EmptyState, Input, Alert } from '@/components/atoms';
 import { Country } from '@/types';
-import { Globe, Plus, Pencil, Trash2, X, Check } from 'lucide-react';
+import { Globe, Plus, Pencil, X, Check, ToggleLeft, ToggleRight } from 'lucide-react';
 
 export default function AdminCountriesPage() {
   const [countries, setCountries] = useState<Country[]>([]);
@@ -97,32 +97,25 @@ export default function AdminCountriesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce pays ?')) return;
+  const handleToggleActive = async (country: Country) => {
+    const newStatus = !country.isActive;
+    const action = newStatus ? 'activer' : 'désactiver';
+    
+    if (!confirm(`Êtes-vous sûr de vouloir ${action} ce pays ?`)) return;
 
     try {
-      // Vérifier d'abord s'il y a des articles liés
-      const checkResponse = await fetch(`/api/proxy/articles?countryId=${id}&limit=1`);
-      if (checkResponse.ok) {
-        const checkData = await checkResponse.json();
-        const articlesCount = checkData.data?.total || checkData.total || 0;
-        
-        if (articlesCount > 0) {
-          setError(`Impossible de supprimer ce pays. ${articlesCount} article(s) y sont associés. Veuillez d'abord réassigner ou supprimer ces articles.`);
-          return;
-        }
-      }
-
-      const response = await fetch(`/api/proxy/countries/${id}`, {
-        method: 'DELETE',
+      const response = await fetch(`/api/proxy/countries/${country.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: newStatus }),
       });
 
       if (response.ok) {
-        setSuccess('Pays supprimé avec succès');
+        setSuccess(`Pays ${newStatus ? 'activé' : 'désactivé'} avec succès`);
         fetchCountries();
       } else {
         const data = await response.json();
-        throw new Error(data.message || 'Erreur lors de la suppression');
+        throw new Error(data.message || `Erreur lors de la ${action}tion`);
       }
     } catch (err: any) {
       setError(err.message);
@@ -223,11 +216,23 @@ export default function AdminCountriesPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
+                      {country.isActive === false && (
+                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">Inactif</span>
+                      )}
                       <Button variant="ghost" size="sm" onClick={() => startEdit(country)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(country.id)}>
-                        <Trash2 className="h-4 w-4 text-error-500" />
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleToggleActive(country)}
+                        title={country.isActive !== false ? 'Désactiver' : 'Activer'}
+                      >
+                        {country.isActive !== false ? (
+                          <ToggleRight className="h-5 w-5 text-success-500" />
+                        ) : (
+                          <ToggleLeft className="h-5 w-5 text-gray-400" />
+                        )}
                       </Button>
                     </div>
                   </>
