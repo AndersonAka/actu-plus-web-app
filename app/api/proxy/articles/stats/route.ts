@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { apiConfig } from '@/config/api.config';
 import { cookies } from 'next/headers';
+import { authConfig } from '@/lib/auth/config';
 
 // GET /api/proxy/articles/stats - Statistiques agrégées des articles (Admin/Manager)
 export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const accessToken = cookieStore.get('access_token')?.value;
+    const accessToken = cookieStore.get(authConfig.cookies.accessToken)?.value;
 
     if (!accessToken) {
       return NextResponse.json(
