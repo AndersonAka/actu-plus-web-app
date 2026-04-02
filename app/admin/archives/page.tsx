@@ -362,15 +362,15 @@ export default function AdminArchivesPage() {
                       </Badge>
                     </div>
                     
-                    {/* Bouton désarchiver (visible au survol) */}
-                    <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {/* Bouton désarchiver */}
+                    <div className="absolute bottom-3 left-3 right-3">
                       <Button
-                        variant="secondary"
+                        variant="primary"
                         size="sm"
                         onClick={() => handleUnarchive(article.id)}
-                        className="bg-white shadow-md hover:bg-primary-50"
+                        className="w-full shadow-lg"
                       >
-                        <RotateCcw className="mr-1 h-3 w-3" />
+                        <RotateCcw className="mr-2 h-4 w-4" />
                         Désarchiver
                       </Button>
                     </div>
