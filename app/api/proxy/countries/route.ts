@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { apiConfig } from '@/config/api.config';
 import { cookies } from 'next/headers';
+import { authConfig } from '@/lib/auth/config';
 
 // GET /api/proxy/countries - Liste des pays
 export async function GET(request: NextRequest) {
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const accessToken = cookieStore.get('access_token')?.value;
+    const accessToken = cookieStore.get(authConfig.cookies.accessToken)?.value;
 
     if (!accessToken) {
       return NextResponse.json(

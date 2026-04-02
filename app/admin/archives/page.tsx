@@ -362,7 +362,7 @@ export default function AdminArchivesPage() {
             variant="outline"
             size="sm"
             className="mt-4"
-            onClick={loadData}
+            onClick={() => loadData(searchQuery)}
           >
             Réessayer
           </Button>
@@ -391,7 +391,7 @@ export default function AdminArchivesPage() {
                 <p className="text-sm text-gray-500">
                   {currentArticles.length} article{currentArticles.length !== 1 ? 's' : ''} trouvé{currentArticles.length !== 1 ? 's' : ''}
                 </p>
-                <Button variant="outline" size="sm" onClick={loadData}>
+                <Button variant="outline" size="sm" onClick={() => loadData(searchQuery)}>
                   <Filter className="mr-2 h-4 w-4" />
                   Actualiser
                 </Button>
