@@ -95,6 +95,7 @@ const Sidebar = ({ variant }: SidebarProps) => {
       { href: '/admin/users', label: 'Utilisateurs', icon: Users },
       { href: '/admin/user-analytics', label: 'Données statistiques', icon: BarChart3 },
       { href: '/admin/veilleur-analytics', label: 'Suivi veilleurs', icon:  Eye},
+      { href: '/admin/archives', label: 'Archivages', icon: Archive },
       { href: '/admin/categories', label: 'Catégories', icon: Tag },
       { href: '/admin/countries', label: 'Pays', icon: Globe },
       { href: '/admin/subscriptions', label: 'Abonnements', icon: CreditCard },
