@@ -340,14 +340,35 @@ export default function AdminArchivesPage() {
                 </Button>
               </div>
               
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
                 {currentArticles.map((article) => (
-                  <div key={article.id} className="relative group">
-                    <ArticleCard article={article} variant="compact" />
+                  <div key={article.id} className="flex items-center justify-between p-4 hover:bg-gray-50">
+                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                      {/* Image */}
+                      {(article.coverImage || article.imageUrl) && (
+                        <div className="h-16 w-24 shrink-0 overflow-hidden rounded-md bg-gray-100">
+                          <img 
+                            src={article.coverImage || article.imageUrl} 
+                            alt={article.title}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Info */}
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-medium text-gray-900 truncate">{article.title}</h4>
+                        <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
+                          <span>{article.category?.name}</span>
+                          <span>•</span>
+                          <span>{new Date(article.createdAt).toLocaleDateString('fr-FR')}</span>
+                        </div>
+                      </div>
+                    </div>
                     
-                    {/* Badge d'archivage */}
-                    <div className="absolute top-2 right-2 flex items-center gap-2">
-                      <Badge variant="secondary" size="sm" className="bg-gray-900 text-white">
+                    {/* Actions */}
+                    <div className="flex items-center gap-3 ml-4">
+                      <Badge variant="secondary" size="sm" className={activeTab === 'system' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}>
                         {activeTab === 'system' ? (
                           <>
                             <Clock className="mr-1 h-3 w-3" />
@@ -360,15 +381,12 @@ export default function AdminArchivesPage() {
                           </>
                         )}
                       </Badge>
-                    </div>
-                    
-                    {/* Bouton désarchiver */}
-                    <div className="absolute bottom-3 left-3 right-3">
+                      
                       <Button
-                        variant="primary"
+                        variant="outline"
                         size="sm"
                         onClick={() => handleUnarchive(article.id)}
-                        className="w-full shadow-lg"
+                        className="whitespace-nowrap"
                       >
                         <RotateCcw className="mr-2 h-4 w-4" />
                         Désarchiver
