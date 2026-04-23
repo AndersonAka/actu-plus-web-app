@@ -12,6 +12,7 @@ export default function ModerateurPublishedPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalPublished, setTotalPublished] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchInput, setSearchInput] = useState('');
 
@@ -41,6 +42,7 @@ export default function ModerateurPublishedPage() {
             total = articlesList.length;
           }
           setArticles(articlesList);
+          setTotalPublished(total);
           setTotalPages(Math.ceil(total / 10) || 1);
         }
       } catch (error) {
@@ -64,7 +66,9 @@ export default function ModerateurPublishedPage() {
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Articles publiés</h1>
-          <p className="mt-1 text-gray-600">Articles publiés et visibles au public</p>
+          <p className="mt-1 text-gray-600">
+            Articles publiés et visibles au public ({totalPublished} au total)
+          </p>
         </div>
         <form onSubmit={handleSearch} className="flex gap-2">
           <div className="relative">
@@ -97,6 +101,16 @@ export default function ModerateurPublishedPage() {
         />
       ) : (
         <>
+          {totalPages > 1 && (
+            <div className="mb-4 rounded-lg border border-gray-200 bg-white px-4 py-3">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
+
           <Card padding="none">
             <div className="divide-y divide-gray-100">
               {articles.map((article) => (

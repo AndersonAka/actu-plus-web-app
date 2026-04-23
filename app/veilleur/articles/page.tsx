@@ -169,6 +169,8 @@ export default function VeilleurArticlesPage() {
             {search && (
               <button
                 onClick={() => setSearch('')}
+                aria-label="Effacer la recherche"
+                title="Effacer la recherche"
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 <X className="h-3.5 w-3.5" />
@@ -181,6 +183,7 @@ export default function VeilleurArticlesPage() {
             <select
               value={statusFilter}
               onChange={(e) => handleStatusChange(e.target.value)}
+              aria-label="Filtrer par statut"
               className="rounded-lg border border-gray-200 bg-gray-50 py-2 pl-3 pr-8 text-sm text-gray-700 focus:border-primary-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             >
               {statusOptions.map((option) => (
@@ -209,6 +212,16 @@ export default function VeilleurArticlesPage() {
             )}
           </div>
         </div>
+
+        {totalPages > 1 && !isLoading && (
+          <div className="border-b border-gray-200 px-4 py-3">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
 
         {/* Liste des articles */}
         {isLoading ? (

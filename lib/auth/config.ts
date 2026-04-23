@@ -16,13 +16,13 @@ export const authConfig = {
     maxAge: 60 * 60 * 24 * 7, // 7 jours
   },
   
-  // Options pour le cookie access token (plus court)
+  // Options pour le cookie access token (durée augmentée avant déconnexion)
   accessTokenCookieOptions: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax' as const,
     path: '/',
-    maxAge: 60 * 60, // 1 heure
+    maxAge: 60 * 60 * 4, // 4 heures
   },
   
   // Routes publiques (pas besoin d'authentification)
