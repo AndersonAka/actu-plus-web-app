@@ -271,6 +271,16 @@ export default function AdminArticlesPage() {
         />
       ) : (
         <>
+          {totalPages > 1 && (
+            <div className="mb-4 rounded-lg border border-gray-200 bg-white px-4 py-3">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
+
           <Card padding="none">
             <div className="overflow-x-auto">
               <table className="w-full">

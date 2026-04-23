@@ -363,6 +363,16 @@ export default function AdminUsersPage() {
         />
       ) : (
         <>
+          {totalPages > 1 && (
+            <div className="mb-4 rounded-lg border border-gray-200 bg-white px-4 py-3">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
+
           <Card padding="none">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -478,7 +488,12 @@ export default function AdminUsersPage() {
               <h2 className="text-xl font-semibold text-gray-900">
                 Détail de l'utilisateur
               </h2>
-              <button onClick={closeDetailModal} className="text-gray-400 hover:text-gray-600">
+              <button
+                onClick={closeDetailModal}
+                className="text-gray-400 hover:text-gray-600"
+                aria-label="Fermer le détail utilisateur"
+                title="Fermer"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -593,6 +608,8 @@ export default function AdminUsersPage() {
                 onClick={closeDeactivateConfirm}
                 className="text-gray-400 hover:text-gray-600"
                 disabled={isDeactivating}
+                aria-label="Fermer la confirmation"
+                title="Fermer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -625,7 +642,12 @@ export default function AdminUsersPage() {
               <h2 className="text-xl font-semibold text-gray-900">
                 {editingUser ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}
               </h2>
-              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
+              <button
+                onClick={closeModal}
+                className="text-gray-400 hover:text-gray-600"
+                aria-label="Fermer le formulaire utilisateur"
+                title="Fermer"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>

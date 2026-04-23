@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, EmptyState, Alert, Badge, Button } from '@/components/atoms';
+import { Pagination } from '@/components/molecules';
 import { Bell, Clock, FileText, CreditCard, UserPlus, Eye, EyeOff, Check } from 'lucide-react';
 
 interface Notification {
@@ -198,7 +199,7 @@ export default function AdminNotificationsPage() {
                   <button
                     onClick={() => markAsRead(notif.id)}
                     disabled={markingRead === notif.id}
-                    className="ml-2 flex-shrink-0 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                    className="ml-2 shrink-0 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
                   >
                     {markingRead === notif.id ? (
                       <span className="flex items-center gap-1">
@@ -253,6 +254,7 @@ export default function AdminNotificationsPage() {
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
+          aria-label="Filtrer les notifications par type"
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
         >
           {notificationTypes.map((t) => (
@@ -264,6 +266,7 @@ export default function AdminNotificationsPage() {
         <select
           value={filterRead}
           onChange={(e) => setFilterRead(e.target.value)}
+          aria-label="Filtrer les notifications par statut de lecture"
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
         >
           <option value="">Tous les statuts</option>
@@ -271,6 +274,19 @@ export default function AdminNotificationsPage() {
           <option value="true">Lus</option>
         </select>
       </div>
+
+      {totalPages > 1 && !isLoading && (
+        <div className="mb-4 rounded-lg border border-gray-200 bg-white px-4 py-3">
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Page {page} sur {totalPages} ({total} notifications)
+          </p>
+        </div>
+      )}
 
       {/* Contenu */}
       {isLoading ? (
@@ -285,26 +301,12 @@ export default function AdminNotificationsPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-between">
-              <p className="text-sm text-gray-600">
-                Page {page} sur {totalPages} ({total} notifications)
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setPage(Math.max(1, page - 1))}
-                  disabled={page === 1}
-                  className="rounded-lg border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
-                >
-                  Précédent
-                </button>
-                <button
-                  onClick={() => setPage(Math.min(totalPages, page + 1))}
-                  disabled={page === totalPages}
-                  className="rounded-lg border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
-                >
-                  Suivant
-                </button>
-              </div>
+            <div className="mt-6">
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+              />
             </div>
           )}
         </>

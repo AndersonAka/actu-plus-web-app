@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/atoms';
 import { Button } from '@/components/atoms';
-import { ArticleCard } from '@/components/molecules';
+import { Pagination } from '@/components/molecules';
 import { 
   Archive, 
   Clock, 
@@ -66,6 +66,8 @@ export default function AdminArchivesPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   // Charger les archives système
   const loadSystemArchives = useCallback(async (search?: string) => {
@@ -139,6 +141,7 @@ export default function AdminArchivesPage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearchQuery(searchInput.trim());
+    setCurrentPage(1);
     loadData(searchInput.trim());
   };
 
@@ -146,6 +149,7 @@ export default function AdminArchivesPage() {
   const clearSearch = () => {
     setSearchInput('');
     setSearchQuery('');
+    setCurrentPage(1);
     loadData('');
   };
 
@@ -193,7 +197,25 @@ export default function AdminArchivesPage() {
   ];
 
   const currentArticles = activeTab === 'system' ? systemArticles : watcherArticles;
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(currentArticles.length / PAGE_SIZE)),
+    [currentArticles.length]
+  );
+  const paginatedCurrentArticles = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return currentArticles.slice(start, start + PAGE_SIZE);
+  }, [currentArticles, currentPage]);
   const currentTab = tabs.find(tab => tab.id === activeTab);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   if (loading) {
     return (
@@ -319,6 +341,8 @@ export default function AdminArchivesPage() {
             <button
               type="button"
               onClick={clearSearch}
+              aria-label="Effacer la recherche"
+              title="Effacer la recherche"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               <X className="h-4 w-4" />
@@ -396,9 +420,19 @@ export default function AdminArchivesPage() {
                   Actualiser
                 </Button>
               </div>
+
+              {totalPages > 1 && (
+                <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
+              )}
               
               <div className="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
-                {currentArticles.map((article) => (
+                {paginatedCurrentArticles.map((article) => (
                   <div key={article.id} className="flex items-center justify-between p-4 hover:bg-gray-50">
                     <div className="flex items-center gap-4 min-w-0 flex-1">
                       {/* Image */}
@@ -452,6 +486,16 @@ export default function AdminArchivesPage() {
                   </div>
                 ))}
               </div>
+
+              {totalPages > 1 && (
+                <div className="mt-2">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
+              )}
             </div>
           )}
         </>
