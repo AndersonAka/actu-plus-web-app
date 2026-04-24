@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/atoms';
 import { Button } from '@/components/atoms';
@@ -21,6 +21,7 @@ import {
 import { Article, ArticleStatus } from '@/types';
 
 type ArchiveType = 'system' | 'watcher';
+const PAGE_SIZE = 10;
 
 interface ArchiveStats {
   system: {
@@ -59,53 +60,47 @@ function mapArticle(data: any): Article {
 
 export default function AdminArchivesPage() {
   const [activeTab, setActiveTab] = useState<ArchiveType>('system');
-  const [systemArticles, setSystemArticles] = useState<Article[]>([]);
-  const [watcherArticles, setWatcherArticles] = useState<Article[]>([]);
+  const [currentArticles, setCurrentArticles] = useState<Article[]>([]);
+  const [currentTotal, setCurrentTotal] = useState(0);
   const [stats, setStats] = useState<ArchiveStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 10;
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Charger les archives système
-  const loadSystemArchives = useCallback(async (search?: string) => {
+  const loadArchives = useCallback(async (type: ArchiveType, page = 1, search?: string) => {
     try {
       const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
-      // Articles archivés automatiquement (archivedById IS NULL) - via endpoint admin
-      const response = await fetch(`/api/proxy/articles/admin?isArchive=true&archivedBySystem=true&limit=50${searchParam}`);
-      
-      if (!response.ok) {
-        throw new Error('Erreur lors du chargement des archives système');
-      }
-      
-      const result = await response.json();
-      const articles = (result.data?.data || result.data || []).map(mapArticle);
-      setSystemArticles(articles);
-    } catch (err) {
-      console.error('Erreur lors du chargement des archives système:', err);
-      setError('Impossible de charger les archives système');
-    }
-  }, []);
+      const modeParam = type === 'system' ? 'archivedBySystem=true' : 'archivedByWatcher=true';
+      const response = await fetch(
+        `/api/proxy/articles/admin?isArchive=true&${modeParam}&page=${page}&limit=${PAGE_SIZE}${searchParam}`
+      );
 
-  // Charger les archives veilleur
-  const loadWatcherArchives = useCallback(async (search?: string) => {
-    try {
-      const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
-      // Articles archivés par les veilleurs (archivedById IS NOT NULL) - via endpoint admin
-      const response = await fetch(`/api/proxy/articles/admin?isArchive=true&archivedByWatcher=true&limit=50${searchParam}`);
-      
       if (!response.ok) {
-        throw new Error('Erreur lors du chargement des archives veilleur');
+        throw new Error('Erreur lors du chargement des archives');
       }
-      
+
       const result = await response.json();
-      const articles = (result.data?.data || result.data || []).map(mapArticle);
-      setWatcherArticles(articles);
+      const payload = result?.data ?? result;
+      const articlesRaw = Array.isArray(payload?.data)
+        ? payload.data
+        : Array.isArray(payload)
+          ? payload
+          : [];
+      const nextArticles = articlesRaw.map(mapArticle);
+      const nextTotal = typeof payload?.total === 'number' ? payload.total : nextArticles.length;
+      const nextTotalPages = typeof payload?.totalPages === 'number'
+        ? payload.totalPages
+        : Math.max(1, Math.ceil(nextTotal / PAGE_SIZE));
+
+      setCurrentArticles(nextArticles);
+      setCurrentTotal(nextTotal);
+      setTotalPages(Math.max(1, nextTotalPages));
     } catch (err) {
-      console.error('Erreur lors du chargement des archives veilleur:', err);
-      setError('Impossible de charger les archives veilleur');
+      console.error('Erreur lors du chargement des archives:', err);
+      setError('Impossible de charger les archives');
     }
   }, []);
 
@@ -127,15 +122,14 @@ export default function AdminArchivesPage() {
   const loadData = useCallback(async (search?: string) => {
     setLoading(true);
     setError(null);
-    
+
     await Promise.all([
-      loadSystemArchives(search),
-      loadWatcherArchives(search),
-      loadStats()
+      loadArchives(activeTab, currentPage, search),
+      loadStats(),
     ]);
-    
+
     setLoading(false);
-  }, [loadSystemArchives, loadWatcherArchives, loadStats]);
+  }, [activeTab, currentPage, loadArchives, loadStats]);
 
   // Rechercher
   const handleSearch = (e: React.FormEvent) => {
@@ -164,7 +158,7 @@ export default function AdminArchivesPage() {
       
       if (response.ok) {
         // Recharger les données
-        loadData();
+        loadData(searchQuery);
       } else {
         const data = await response.json();
         alert(data.message || 'Erreur lors du désarchivage');
@@ -176,36 +170,8 @@ export default function AdminArchivesPage() {
   };
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  const tabs = [
-    {
-      id: 'system' as ArchiveType,
-      label: 'Archivés par le système',
-      icon: Clock,
-      description: 'Articles archivés automatiquement après 24h',
-      count: systemArticles.length,
-    },
-    {
-      id: 'watcher' as ArchiveType,
-      label: 'Archivés par les veilleurs',
-      icon: User,
-      description: 'Articles archivés manuellement par les veilleurs',
-      count: watcherArticles.length,
-    },
-  ];
-
-  const currentArticles = activeTab === 'system' ? systemArticles : watcherArticles;
-  const totalPages = useMemo(
-    () => Math.max(1, Math.ceil(currentArticles.length / PAGE_SIZE)),
-    [currentArticles.length]
-  );
-  const paginatedCurrentArticles = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return currentArticles.slice(start, start + PAGE_SIZE);
-  }, [currentArticles, currentPage]);
-  const currentTab = tabs.find(tab => tab.id === activeTab);
+    loadData(searchQuery);
+  }, [loadData, searchQuery]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -216,6 +182,25 @@ export default function AdminArchivesPage() {
       setCurrentPage(totalPages);
     }
   }, [currentPage, totalPages]);
+
+  const tabs = [
+    {
+      id: 'system' as ArchiveType,
+      label: 'Archivés par le système',
+      icon: Clock,
+      description: 'Articles archivés automatiquement après 24h',
+      count: stats?.system.total ?? 0,
+    },
+    {
+      id: 'watcher' as ArchiveType,
+      label: 'Archivés par les veilleurs',
+      icon: User,
+      description: 'Articles archivés manuellement par les veilleurs',
+      count: stats?.watcher.total ?? 0,
+    },
+  ];
+
+  const currentTab = tabs.find(tab => tab.id === activeTab);
 
   if (loading) {
     return (
@@ -403,9 +388,9 @@ export default function AdminArchivesPage() {
                 Aucun article archivé
               </h3>
               <p className="mt-2 text-sm text-gray-500">
-                {activeTab === 'system' 
+                {activeTab === 'system'
                   ? 'Aucun article n\'a été archivé automatiquement par le système.'
-                  : 'Aucun article n\'a été archivé par les veilleurs.'
+                  : 'Aucun article n\'a été archivé manuellement.'
                 }
               </p>
             </div>
@@ -413,7 +398,7 @@ export default function AdminArchivesPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-sm text-gray-500">
-                  {currentArticles.length} article{currentArticles.length !== 1 ? 's' : ''} trouvé{currentArticles.length !== 1 ? 's' : ''}
+                  {currentTotal} article{currentTotal !== 1 ? 's' : ''} trouvé{currentTotal !== 1 ? 's' : ''}
                 </p>
                 <Button variant="outline" size="sm" onClick={() => loadData(searchQuery)}>
                   <Filter className="mr-2 h-4 w-4" />
@@ -430,22 +415,22 @@ export default function AdminArchivesPage() {
                   />
                 </div>
               )}
-              
+
               <div className="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
-                {paginatedCurrentArticles.map((article) => (
+                {currentArticles.map((article) => (
                   <div key={article.id} className="flex items-center justify-between p-4 hover:bg-gray-50">
                     <div className="flex items-center gap-4 min-w-0 flex-1">
                       {/* Image */}
                       {(article.coverImage || article.imageUrl) && (
                         <div className="h-16 w-24 shrink-0 overflow-hidden rounded-md bg-gray-100">
-                          <img 
-                            src={article.coverImage || article.imageUrl} 
+                          <img
+                            src={article.coverImage || article.imageUrl}
                             alt={article.title}
                             className="h-full w-full object-cover"
                           />
                         </div>
                       )}
-                      
+
                       {/* Info */}
                       <div className="min-w-0 flex-1">
                         <h4 className="font-medium text-gray-900 truncate">{article.title}</h4>
@@ -456,7 +441,7 @@ export default function AdminArchivesPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Actions */}
                     <div className="flex items-center gap-3 ml-4">
                       <Badge variant="secondary" size="sm" className={activeTab === 'system' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}>
@@ -468,11 +453,11 @@ export default function AdminArchivesPage() {
                         ) : (
                           <>
                             <User className="mr-1 h-3 w-3" />
-                            Veilleur
+                            Manuel
                           </>
                         )}
                       </Badge>
-                      
+
                       <Button
                         variant="outline"
                         size="sm"

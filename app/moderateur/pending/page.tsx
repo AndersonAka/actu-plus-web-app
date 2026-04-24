@@ -21,21 +21,30 @@ export default function ModerateurPendingPage() {
         );
         if (response.ok) {
           const result = await response.json();
-          // Parser la réponse API
-          let articlesList: Article[] = [];
-          let total = 0;
-          if (result.data?.data && Array.isArray(result.data.data)) {
-            articlesList = result.data.data;
-            total = result.data.meta?.total || articlesList.length;
-          } else if (result.data && Array.isArray(result.data)) {
-            articlesList = result.data;
-            total = articlesList.length;
-          } else if (Array.isArray(result)) {
-            articlesList = result;
-            total = articlesList.length;
-          }
+          // Parser la réponse API (formats backend/proxy possibles)
+          const payload = result?.data ?? result;
+          const articlesList: Article[] = Array.isArray(payload?.data)
+            ? payload.data
+            : Array.isArray(payload?.articles)
+              ? payload.articles
+              : Array.isArray(payload)
+                ? payload
+                : [];
+
+          const total =
+            typeof payload?.total === 'number'
+              ? payload.total
+              : typeof payload?.meta?.total === 'number'
+                ? payload.meta.total
+                : articlesList.length;
+
+          const computedTotalPages =
+            typeof payload?.totalPages === 'number'
+              ? payload.totalPages
+              : Math.ceil(total / 10) || 1;
+
           setArticles(articlesList);
-          setTotalPages(Math.ceil(total / 10) || 1);
+          setTotalPages(computedTotalPages);
         }
       } catch (error) {
         console.error('Error fetching articles:', error);
