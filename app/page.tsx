@@ -35,12 +35,19 @@ function mapArticle(data: any): Article {
 async function getFeaturedArticles(): Promise<Article[]> {
   try {
     const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles?isFeatured=true&limit=10&publishedToday=true&contentType=article`,
+      `${apiConfig.baseUrl}/api/articles/featured-home?limit=10&publishedToday=true`,
       { cache: 'no-store' }
     );
     if (!response.ok) return [];
     const result = await response.json();
-    const articles = result.data?.data || [];
+    let articles: any[] = [];
+    if (Array.isArray(result)) {
+      articles = result;
+    } else if (Array.isArray(result.data)) {
+      articles = result.data;
+    } else if (Array.isArray(result.data?.data)) {
+      articles = result.data.data;
+    }
     return articles.map(mapArticle);
   } catch (error) {
     console.error('Error fetching featured articles:', error);

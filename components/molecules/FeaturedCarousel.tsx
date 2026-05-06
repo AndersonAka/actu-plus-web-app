@@ -181,12 +181,14 @@ const FeaturedCarousel = ({ articles, className }: FeaturedCarouselProps) => {
           <button
             onClick={handlePrev}
             className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow-lg transition-colors hover:bg-white"
+            title="Précédent"
           >
             <ChevronLeft className="h-5 w-5 text-gray-800" />
           </button>
           <button
             onClick={handleNext}
             className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow-lg transition-colors hover:bg-white"
+            title="Suivant"
           >
             <ChevronRight className="h-5 w-5 text-gray-800" />
           </button>
@@ -203,6 +205,8 @@ const FeaturedCarousel = ({ articles, className }: FeaturedCarouselProps) => {
                 setActiveIndex(index);
                 scrollToIndex(index);
               }}
+              title={`Aller au slide ${index + 1}`}
+              aria-label={`Aller au slide ${index + 1}`}
               className={cn(
                 'h-2 rounded-full transition-all',
                 activeIndex === index
