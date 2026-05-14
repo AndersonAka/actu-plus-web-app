@@ -3,7 +3,10 @@ import { cookies } from 'next/headers';
 import { apiConfig } from '@/config/api.config';
 import { authConfig } from '@/lib/auth/config';
 
-/** POST /api/proxy/brevo/test-email — e-mail de test Brevo (admin) */
+/**
+ * POST /api/proxy/onesignal/email
+ * Relaie vers le backend Nest : POST /api/onesignal/email (e-mail transactionnel via Brevo, admin).
+ */
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = await cookies();
@@ -15,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const response = await fetch(`${apiConfig.baseUrl}/api/brevo/test-email`, {
+    const response = await fetch(`${apiConfig.baseUrl}/api/onesignal/email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -33,7 +36,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Erreur serveur';
-    console.error('Brevo test-email proxy error:', error);
+    console.error('OneSignal email proxy error:', error);
     return NextResponse.json({ message }, { status: 500 });
   }
 }

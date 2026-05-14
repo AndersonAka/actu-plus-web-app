@@ -20,13 +20,19 @@ export default function AdminEmailTestPage() {
     setLastResponse(null);
 
     try {
-      const payload: { to: string; subject?: string; htmlBody?: string } = {
-        to: to.trim(),
-      };
-      if (subject.trim()) payload.subject = subject.trim();
-      if (htmlBody.trim()) payload.htmlBody = htmlBody.trim();
+      const defaultSubject = `Actu Plus — test Brevo (${new Date().toISOString()})`;
+      const defaultHtml = `<p>Ceci est un <strong>e-mail de test</strong> envoyé depuis l’administration Actu Plus.</p>
+<p>Horodatage (UTC) : <code>${new Date().toISOString()}</code></p>
+<p>Si vous recevez ce message, l’API transactionnelle Brevo fonctionne correctement.</p>`;
 
-      const response = await fetch('/api/proxy/brevo/test-email', {
+      const payload = {
+        includeEmailTokens: [to.trim()],
+        subject: subject.trim() || defaultSubject,
+        body: htmlBody.trim() || defaultHtml,
+        includeUnsubscribed: true,
+      };
+
+      const response = await fetch('/api/proxy/onesignal/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
