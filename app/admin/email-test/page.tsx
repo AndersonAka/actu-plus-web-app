@@ -4,6 +4,15 @@ import { useState } from 'react';
 import { Button, Card, CardHeader, CardTitle, CardContent, Input, TextArea, Alert } from '@/components/atoms';
 import { Mail, Send } from 'lucide-react';
 
+function extractApiPayload(data: unknown): Record<string, unknown> | null {
+  if (!data || typeof data !== 'object') return null;
+  const o = data as { data?: unknown };
+  if (o.data !== undefined && o.data !== null && typeof o.data === 'object') {
+    return o.data as Record<string, unknown>;
+  }
+  return data as Record<string, unknown>;
+}
+
 export default function AdminEmailTestPage() {
   const [to, setTo] = useState('');
   const [subject, setSubject] = useState('');
@@ -52,8 +61,18 @@ export default function AdminEmailTestPage() {
       }
 
       setLastResponse(data as Record<string, unknown>);
+
+      const brevo = extractApiPayload(data);
+      const messageId =
+        (typeof brevo?.messageId === 'string' && brevo.messageId) ||
+        (Array.isArray(brevo?.messageIds) && typeof brevo.messageIds[0] === 'string'
+          ? brevo.messageIds[0]
+          : undefined);
+
       setSuccess(
-        'E-mail accepté par Brevo. Vérifiez la boîte du destinataire (et les courriers indésirables).',
+        messageId
+          ? `Brevo a accepté l’e-mail (messageId : ${messageId}). Si rien n’arrive, suivez les vérifications ci-dessous.`
+          : `Brevo a accepté l’e-mail. Si rien n’arrive, suivez les vérifications ci-dessous.`,
       );
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
@@ -82,6 +101,29 @@ export default function AdminEmailTestPage() {
         <CardContent className="space-y-4">
           {success && <Alert variant="success">{success}</Alert>}
           {error && <Alert variant="error">{error}</Alert>}
+
+          <Alert variant="info" title="L’API réussit mais vous ne voyez pas le mail ?">
+            <ul className="mt-2 list-inside list-disc space-y-1 text-sm">
+              <li>
+                Dans Brevo : <strong>Paramètres</strong> → <strong>Expéditeurs</strong> — l’adresse
+                d’envoi (ex. no-reply@…) doit être <strong>validée</strong> (e-mail de confirmation
+                Brevo).
+              </li>
+              <li>
+                Toujours dans Brevo : <strong>Logs</strong> / <strong>E-mails transactionnels</strong>{' '}
+                — recherchez le <code className="rounded bg-gray-100 px-1">messageId</code> ci-dessous
+                : statut délivré, reporté, bloqué ou rebond.
+              </li>
+              <li>
+                Domaine : enregistrements <strong>SPF</strong> et <strong>DKIM</strong> pour le domaine
+                de l’expéditeur (sinon filtres anti-spam des FAI).
+              </li>
+              <li>
+                Côté destinataire : courrier indésirable, onglet « Promotions », délai de quelques
+                minutes.
+              </li>
+            </ul>
+          </Alert>
 
           <div>
             <label htmlFor="email-test-to" className="mb-1 block text-sm font-medium text-gray-700">
