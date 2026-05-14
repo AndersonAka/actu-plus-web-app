@@ -24,6 +24,7 @@ function mapArticle(data: any): Article {
     author: data.author,
     status: data.isPublished ? ArticleStatus.PUBLISHED : ArticleStatus.DRAFT,
     isFeatured: data.isFeatured,
+    isFeaturedHome: data.isFeaturedHome,
     isPremium: data.isPremium || false,
     views: data.views || 0,
     publishedAt: data.publishedAt,

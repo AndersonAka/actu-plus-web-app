@@ -6,6 +6,15 @@ import { cn } from '@/lib/utils/cn';
 
 export type CountryCode = string;
 
+/**
+ * Country interface
+ * @interface Country
+ * @property {string} id - The id of the country
+ * @property {string} code - The code of the country
+ * @property {string} name - The name of the country
+ * @property {string} flag - The flag of the country
+ * @property {boolean} isActive - Whether the country is active
+ */
 export interface Country {
   id: string;
   code: string;

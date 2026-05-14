@@ -276,7 +276,7 @@ const ArticleCard = ({
                 {statusLabels[article.status].label}
               </Badge>
             )}
-            {article.isFeatured && !showStatus && (
+            {(article.isFeaturedHome || article.isFeatured) && !showStatus && (
               <Badge variant="primary">À la une</Badge>
             )}
             {scopeLabel && (

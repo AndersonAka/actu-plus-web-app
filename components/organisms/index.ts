@@ -18,3 +18,4 @@ export type { ArticleViewProps } from './ArticleView';
 
 export { CookieBanner } from './CookieBanner';
 export { CookieSettingsModal } from './CookieSettingsModal';
+export { AxeptioIntegration } from './AxeptioIntegration';

@@ -7,6 +7,7 @@ import {
   CookieCategory,
   DEFAULT_PREFERENCES,
 } from '@/lib/types/cookie.types';
+import { isAxeptioEnabled } from '@/lib/axeptio/config';
 
 const STORAGE_KEY = 'actu_plus_cookie_consent';
 
@@ -57,7 +58,7 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
     preferences: DEFAULT_PREFERENCES,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [showBanner, setShowBanner] = useState(false);
+  const [showBanner, setShowBanner] = useState(() => !isAxeptioEnabled());
   const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
@@ -66,7 +67,7 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
       setState(stored);
       setShowBanner(false);
     } else {
-      setShowBanner(true);
+      setShowBanner(!isAxeptioEnabled());
     }
     setIsLoading(false);
   }, []);
@@ -132,6 +133,18 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
   }, []);
 
   const openSettings = useCallback(() => {
+    if (isAxeptioEnabled()) {
+      if (typeof window === 'undefined') return;
+      if (typeof window.openAxeptioCookies === 'function') {
+        window.openAxeptioCookies();
+        return;
+      }
+      void 0 === window._axcb && (window._axcb = []);
+      window._axcb.push((axeptio) => {
+        axeptio.openCookies?.();
+      });
+      return;
+    }
     setShowSettings(true);
   }, []);
 
