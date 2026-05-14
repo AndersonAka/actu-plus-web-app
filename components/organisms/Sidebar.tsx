@@ -27,6 +27,7 @@ import {
   Building2,
   HelpCircle,
   Archive,
+  Mail,
 } from 'lucide-react';
 
 export interface SidebarProps {
@@ -103,6 +104,7 @@ const Sidebar = ({ variant }: SidebarProps) => {
       { href: '/admin/enterprise-subscriptions', label: 'Comptes Entreprise', icon: Building2 },
       { href: '/admin/messages', label: 'Messages', icon: MessageSquare },
       { href: '/admin/notifications', label: 'Notifications', icon: Bell },
+      { href: '/admin/email-test', label: 'Test e-mail (Brevo)', icon: Mail },
       { href: '/admin/settings', label: 'Paramètres', icon: Settings },
       { href: '/admin/aide', label: 'Aide', icon: HelpCircle },
     ],
