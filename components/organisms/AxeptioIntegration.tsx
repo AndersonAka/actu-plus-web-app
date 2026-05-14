@@ -5,6 +5,7 @@ import { useCookieConsent } from '@/lib/contexts/CookieConsentContext';
 import {
   AXEPTIO_CLIENT_ID,
   AXEPTIO_COOKIES_VERSION,
+  hasValidAxeptioProjectIds,
   isAxeptioEnabled,
 } from '@/lib/axeptio/config';
 import { mapAxeptioChoicesToPreferences } from '@/lib/axeptio/mapAxeptioChoices';
@@ -17,7 +18,13 @@ export function AxeptioIntegration() {
   const { savePreferences } = useCookieConsent();
 
   useEffect(() => {
-    if (!isAxeptioEnabled() || typeof window === 'undefined') return;
+    if (
+      typeof window === 'undefined' ||
+      !isAxeptioEnabled() ||
+      !hasValidAxeptioProjectIds()
+    ) {
+      return;
+    }
 
     if (window.__axeptioActuPlusInit) return;
     window.__axeptioActuPlusInit = true;
