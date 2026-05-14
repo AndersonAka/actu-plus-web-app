@@ -7,23 +7,14 @@ import {
   CookieCategory,
   DEFAULT_PREFERENCES,
 } from '@/lib/types/cookie.types';
-import { isAxeptioEnabled } from '@/lib/axeptio/config';
 
 const STORAGE_KEY = 'actu_plus_cookie_consent';
 
 interface CookieConsentContextType {
   state: CookieConsentState;
   isLoading: boolean;
-  showBanner: boolean;
-  showSettings: boolean;
-  acceptAll: () => void;
-  rejectAll: () => void;
   savePreferences: (preferences: CookiePreferences) => void;
-  updatePreference: (category: CookieCategory, value: boolean) => void;
   openSettings: () => void;
-  closeSettings: () => void;
-  closeBanner: () => void;
-  resetConsent: () => void;
   hasConsent: (category: CookieCategory) => boolean;
 }
 
@@ -34,7 +25,7 @@ const getStoredConsent = (): CookieConsentState | null => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      return JSON.parse(stored) as CookieConsentState;
     }
   } catch (error) {
     console.error('Error reading cookie consent:', error);
@@ -58,56 +49,14 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
     preferences: DEFAULT_PREFERENCES,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [showBanner, setShowBanner] = useState(() => !isAxeptioEnabled());
-  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     const stored = getStoredConsent();
     if (stored) {
       setState(stored);
-      setShowBanner(false);
-    } else {
-      setShowBanner(!isAxeptioEnabled());
     }
     setIsLoading(false);
   }, []);
-
-  const saveState = useCallback((newState: CookieConsentState) => {
-    setState(newState);
-    storeConsent(newState);
-    setShowBanner(false);
-    setShowSettings(false);
-  }, []);
-
-  const acceptAll = useCallback(() => {
-    const newState: CookieConsentState = {
-      hasConsented: true,
-      consentDate: new Date().toISOString(),
-      preferences: {
-        necessary: true,
-        functional: true,
-        analytics: true,
-        marketing: true,
-        personalization: true,
-      },
-    };
-    saveState(newState);
-  }, [saveState]);
-
-  const rejectAll = useCallback(() => {
-    const newState: CookieConsentState = {
-      hasConsented: true,
-      consentDate: new Date().toISOString(),
-      preferences: {
-        necessary: true, // Toujours requis
-        functional: false,
-        analytics: false,
-        marketing: false,
-        personalization: false,
-      },
-    };
-    saveState(newState);
-  }, [saveState]);
 
   const savePreferences = useCallback((preferences: CookiePreferences) => {
     const newState: CookieConsentState = {
@@ -115,57 +64,23 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
       consentDate: new Date().toISOString(),
       preferences: {
         ...preferences,
-        necessary: true, // Force toujours true
+        necessary: true,
       },
     };
-    saveState(newState);
-  }, [saveState]);
-
-  const updatePreference = useCallback((category: CookieCategory, value: boolean) => {
-    if (category === 'necessary') return; // Cannot change necessary
-    setState((prev) => ({
-      ...prev,
-      preferences: {
-        ...prev.preferences,
-        [category]: value,
-      },
-    }));
+    setState(newState);
+    storeConsent(newState);
   }, []);
 
   const openSettings = useCallback(() => {
-    if (isAxeptioEnabled()) {
-      if (typeof window === 'undefined') return;
-      if (typeof window.openAxeptioCookies === 'function') {
-        window.openAxeptioCookies();
-        return;
-      }
-      void 0 === window._axcb && (window._axcb = []);
-      window._axcb.push((axeptio) => {
-        axeptio.openCookies?.();
-      });
+    if (typeof window === 'undefined') return;
+    if (typeof window.openAxeptioCookies === 'function') {
+      window.openAxeptioCookies();
       return;
     }
-    setShowSettings(true);
-  }, []);
-
-  const closeSettings = useCallback(() => {
-    setShowSettings(false);
-  }, []);
-
-  const closeBanner = useCallback(() => {
-    setShowBanner(false);
-  }, []);
-
-  const resetConsent = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-    setState({
-      hasConsented: false,
-      consentDate: null,
-      preferences: DEFAULT_PREFERENCES,
+    void 0 === window._axcb && (window._axcb = []);
+    window._axcb.push((axeptio) => {
+      axeptio.openCookies?.();
     });
-    setShowBanner(true);
   }, []);
 
   const hasConsent = useCallback((category: CookieCategory): boolean => {
@@ -178,16 +93,8 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
       value={{
         state,
         isLoading,
-        showBanner,
-        showSettings,
-        acceptAll,
-        rejectAll,
         savePreferences,
-        updatePreference,
         openSettings,
-        closeSettings,
-        closeBanner,
-        resetConsent,
         hasConsent,
       }}
     >
