@@ -325,14 +325,19 @@ const sections: HelpSection[] = [
     title: 'Paramètres',
     description: 'Configurer les paramètres globaux de la plateforme.',
     content:
-      "La page « Paramètres » permet de configurer les paramètres globaux de la plateforme, notamment l'heure de cut-off éditorial.",
+      "La page « Paramètres » permet de configurer les règles éditoriales : cut-off horaire et durée de visibilité des sections d'accueil.",
     steps: [
       { text: 'Cliquez sur « Paramètres » dans le menu latéral.' },
-      { title: 'Heure de cut-off', text: "Définissez l'heure à laquelle les articles « du jour » sont recalculés. Par défaut : 00:00." },
+      { title: 'Heure de cut-off', text: "Définissez l'heure à laquelle le jour éditorial bascule (ex. 07:30)." },
+      {
+        title: 'Durée de visibilité (jours)',
+        text: 'Définissez combien de jours un article reste visible dans À la une, Focus et Résumé (1 à 30). La valeur 1 correspond au comportement « jour éditorial seul ».',
+      },
       { text: 'Cliquez sur « Enregistrer » pour sauvegarder les modifications.' },
     ],
     tips: [
-      'L\'heure de cut-off affecte la section « Articles du jour » sur la page d\'accueil.',
+      'Le cut-off horaire définit quel jour calendaire compte comme « aujourd\'hui » éditorial.',
+      'La durée en jours s\'applique uniquement aux sections À la une, Focus et Résumé — pas à la liste générale « Articles du jour ».',
     ],
     images: [
       {

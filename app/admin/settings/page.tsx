@@ -19,6 +19,7 @@ export default function AdminSettingsPage() {
     enablePremiumContent: true,
     maintenanceMode: false,
     cutOffTime: '07:30',
+    homeSectionsVisibilityDays: 1,
   });
 
   useEffect(() => {
@@ -36,6 +37,10 @@ export default function AdminSettingsPage() {
             enablePremiumContent: data.enablePremiumContent ?? true,
             maintenanceMode: data.maintenanceMode ?? false,
             cutOffTime: data.cutOffTime || '07:30',
+            homeSectionsVisibilityDays: Math.max(
+              1,
+              Math.min(30, parseInt(String(data.homeSectionsVisibilityDays ?? '1'), 10) || 1),
+            ),
           });
         }
       } catch (err) {
@@ -197,24 +202,52 @@ export default function AdminSettingsPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-primary-600" />
-              <CardTitle>Cut-off time éditorial</CardTitle>
+              <CardTitle>Règles éditoriales (accueil)</CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div>
               <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                Heure de début de la journée
+                Heure de cut-off
               </label>
               <input
+                title="Heure de cut-off"
                 type="time"
                 value={settings.cutOffTime}
                 onChange={(e) => setSettings(prev => ({ ...prev, cutOffTime: e.target.value }))}
                 className="rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
               <p className="mt-2 text-sm text-gray-500">
-                Avant cette heure, la page d'accueil affiche les articles de la journée précédente.
-                Après cette heure, elle affiche uniquement les articles du jour en cours.
-                Actuellement : <strong>{settings.cutOffTime}</strong>
+                Avant cette heure, le jour éditorial en cours correspond encore à la veille.
+                Après cette heure, il bascule sur le jour calendaire actuel.
+              </p>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                Durée de visibilité (jours)
+              </label>
+              <input
+                title="Durée de visibilité (jours)"
+                type="number"
+                min={1}
+                max={30}
+                value={settings.homeSectionsVisibilityDays}
+                onChange={(e) =>
+                  setSettings(prev => ({
+                    ...prev,
+                    homeSectionsVisibilityDays: Math.max(
+                      1,
+                      Math.min(30, parseInt(e.target.value, 10) || 1),
+                    ),
+                  }))
+                }
+                className="w-28 rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+              <p className="mt-2 text-sm text-gray-500">
+                Nombre de jours calendaires (relatifs au jour éditorial courant) pendant lesquels
+                un article publié reste visible dans les sections{' '}
+                <strong>À la une</strong>, <strong>Focus</strong> et <strong>Résumé</strong>.
+                La valeur <strong>1</strong> conserve le comportement actuel (jour éditorial seul).
               </p>
             </div>
           </CardContent>
