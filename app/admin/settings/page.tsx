@@ -53,6 +53,29 @@ export default function AdminSettingsPage() {
     fetchSettings();
   }, []);
 
+  const buildSettingsPayload = () => {
+    const contactEmail = settings.contactEmail.trim();
+    const supportEmail = settings.supportEmail.trim();
+    return {
+      siteName: settings.siteName,
+      siteDescription: settings.siteDescription,
+      ...(contactEmail ? { contactEmail } : {}),
+      ...(supportEmail ? { supportEmail } : {}),
+      enableNotifications: settings.enableNotifications,
+      enablePremiumContent: settings.enablePremiumContent,
+      maintenanceMode: settings.maintenanceMode,
+      cutOffTime: settings.cutOffTime,
+      homeSectionsVisibilityDays: settings.homeSectionsVisibilityDays,
+    };
+  };
+
+  const formatApiError = (data: { message?: string | string[] }) => {
+    if (Array.isArray(data.message)) {
+      return data.message.join(', ');
+    }
+    return data.message || 'Erreur lors de la sauvegarde';
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     setError(null);
@@ -61,14 +84,14 @@ export default function AdminSettingsPage() {
       const response = await fetch('/api/proxy/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
+        body: JSON.stringify(buildSettingsPayload()),
       });
 
       if (response.ok) {
         setSuccess('Paramètres enregistrés avec succès');
       } else {
         const data = await response.json();
-        throw new Error(data.message || 'Erreur lors de la sauvegarde');
+        throw new Error(formatApiError(data));
       }
     } catch (err: any) {
       setError(err.message);
