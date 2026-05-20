@@ -53,7 +53,7 @@ export default function AdminSettingsPage() {
     fetchSettings();
   }, []);
 
-  const buildSettingsPayload = () => {
+  const buildGeneralSettingsPayload = () => {
     const contactEmail = settings.contactEmail.trim();
     const supportEmail = settings.supportEmail.trim();
     return {
@@ -64,10 +64,13 @@ export default function AdminSettingsPage() {
       enableNotifications: settings.enableNotifications,
       enablePremiumContent: settings.enablePremiumContent,
       maintenanceMode: settings.maintenanceMode,
-      cutOffTime: settings.cutOffTime,
-      homeSectionsVisibilityDays: settings.homeSectionsVisibilityDays,
     };
   };
+
+  const buildEditorialSettingsPayload = () => ({
+    cutOffTime: settings.cutOffTime,
+    homeSectionsVisibilityDays: settings.homeSectionsVisibilityDays,
+  });
 
   const formatApiError = (data: { message?: string | string[] }) => {
     if (Array.isArray(data.message)) {
@@ -81,18 +84,35 @@ export default function AdminSettingsPage() {
     setError(null);
     setSuccess(null);
     try {
-      const response = await fetch('/api/proxy/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(buildSettingsPayload()),
-      });
+      const headers = { 'Content-Type': 'application/json' };
 
-      if (response.ok) {
-        setSuccess('Paramètres enregistrés avec succès');
-      } else {
-        const data = await response.json();
+      const [generalResponse, editorialResponse] = await Promise.all([
+        fetch('/api/proxy/settings', {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(buildGeneralSettingsPayload()),
+        }),
+        fetch('/api/proxy/settings/editorial', {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(buildEditorialSettingsPayload()),
+        }),
+      ]);
+
+      if (!generalResponse.ok) {
+        const data = await generalResponse.json();
         throw new Error(formatApiError(data));
       }
+
+      if (!editorialResponse.ok) {
+        const data = await editorialResponse.json();
+        throw new Error(
+          formatApiError(data) +
+            ' (règles éditoriales : redéployez le backend si cette erreur persiste)',
+        );
+      }
+
+      setSuccess('Paramètres enregistrés avec succès');
     } catch (err: any) {
       setError(err.message);
     } finally {
