@@ -4,6 +4,43 @@ import { useState, useEffect } from 'react';
 import { Button, Card, CardHeader, CardTitle, CardContent, Input, TextArea, Alert } from '@/components/atoms';
 import { Save, Globe, Mail, Shield, Clock } from 'lucide-react';
 
+type SettingsPayload = {
+  siteName?: string;
+  siteDescription?: string;
+  contactEmail?: string;
+  supportEmail?: string;
+  enableNotifications?: boolean;
+  enablePremiumContent?: boolean;
+  maintenanceMode?: boolean;
+  cutOffTime?: string;
+  homeSectionsVisibilityDays?: number | string;
+};
+
+/** Réponse API Nest : { success, data, timestamp } ou objet plat */
+function unwrapSettingsResponse(json: SettingsPayload & { data?: SettingsPayload }): SettingsPayload {
+  if (json.data && typeof json.data === 'object') {
+    return json.data;
+  }
+  return json;
+}
+
+function mapSettingsToState(raw: SettingsPayload) {
+  return {
+    siteName: raw.siteName || '',
+    siteDescription: raw.siteDescription || '',
+    contactEmail: raw.contactEmail || '',
+    supportEmail: raw.supportEmail || '',
+    enableNotifications: raw.enableNotifications ?? true,
+    enablePremiumContent: raw.enablePremiumContent ?? true,
+    maintenanceMode: raw.maintenanceMode ?? false,
+    cutOffTime: raw.cutOffTime || '07:30',
+    homeSectionsVisibilityDays: Math.max(
+      1,
+      Math.min(30, parseInt(String(raw.homeSectionsVisibilityDays ?? '1'), 10) || 1),
+    ),
+  };
+}
+
 export default function AdminSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -27,21 +64,8 @@ export default function AdminSettingsPage() {
       try {
         const response = await fetch('/api/proxy/settings');
         if (response.ok) {
-          const data = await response.json();
-          setSettings({
-            siteName: data.siteName || '',
-            siteDescription: data.siteDescription || '',
-            contactEmail: data.contactEmail || '',
-            supportEmail: data.supportEmail || '',
-            enableNotifications: data.enableNotifications ?? true,
-            enablePremiumContent: data.enablePremiumContent ?? true,
-            maintenanceMode: data.maintenanceMode ?? false,
-            cutOffTime: data.cutOffTime || '07:30',
-            homeSectionsVisibilityDays: Math.max(
-              1,
-              Math.min(30, parseInt(String(data.homeSectionsVisibilityDays ?? '1'), 10) || 1),
-            ),
-          });
+          const json = await response.json();
+          setSettings(mapSettingsToState(unwrapSettingsResponse(json)));
         }
       } catch (err) {
         console.error('Error fetching settings:', err);
@@ -111,6 +135,17 @@ export default function AdminSettingsPage() {
             ' (règles éditoriales : redéployez le backend si cette erreur persiste)',
         );
       }
+
+      const editorialJson = await editorialResponse.json();
+      const saved = unwrapSettingsResponse(editorialJson);
+      setSettings((prev) =>
+        mapSettingsToState({
+          ...prev,
+          cutOffTime: saved.cutOffTime ?? prev.cutOffTime,
+          homeSectionsVisibilityDays:
+            saved.homeSectionsVisibilityDays ?? prev.homeSectionsVisibilityDays,
+        }),
+      );
 
       setSuccess('Paramètres enregistrés avec succès');
     } catch (err: any) {
