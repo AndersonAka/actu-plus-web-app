@@ -188,14 +188,14 @@ export default function AdminArchivesPage() {
       id: 'system' as ArchiveType,
       label: 'Archivés par le système',
       icon: Clock,
-      description: 'Articles archivés automatiquement après 24h',
+      description: '',
       count: stats?.system.total ?? 0,
     },
     {
       id: 'watcher' as ArchiveType,
       label: 'Archivés par les veilleurs',
       icon: User,
-      description: 'Articles archivés manuellement par les veilleurs',
+      description: '',
       count: stats?.watcher.total ?? 0,
     },
   ];
