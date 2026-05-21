@@ -12,9 +12,9 @@ export default function ModerateurPublishedArticleViewPage() {
       articleId={id}
       backUrl="/moderateur/published"
       backLabel="Retour aux articles publiés"
-      editUrl={`/moderateur/articles/${id}`}
-      userRole="manager"
-      showEditButton={false}
+      editUrl={`/moderateur/articles/${id}/edit`}
+      userRole="moderateur"
+      showEditButton={true}
       showUnpublishButton={true}
     />
   );

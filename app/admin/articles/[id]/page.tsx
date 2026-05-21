@@ -12,7 +12,8 @@ export default function AdminArticleViewPage() {
       articleId={id}
       backUrl="/admin/articles"
       backLabel="Retour aux articles"
-      showEditButton={false}
+      editUrl={`/moderateur/articles/${id}/edit`}
+      showEditButton={true}
       showUnpublishButton={true}
       userRole="admin"
     />

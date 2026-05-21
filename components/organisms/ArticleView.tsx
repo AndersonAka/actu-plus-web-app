@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardContent, Button, Alert } from '@/components/atoms';
 import { StatusBadge } from '@/components/molecules';
 import { Article, ArticleStatus } from '@/types';
+import { canEditArticleContent, type ArticleEditorRole } from '@/lib/articles/edit-permissions';
 import { ArrowLeft, Calendar, MapPin, Tag, User, Edit, EyeOff } from 'lucide-react';
 
 const getArticleStatus = (article: any): ArticleStatus => {
@@ -22,7 +23,7 @@ export interface ArticleViewProps {
   editUrl?: string;
   showEditButton?: boolean;
   showUnpublishButton?: boolean;
-  userRole?: 'admin' | 'manager' | 'veilleur';
+  userRole?: ArticleEditorRole;
 }
 
 export function ArticleView({ 
@@ -86,24 +87,7 @@ export function ArticleView({
   }
 
   const status = getArticleStatus(article);
-  
-  // Déterminer si l'utilisateur peut modifier l'article
-  // Un article validé, rejeté ou publié ne peut plus être modifié
-  const canEdit = (() => {
-    // Seuls les brouillons et articles en attente peuvent être modifiés
-    if (status === ArticleStatus.APPROVED || status === ArticleStatus.REJECTED || status === ArticleStatus.PUBLISHED) {
-      return false;
-    }
-    // Pour les brouillons : tout le monde peut modifier
-    if (status === ArticleStatus.DRAFT) {
-      return true;
-    }
-    // Pour les articles en attente : seuls admin et manager peuvent modifier
-    if (status === ArticleStatus.PENDING) {
-      return userRole === 'admin' || userRole === 'manager';
-    }
-    return false;
-  })();
+  const canEdit = canEditArticleContent(status, userRole);
 
   const finalEditUrl = editUrl || `${backUrl}/${articleId}/edit`;
 

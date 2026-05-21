@@ -573,12 +573,14 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
                 <Button variant="danger" onClick={() => setShowRejectModal(true)} leftIcon={<XCircle className="h-4 w-4" />}>
                   Rejeter
                 </Button>
-                <Link href={`/moderateur/articles/${articleId}/edit`}>
-                  <Button variant="secondary" leftIcon={<Pencil className="h-4 w-4" />}>
-                    Modifier l'article
-                  </Button>
-                </Link>
               </>
+            )}
+            {(canApprove || canPublish) && (
+              <Link href={`/moderateur/articles/${articleId}/edit`}>
+                <Button variant="secondary" leftIcon={<Pencil className="h-4 w-4" />}>
+                  Modifier l'article
+                </Button>
+              </Link>
             )}
             {canPublish && (
               <Button variant="primary" onClick={handlePublish} isLoading={actionLoading === 'publish'} leftIcon={<Send className="h-4 w-4" />}>
@@ -607,6 +609,13 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
                 >
                   Dépublier l'article
                 </Button>
+              </div>
+            )}
+            {canPublish && !isPublished && article.status === ArticleStatus.APPROVED && (
+              <div className="w-full rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <p className="text-sm text-amber-900">
+                  <strong>Article dépublié ou validé non publié</strong> — vous pouvez modifier le contenu puis le republier.
+                </p>
               </div>
             )}
           </div>

@@ -7,7 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Input, TextArea, Select, Card, CardHeader, CardTitle, CardContent, Alert } from '@/components/atoms';
 import { RichTextEditor, ImageUpload } from '@/components/molecules';
-import { Category, Country } from '@/types';
+import { ArticleStatus, Category, Country } from '@/types';
+import { canModeratorUseEditPage } from '@/lib/articles/edit-permissions';
 import { ArrowLeft, Save, Plus, Trash2, Link as LinkIcon, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -101,9 +102,11 @@ export default function ModerateurEditArticlePage({ params }: { params: Promise<
           const result = await response.json();
           const article = result.data || result;
 
-          const status = article.status || 'draft';
-          if (status !== 'pending') {
-            setError('Seuls les articles en attente de validation peuvent être modifiés par le modérateur.');
+          const status = (article.status || ArticleStatus.DRAFT) as ArticleStatus;
+          if (!canModeratorUseEditPage(status)) {
+            setError(
+              'Cet article ne peut pas être modifié ici. Les articles publiés doivent être dépubliés avant modification du contenu.',
+            );
             router.push(`/moderateur/articles/${id}`);
             return;
           }
