@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Button, Input, Alert } from '@/components/atoms';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,6 +26,7 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +59,10 @@ export default function ForgotPasswordPage() {
 
       setSubmittedEmail(data.email);
       setIsSubmitted(true);
+      // Rediriger vers l'écran de saisie du code OTP + nouveau mot de passe
+      setTimeout(() => {
+        router.push(`/reset-password?email=${encodeURIComponent(data.email)}`);
+      }, 1200);
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue. Veuillez réessayer.');
     } finally {
@@ -72,8 +78,8 @@ export default function ForgotPasswordPage() {
     },
     {
       icon: Shield,
-      title: 'Lien valide 1 heure',
-      description: 'Pour votre sécurité, le lien expire après 1 heure',
+      title: 'Code valide 15 minutes',
+      description: 'Pour votre sécurité, le code expire après 15 minutes',
     },
     {
       icon: KeyRound,
@@ -109,12 +115,12 @@ export default function ForgotPasswordPage() {
                 <CheckCircle2 className="h-10 w-10 text-green-600" />
               </div>
               <h1 className="mb-2 text-2xl font-bold text-gray-900">
-                Email envoyé !
+                Code envoyé !
               </h1>
               <p className="mb-6 text-gray-600">
                 Si un compte existe avec l'adresse{' '}
                 <span className="font-medium text-gray-900">{submittedEmail}</span>,
-                vous recevrez un email avec les instructions de réinitialisation.
+                vous recevrez un code de réinitialisation. Redirection en cours…
               </p>
 
               {/* Security Tips */}
@@ -165,7 +171,7 @@ export default function ForgotPasswordPage() {
                   Mot de passe oublié ?
                 </h1>
                 <p className="mt-2 text-gray-600">
-                  Pas de panique ! Entrez votre email et nous vous enverrons un lien de réinitialisation.
+                  Pas de panique ! Entrez votre email et nous vous enverrons un code de réinitialisation.
                 </p>
               </div>
 
@@ -214,7 +220,7 @@ export default function ForgotPasswordPage() {
                   ) : (
                     <>
                       <Send className="mr-2 h-4 w-4" />
-                      Envoyer le lien
+                      Envoyer le code
                     </>
                   )}
                 </Button>
@@ -254,7 +260,7 @@ export default function ForgotPasswordPage() {
                 Sécurité renforcée
               </h2>
               <p className="text-lg text-primary-100">
-                Votre sécurité est notre priorité. Le lien de réinitialisation expire après 1 heure pour protéger votre compte.
+                Votre sécurité est notre priorité. Le code de réinitialisation expire après 15 minutes pour protéger votre compte.
               </p>
             </div>
           </div>

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 
 const resetPasswordSchema = z.object({
+  code: z.string().optional(),
   password: z
     .string()
     .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
@@ -39,6 +40,9 @@ function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
+  const email = searchParams.get('email') || '';
+  // Mode OTP si un email est fourni (nouveau flux), sinon mode lien token (rétrocompat)
+  const isOtpMode = !token && !!email;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -67,25 +71,39 @@ function ResetPasswordContent() {
   const strengthScore = Object.values(passwordStrength).filter(Boolean).length;
 
   const onSubmit = async (data: ResetPasswordFormData) => {
-    if (!token) {
-      setError('Token de réinitialisation manquant');
-      return;
-    }
-
     setIsSubmitting(true);
     setError(null);
 
     try {
-      const response = await fetch('/api/proxy/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password: data.password }),
-      });
+      if (isOtpMode) {
+        const code = (data.code || '').trim();
+        if (code.length !== 6) {
+          setError('Veuillez saisir le code à 6 chiffres reçu par email');
+          setIsSubmitting(false);
+          return;
+        }
 
-      const result = await response.json();
+        const response = await fetch('/api/proxy/auth/reset-password-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code, password: data.password }),
+        });
 
-      if (!response.ok) {
-        throw new Error(result.message || 'Une erreur est survenue');
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.message || 'Une erreur est survenue');
+        }
+      } else {
+        const response = await fetch('/api/proxy/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, password: data.password }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.message || 'Une erreur est survenue');
+        }
       }
 
       setIsSubmitted(true);
@@ -96,8 +114,22 @@ function ResetPasswordContent() {
     }
   };
 
-  // If no token, show error
-  if (!token) {
+  const handleResendCode = async () => {
+    if (!email) return;
+    setError(null);
+    try {
+      await fetch('/api/proxy/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+    } catch {
+      // Réponse neutre : on n'expose rien
+    }
+  };
+
+  // Ni token ni email → lien invalide
+  if (!token && !email) {
     return (
       <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
@@ -162,6 +194,36 @@ function ResetPasswordContent() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Code OTP (mode email) */}
+            {isOtpMode && (
+              <div>
+                <label htmlFor="code" className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Code de vérification
+                </label>
+                <p className="mb-2 text-xs text-gray-500">
+                  Saisissez le code à 6 chiffres envoyé à{' '}
+                  <span className="font-medium text-gray-700">{email}</span>
+                </p>
+                <input
+                  type="text"
+                  id="code"
+                  inputMode="numeric"
+                  maxLength={6}
+                  {...register('code')}
+                  className="w-full rounded-lg border border-gray-300 py-3 px-4 text-center text-lg tracking-[0.5em] font-semibold transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  placeholder="••••••"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={handleResendCode}
+                  className="mt-2 text-sm text-primary-600 hover:text-primary-700"
+                >
+                  Renvoyer le code
+                </button>
+              </div>
+            )}
+
             {/* Password */}
             <div>
               <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">
