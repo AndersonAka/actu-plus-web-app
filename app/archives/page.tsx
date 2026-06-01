@@ -181,8 +181,8 @@ export default function ArchivesPage() {
                 <h1 className="text-2xl font-bold text-gray-900">Archives</h1>
                 <p className="text-sm text-gray-500">
                   {totalCount > 0
-                    ? `${totalCount} article${totalCount !== 1 ? 's' : ''} archivé${totalCount !== 1 ? 's' : ''} automatiquement (après 24 h)`
-                    : 'Articles archivés automatiquement après 24 h de publication'}
+                    ? `${totalCount} article${totalCount !== 1 ? 's' : ''} archivé${totalCount !== 1 ? 's' : ''}`
+                    : 'Articles archivés'}
                 </p>
               </div>
             </div>
