@@ -71,8 +71,13 @@ export default function QuotesPage() {
     try {
       const response = await fetch('/api/proxy/quotes?limit=100');
       if (response.ok) {
-        const data = await response.json();
-        const list = Array.isArray(data) ? data : data.data ?? [];
+        const res = await response.json();
+        const payload = res?.data ?? res;
+        const list = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+            ? payload.data
+            : [];
         setQuotes(list);
       }
     } catch (err) {
@@ -86,8 +91,15 @@ export default function QuotesPage() {
     try {
       const response = await fetch('/api/proxy/subscriptions/plans?category=enterprise&all=true');
       if (response.ok) {
-        const data = await response.json();
-        setPlans(Array.isArray(data) ? data : data.data ?? []);
+        const res = await response.json();
+        const payload = res?.data ?? res;
+        setPlans(
+          Array.isArray(payload)
+            ? payload
+            : Array.isArray(payload?.data)
+              ? payload.data
+              : [],
+        );
       }
     } catch (err) {
       console.error('Error fetching plans:', err);
