@@ -367,6 +367,7 @@ export default function EnterpriseSubscriptionsPage() {
             />
             {search && (
               <button
+                title="Réinitialiser la recherche"
                 onClick={() => setSearch('')}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
@@ -376,6 +377,7 @@ export default function EnterpriseSubscriptionsPage() {
           </div>
           <div className="flex items-center gap-2">
             <select
+              title="Filtrer par statut"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="rounded-lg border border-gray-200 bg-gray-50 py-2 pl-3 pr-8 text-sm text-gray-700 focus:border-primary-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20"
@@ -503,7 +505,7 @@ export default function EnterpriseSubscriptionsPage() {
           <div className="w-full max-w-2xl rounded-xl bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
               <h2 className="text-lg font-semibold text-gray-900">Nouvel abonnement enterprise</h2>
-              <button onClick={() => { setShowCreateModal(false); setError(''); }} className="text-gray-400 hover:text-gray-600">
+              <button title="Fermer le modal" onClick={() => { setShowCreateModal(false); setError(''); }} className="text-gray-400 hover:text-gray-600">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -583,7 +585,9 @@ export default function EnterpriseSubscriptionsPage() {
           <div className="w-full max-w-xl rounded-xl bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
               <h2 className="text-lg font-semibold text-gray-900">Modifier l'abonnement</h2>
-              <button onClick={() => { setShowEditModal(false); setError(''); }} className="text-gray-400 hover:text-gray-600">
+              <button 
+              title="Fermer le modal"
+              onClick={() => { setShowEditModal(false); setError(''); }} className="text-gray-400 hover:text-gray-600">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -681,7 +685,7 @@ export default function EnterpriseSubscriptionsPage() {
                   <div className="flex items-center gap-2">{getStatusBadge(selectedSubscription.status)}</div>
                 </div>
               </div>
-              <button onClick={closeDetailModal} className="text-gray-400 hover:text-gray-600">
+              <button title="Fermer le modal" onClick={closeDetailModal} className="text-gray-400 hover:text-gray-600">
                 <X className="h-5 w-5" />
               </button>
             </div>
