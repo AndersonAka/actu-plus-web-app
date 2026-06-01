@@ -28,6 +28,7 @@ import {
   HelpCircle,
   Archive,
   Mail,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 export interface SidebarProps {
@@ -102,6 +103,7 @@ const Sidebar = ({ variant }: SidebarProps) => {
       { href: '/admin/countries', label: 'Pays', icon: Globe },
       { href: '/admin/subscriptions', label: 'Abonnements', icon: CreditCard },
       { href: '/admin/enterprise-subscriptions', label: 'Comptes Entreprise', icon: Building2 },
+      { href: '/admin/quotes', label: 'Demandes de devis', icon: FileSpreadsheet },
       { href: '/admin/messages', label: 'Messages', icon: MessageSquare },
       { href: '/admin/notifications', label: 'Notifications', icon: Bell },
       { href: '/admin/email-test', label: 'Test e-mail (Brevo)', icon: Mail },

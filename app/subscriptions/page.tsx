@@ -33,16 +33,18 @@ function SubscriptionsContent() {
   const [error, setError] = useState<string | null>(null);
 
   const [showEnterpriseForm, setShowEnterpriseForm] = useState(false);
-  const [enterpriseDuration, setEnterpriseDuration] = useState<number>(3);
-  const [enterpriseHeadcount, setEnterpriseHeadcount] = useState<number>(5);
   const [enterpriseForm, setEnterpriseForm] = useState({
     companyName: '',
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
+    country: '',
+    numberOfAccess: '',
+    message: '',
   });
   const [enterpriseFormError, setEnterpriseFormError] = useState<string | null>(null);
+  const [quoteSubmitted, setQuoteSubmitted] = useState(false);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -150,66 +152,70 @@ function SubscriptionsContent() {
     }).format(price);
   };
 
-  const getEnterprisePlan = () => {
-    return plans.find(
-      p => p.category === 'enterprise'
-        && p.duration === enterpriseDuration
-        && (p as any).headcount === enterpriseHeadcount
-    );
-  };
-
-  const getEnterprisePrice = (): number => {
-    const plan = getEnterprisePlan();
-    return plan?.price ?? 0;
+  const openEnterpriseForm = () => {
+    setEnterpriseFormError(null);
+    setQuoteSubmitted(false);
+    // Pré-remplir avec le profil si l'utilisateur est connecté
+    if (user) {
+      setEnterpriseForm(f => ({
+        ...f,
+        firstName: f.firstName || user.firstName || '',
+        lastName: f.lastName || user.lastName || '',
+        email: f.email || user.email || '',
+      }));
+    }
+    setShowEnterpriseForm(true);
   };
 
   const handleEnterpriseSubmit = async () => {
     setEnterpriseFormError(null);
-    const { companyName, firstName, lastName, email, phone } = enterpriseForm;
-    if (!companyName || !firstName || !lastName || !email) {
+    const { companyName, firstName, lastName, email, phone, country, numberOfAccess, message } = enterpriseForm;
+    if (!companyName || !firstName || !lastName || !email || !phone) {
       setEnterpriseFormError('Veuillez remplir tous les champs obligatoires.');
       return;
     }
 
-    const plan = getEnterprisePlan();
-    if (!plan) {
-      setEnterpriseFormError(`Aucune formule entreprise disponible pour ${enterpriseHeadcount} personne(s) sur ${enterpriseDuration} mois.`);
-      return;
-    }
-
     setProcessingPayment(true);
-    setSelectedPlan(plan.id);
     try {
-      const price = getEnterprisePrice();
-      const payment = await paymentService.createPayment({
-        subscriptionPlanId: plan.id,
-        amount: price,
-        currency: 'XOF',
-        paymentMethod: 'mobile_money',
+      const response = await fetch('/api/proxy/quotes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyName,
+          firstName,
+          lastName,
+          email,
+          phone,
+          ...(country ? { country } : {}),
+          ...(numberOfAccess ? { numberOfAccess: Number(numberOfAccess) } : {}),
+          ...(message ? { message } : {}),
+        }),
       });
-      const paystackUrl = await paymentService.getPaymentUrl(payment.id);
-      window.location.href = paystackUrl;
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Erreur lors de l'envoi de la demande.");
+      }
+
+      setQuoteSubmitted(true);
     } catch (err: any) {
-      setEnterpriseFormError(err.message || 'Erreur lors de l\'initialisation du paiement.');
+      setEnterpriseFormError(err.message || "Erreur lors de l'envoi de la demande de devis.");
+    } finally {
       setProcessingPayment(false);
-      setSelectedPlan(null);
     }
   };
 
   const handleSubscribe = async (planId: string, category: string) => {
     setError(null);
-    
-    if (!isAuthenticated) {
-      window.location.href = `/login?redirect=/subscriptions&plan=${planId}`;
+
+    if (category === 'enterprise') {
+      // Modèle "devis" : aucune authentification ni paiement requis.
+      openEnterpriseForm();
       return;
     }
 
-    if (category === 'enterprise') {
-      if (!isAuthenticated) {
-        window.location.href = `/login?redirect=/subscriptions`;
-        return;
-      }
-      setShowEnterpriseForm(true);
+    if (!isAuthenticated) {
+      window.location.href = `/login?redirect=/subscriptions&plan=${planId}`;
       return;
     }
 
@@ -433,14 +439,9 @@ function SubscriptionsContent() {
 
                   <button
                     onClick={() => handleSubscribe(samplePlan?.id || 'enterprise', 'enterprise')}
-                    disabled={processingPayment || enterprisePlans.length === 0}
-                    className={`flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3 font-medium transition-colors ${colors.button} text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className={`flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3 font-medium transition-colors ${colors.button} text-gray-900`}
                   >
-                    {processingPayment && selectedPlan?.startsWith('enterprise') ? (
-                      <><Loader2 className="h-4 w-4 animate-spin" /> Traitement...</>
-                    ) : (
-                      <>Souscrire une formule <ArrowRight className="h-4 w-4" /></>
-                    )}
+                    Demander un devis <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
               );
@@ -448,169 +449,154 @@ function SubscriptionsContent() {
           </div>
         </section>
 
-        {/* Enterprise Form Modal */}
+        {/* Enterprise Quote Modal */}
         {showEnterpriseForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
             <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-8 shadow-2xl">
               <div className="mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Formule Entreprise</h2>
-                  <p className="text-sm text-gray-500">Renseignez vos informations pour finaliser la souscription</p>
+                  <h2 className="text-xl font-bold text-gray-900">Demande de devis Entreprise</h2>
+                  <p className="text-sm text-gray-500">Décrivez votre besoin, notre équipe vous recontacte rapidement</p>
                 </div>
-                <button onClick={() => setShowEnterpriseForm(false)} className="text-gray-400 hover:text-gray-600">
+                <button onClick={() => setShowEnterpriseForm(false)} aria-label="Fermer" className="text-gray-400 hover:text-gray-600">
                   <X className="h-6 w-6" />
                 </button>
               </div>
 
-              {enterpriseFormError && (
-                <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">{enterpriseFormError}</div>
-              )}
+              {quoteSubmitted ? (
+                <div className="py-6 text-center">
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-100">
+                    <Check className="h-7 w-7 text-green-600" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-gray-900">Demande envoyée</h3>
+                  <p className="mb-6 text-sm text-gray-600">
+                    Votre demande de cotation a bien été reçue. Notre équipe commerciale
+                    vous recontactera dans les plus brefs délais avec une proposition adaptée.
+                  </p>
+                  <button
+                    onClick={() => setShowEnterpriseForm(false)}
+                    className="rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-700"
+                  >
+                    Fermer
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {enterpriseFormError && (
+                    <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">{enterpriseFormError}</div>
+                  )}
 
-              {/* Configurator */}
-              {(() => {
-                const entPlans = plans.filter(p => p.category === 'enterprise');
-                const availableHeadcounts = [...new Set(entPlans.map(p => (p as any).headcount as number).filter(Boolean))].sort((a, b) => a - b);
-                const availableDurations = [...new Set(entPlans.filter(p => (p as any).headcount === enterpriseHeadcount).map(p => p.duration))].sort((a, b) => a - b);
-                const matchedPlan = getEnterprisePlan();
-                return (
-                  <div className="mb-6 rounded-xl bg-gray-50 p-4">
-                    <h3 className="mb-3 text-sm font-semibold text-gray-700">Configuration de votre formule</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">Nom de l'entreprise <span className="text-red-500">*</span></label>
+                      <input
+                        type="text"
+                        value={enterpriseForm.companyName}
+                        onChange={e => setEnterpriseForm(f => ({ ...f, companyName: e.target.value }))}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                        placeholder="Nom de votre entreprise"
+                      />
+                    </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="mb-1 block text-xs font-medium text-gray-600">Nombre de collaborateurs</label>
-                        <select
-                          value={enterpriseHeadcount}
-                          onChange={e => {
-                            const hc = Number(e.target.value);
-                            setEnterpriseHeadcount(hc);
-                            // Reset duration if not available for new headcount
-                            const durationsForHc = [...new Set(entPlans.filter(p => (p as any).headcount === hc).map(p => p.duration))];
-                            if (!durationsForHc.includes(enterpriseDuration) && durationsForHc.length > 0) {
-                              setEnterpriseDuration(durationsForHc[0]);
-                            }
-                          }}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
-                        >
-                          {availableHeadcounts.length > 0 ? (
-                            availableHeadcounts.map(n => (
-                              <option key={n} value={n}>{n} personne{n > 1 ? 's' : ''}</option>
-                            ))
-                          ) : (
-                            <option value={0} disabled>Aucune formule disponible</option>
-                          )}
-                        </select>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Prénom <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          value={enterpriseForm.firstName}
+                          onChange={e => setEnterpriseForm(f => ({ ...f, firstName: e.target.value }))}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                          placeholder="Prénom du responsable"
+                        />
                       </div>
                       <div>
-                        <label className="mb-1 block text-xs font-medium text-gray-600">Durée</label>
-                        <select
-                          value={enterpriseDuration}
-                          onChange={e => setEnterpriseDuration(Number(e.target.value))}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
-                        >
-                          {availableDurations.length > 0 ? (
-                            availableDurations.map(d => (
-                              <option key={d} value={d}>{d} mois</option>
-                            ))
-                          ) : (
-                            <option value={0} disabled>—</option>
-                          )}
-                        </select>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Nom <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          value={enterpriseForm.lastName}
+                          onChange={e => setEnterpriseForm(f => ({ ...f, lastName: e.target.value }))}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                          placeholder="Nom du responsable"
+                        />
                       </div>
                     </div>
-                    <div className="mt-4 rounded-lg bg-primary-50 border border-primary-200 p-3 text-center">
-                      {matchedPlan ? (
-                        <>
-                          <p className="text-xs text-primary-600">Montant</p>
-                          <p className="text-2xl font-bold text-primary-700">
-                            {Number(matchedPlan.price).toLocaleString('fr-FR')} FCFA
-                          </p>
-                          <p className="text-xs text-gray-500">pour {enterpriseHeadcount} pers. / {enterpriseDuration} mois</p>
-                        </>
-                      ) : (
-                        <p className="text-sm text-gray-500">Sélectionnez une combinaison valide</p>
-                      )}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
+                        <input
+                          type="email"
+                          value={enterpriseForm.email}
+                          onChange={e => setEnterpriseForm(f => ({ ...f, email: e.target.value }))}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                          placeholder="email@entreprise.com"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Téléphone <span className="text-red-500">*</span></label>
+                        <input
+                          type="tel"
+                          value={enterpriseForm.phone}
+                          onChange={e => setEnterpriseForm(f => ({ ...f, phone: e.target.value }))}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                          placeholder="+225 07 00 00 00"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Pays</label>
+                        <input
+                          type="text"
+                          value={enterpriseForm.country}
+                          onChange={e => setEnterpriseForm(f => ({ ...f, country: e.target.value }))}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                          placeholder="Côte d'Ivoire"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Nombre d'accès souhaités</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={enterpriseForm.numberOfAccess}
+                          onChange={e => setEnterpriseForm(f => ({ ...f, numberOfAccess: e.target.value }))}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                          placeholder="Ex: 25"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">Message (optionnel)</label>
+                      <textarea
+                        rows={3}
+                        value={enterpriseForm.message}
+                        onChange={e => setEnterpriseForm(f => ({ ...f, message: e.target.value }))}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                        placeholder="Précisez votre besoin..."
+                      />
                     </div>
                   </div>
-                );
-              })()}
 
-              {/* Company info */}
-              <div className="space-y-4">
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Nom de l'entreprise <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    value={enterpriseForm.companyName}
-                    onChange={e => setEnterpriseForm(f => ({ ...f, companyName: e.target.value }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                    placeholder="Nom de votre entreprise"
-                  />
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">Prénom <span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      value={enterpriseForm.firstName}
-                      onChange={e => setEnterpriseForm(f => ({ ...f, firstName: e.target.value }))}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                      placeholder="Prénom du responsable"
-                    />
+                  <div className="mt-6 flex gap-3">
+                    <button
+                      onClick={() => setShowEnterpriseForm(false)}
+                      className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      onClick={handleEnterpriseSubmit}
+                      disabled={processingPayment}
+                      className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-3 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+                    >
+                      {processingPayment ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" /> Envoi...</>
+                      ) : (
+                        <>Envoyer ma demande <ArrowRight className="h-4 w-4" /></>
+                      )}
+                    </button>
                   </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">Nom <span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      value={enterpriseForm.lastName}
-                      onChange={e => setEnterpriseForm(f => ({ ...f, lastName: e.target.value }))}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                      placeholder="Nom du responsable"
-                    />
-                  </div>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
-                    <input
-                      type="email"
-                      value={enterpriseForm.email}
-                      onChange={e => setEnterpriseForm(f => ({ ...f, email: e.target.value }))}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                      placeholder="email@entreprise.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">Téléphone</label>
-                    <input
-                      type="tel"
-                      value={enterpriseForm.phone}
-                      onChange={e => setEnterpriseForm(f => ({ ...f, phone: e.target.value }))}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                      placeholder="+225 07 00 00 00"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 flex gap-3">
-                <button
-                  onClick={() => setShowEnterpriseForm(false)}
-                  className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={handleEnterpriseSubmit}
-                  disabled={processingPayment}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-3 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-                >
-                  {processingPayment ? (
-                    <><Loader2 className="h-4 w-4 animate-spin" /> Traitement...</>
-                  ) : (
-                    <>Procéder au paiement <ArrowRight className="h-4 w-4" /></>
-                  )}
-                </button>
-              </div>
+                </>
+              )}
             </div>
           </div>
         )}

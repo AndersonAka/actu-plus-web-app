@@ -338,13 +338,13 @@ export default function EnterpriseSubscriptionsPage() {
             Gérez les abonnements enterprise, leurs employés et codes de référence
           </p>
         </div>
-        {/* <Button
+        <Button
           variant="primary"
           onClick={() => { setShowCreateModal(true); setError(''); }}
           leftIcon={<Plus className="h-4 w-4" />}
         >
           Nouvel abonnement
-        </Button> */}
+        </Button>
       </div>
 
       {success && <Alert variant="success" onClose={() => setSuccess('')}>{success}</Alert>}

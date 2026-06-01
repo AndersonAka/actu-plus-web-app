@@ -12,6 +12,8 @@ const PUBLIC_ROUTES = [
   '/register',
   '/forgot-password',
   '/reset-password',
+  '/subscriptions',
+  '/contact',
 ];
 
 // Routes dynamiques publiques (patterns)
