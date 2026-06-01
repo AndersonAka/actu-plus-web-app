@@ -290,8 +290,8 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
       {error && <Alert variant="error" className="mb-6" onClose={() => setError(null)}>{error}</Alert>}
       {success && <Alert variant="success" className="mb-6" onClose={() => setSuccess(null)}>{success}</Alert>}
 
-      {/* Image de couverture */}
-      {(article.imageUrl || article.coverImage) && (
+      {/* Image de couverture — jamais pour les résumés (dépourvus d'image) */}
+      {!isSummary && (article.imageUrl || article.coverImage) && (
         <div className="relative mb-6 h-64 md:h-80 w-full overflow-hidden rounded-lg">
           <Image
             src={article.imageUrl || article.coverImage || ''}
@@ -416,6 +416,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
                 Section de destination
               </label>
               <select
+                title="Section de destination"
                 value={articleSection}
                 onChange={(e) => {
                   const newSection = e.target.value;
@@ -441,6 +442,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
                   </label>
                   <div className="flex items-center gap-3">
                     <input
+                      title="Durée de visibilité"
                       type="number"
                       min={1}
                       max={30}
@@ -529,6 +531,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
               {isScheduled && (
                 <div className="ml-8">
                   <input
+                    title="Date de publication programmée"
                     type="datetime-local"
                     value={scheduledPublishAt}
                     onChange={(e) => setScheduledPublishAt(e.target.value)}
