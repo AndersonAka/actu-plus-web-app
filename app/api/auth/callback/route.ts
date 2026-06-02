@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { authConfig } from '@/lib/auth/config';
 import { unwrapApiData } from '@/lib/api/unwrap';
+import { User } from '@/types';
 
 // Utiliser BACKEND_API_URL (côté serveur) et non NEXT_PUBLIC_API_URL (qui est /api/proxy)
 const BACKEND_URL = process.env.BACKEND_API_URL || 'http://localhost:3001';
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
       throw new Error('Impossible de récupérer les informations utilisateur');
     }
 
-    const user = unwrapApiData(await userResponse.json());
+    const user = unwrapApiData<User>(await userResponse.json());
 
     // Stocker les tokens dans les cookies
     const cookieStore = await cookies();
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Rediriger vers la page d'accueil ou le dashboard selon le rôle
-    const redirectUrl = getRedirectUrlByRole(user.role);
+    const redirectUrl = getRedirectUrlByRole(String(user.role).toUpperCase());
     return NextResponse.redirect(new URL(redirectUrl, request.url));
   } catch (error) {
     console.error('Erreur lors du callback OAuth:', error);

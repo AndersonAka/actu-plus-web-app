@@ -166,6 +166,7 @@ const ArticleCard = ({
             </div>
             {onFavorite && (
               <button
+                title="Ajouter aux favoris"
                 onClick={(e) => {
                   e.preventDefault();
                   onFavorite(article.id);
@@ -326,6 +327,7 @@ const ArticleCard = ({
           </div>
           {onFavorite && (
             <button
+              title="Ajouter aux favoris"
               onClick={(e) => {
                 e.preventDefault();
                 onFavorite(article.id);

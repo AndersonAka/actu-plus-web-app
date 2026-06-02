@@ -103,7 +103,8 @@ export function ShareButton({ title, excerpt, articlePath }: ShareButtonProps) {
           <div className="absolute right-0 bottom-full mb-2 z-50 w-64 rounded-lg border border-gray-200 bg-white p-4 shadow-xl">
             <div className="flex items-center justify-between mb-3">
               <span className="font-semibold text-gray-900">Partager</span>
-              <button 
+              <button
+                title="Fermer le menu"
                 onClick={() => setShowMenu(false)}
                 className="p-1 rounded-full hover:bg-gray-100 transition-colors"
               >
@@ -131,12 +132,14 @@ export function ShareButton({ title, excerpt, articlePath }: ShareButtonProps) {
               <p className="text-xs text-gray-500 mb-2">Ou copier le lien</p>
               <div className="flex gap-2">
                 <input
+                  title="Lien à copier"
                   type="text"
                   value={shareUrl}
                   readOnly
                   className="flex-1 px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg truncate"
                 />
                 <button
+                  title="Copier le lien"
                   onClick={handleCopyLink}
                   className={`px-3 py-2 rounded-lg transition-colors ${
                     copied 
