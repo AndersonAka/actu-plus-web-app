@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Article } from '@/types';
+import { getArticlePublicPath } from '@/lib/articles/article-url';
 import { Button } from '@/components/atoms';
 import { Lock, Crown } from 'lucide-react';
 
@@ -113,7 +114,7 @@ export function ArticleContent({ article }: ArticleContentProps) {
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           {!isAuthenticated ? (
             <>
-              <Link href={`/login?returnUrl=/articles/${article.id}`}>
+              <Link href={`/login?returnUrl=${encodeURIComponent(getArticlePublicPath(article))}`}>
                 <Button variant="primary" leftIcon={<Lock className="h-4 w-4" />}>
                   Se connecter
                 </Button>

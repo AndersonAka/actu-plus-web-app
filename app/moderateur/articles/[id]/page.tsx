@@ -10,6 +10,7 @@ import { Article, ArticleStatus } from '@/types';
 import { ArrowLeft, CheckCircle, XCircle, Send, Calendar, User, MapPin, Tag, Link as LinkIcon, Crown, Star, Clock, Layers, Save, EyeOff, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { getArticlePublicPath } from '@/lib/articles/article-url';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -600,7 +601,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
               <div className="w-full space-y-3">
                 <div className="rounded-lg bg-success-50 p-4">
                   <p className="font-medium text-success-700">Article publié</p>
-                  <Link href={`/articles/${article.id}`} className="text-sm text-success-600 hover:underline">
+                  <Link href={getArticlePublicPath(article)} className="text-sm text-success-600 hover:underline">
                     Voir l'article →
                   </Link>
                 </div>

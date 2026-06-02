@@ -1,9 +1,13 @@
+import { getArticlePublicPath } from '@/lib/articles/article-url';
+
 // Constantes de routes de l'application
 export const Routes = {
   // Public
   home: '/',
   articles: '/articles',
-  article: (id: string) => `/articles/${id}`,
+  /** Préférer articleFrom({ id, slug }) pour les liens publics (e-mail, SEO). */
+  article: (idOrSlug: string) => `/articles/${idOrSlug}`,
+  articleFrom: getArticlePublicPath,
   category: (id: string) => `/category/${id}`,
   country: (code: string) => `/country/${code}`,
   search: '/search',

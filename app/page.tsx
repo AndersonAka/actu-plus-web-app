@@ -6,6 +6,7 @@ import { apiConfig } from '@/config/api.config';
 import { Article, ArticleStatus } from '@/types';
 import { HomePageClient } from './HomePageClient';
 import { Lock } from 'lucide-react';
+import { getArticlePublicPath } from '@/lib/articles/article-url';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -189,7 +190,7 @@ export default async function HomePage() {
                       {focusArticles.map((article) => (
                         <Link
                           key={article.id}
-                          href={article.country?.code ? `/country/${article.country.code.toLowerCase()}?tab=focus` : `/articles/${article.id}`}
+                          href={article.country?.code ? `/country/${article.country.code.toLowerCase()}?tab=focus` : getArticlePublicPath(article)}
                           className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
                         >
                           <div className="relative aspect-video w-full overflow-hidden">
@@ -265,7 +266,7 @@ export default async function HomePage() {
                       summaryArticles.map((article) => (
                         <Link
                           key={article.id}
-                          href={article.country?.code ? `/country/${article.country.code.toLowerCase()}` : `/articles/${article.id}`}
+                          href={article.country?.code ? `/country/${article.country.code.toLowerCase()}` : getArticlePublicPath(article)}
                           className="group flex gap-3 px-5 py-4 transition-colors hover:bg-gray-50"
                         >
                           <div className="flex-1 min-w-0">

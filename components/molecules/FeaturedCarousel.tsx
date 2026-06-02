@@ -161,7 +161,7 @@ const FeaturedCarousel = ({ articles, className }: FeaturedCarouselProps) => {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      shareArticle(article.id, article.title);
+                      shareArticle(article);
                     }}
                     className="rounded-full bg-white/20 p-2 backdrop-blur-sm transition-colors hover:bg-white/30"
                     title="Partager l'article"

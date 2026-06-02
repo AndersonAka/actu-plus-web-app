@@ -6,6 +6,7 @@ import { Button, Card, EmptyState } from '@/components/atoms';
 import { Pagination, StatusBadge } from '@/components/molecules';
 import { Article } from '@/types';
 import { Eye, Send, ExternalLink, Search, Clock } from 'lucide-react';
+import { getArticlePublicPath } from '@/lib/articles/article-url';
 
 export default function ModerateurPublishedPage() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -146,7 +147,7 @@ export default function ModerateurPublishedPage() {
                       </span>
                     )}
                     <StatusBadge status={article.status} />
-                    <Link href={`/articles/${article.id}`} target="_blank">
+                    <Link href={getArticlePublicPath(article)} target="_blank">
                       <Button variant="ghost" size="sm" leftIcon={<ExternalLink className="h-4 w-4" />}>
                         Voir
                       </Button>

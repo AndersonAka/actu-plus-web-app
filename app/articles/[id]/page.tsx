@@ -13,8 +13,8 @@ import { ArticleContent } from './ArticleContent';
 import { BackButton } from './BackButton';
 import { ShareButton } from './ShareButton';
 import { FavoriteButton } from './FavoriteButton';
-import { getArticleApiPath, getArticlePublicPath } from '@/lib/articles/article-url';
-import { unwrapApiData } from '@/lib/api/unwrap';
+import { getArticlePublicPath } from '@/lib/articles/article-url';
+import { fetchArticleByIdOrSlug } from '@/lib/articles/fetch-article';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -45,12 +45,8 @@ function mapArticle(data: any): Article {
 
 async function getArticle(idOrSlug: string): Promise<Article | null> {
   try {
-    const response = await fetch(getArticleApiPath(apiConfig.baseUrl, idOrSlug), {
-      cache: 'no-store',
-    });
-    if (!response.ok) return null;
-    const result = await response.json();
-    const articleData = unwrapApiData(result);
+    const articleData = await fetchArticleByIdOrSlug(apiConfig.baseUrl, idOrSlug);
+    if (!articleData) return null;
     return mapArticle(articleData);
   } catch (error) {
     console.error('Error fetching article:', error);

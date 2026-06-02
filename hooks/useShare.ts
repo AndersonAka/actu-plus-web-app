@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
+import { getArticlePublicPath } from '@/lib/articles/article-url';
 
 export interface ShareOptions {
   title: string;
@@ -39,14 +40,18 @@ export function useShare() {
     }
   }, []);
 
-  const shareArticle = useCallback((articleId: string, title: string) => {
-    const url = `${window.location.origin}/articles/${articleId}`;
-    return share({
-      title: `${title} - Actu Plus`,
-      text: `Découvrez cet article sur Actu Plus`,
-      url,
-    });
-  }, [share]);
+  const shareArticle = useCallback(
+    (article: { id: string; slug?: string | null; title: string }) => {
+      const path = getArticlePublicPath(article);
+      const url = `${window.location.origin}${path}`;
+      return share({
+        title: `${article.title} - Actu Plus`,
+        text: `Découvrez cet article sur Actu Plus`,
+        url,
+      });
+    },
+    [share],
+  );
 
   return {
     share,
