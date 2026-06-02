@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { authConfig } from '@/lib/auth/config';
+import { unwrapApiData } from '@/lib/api/unwrap';
 
 // Utiliser BACKEND_API_URL (côté serveur) et non NEXT_PUBLIC_API_URL (qui est /api/proxy)
 const BACKEND_URL = process.env.BACKEND_API_URL || 'http://localhost:3001';
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
       throw new Error('Impossible de récupérer les informations utilisateur');
     }
 
-    const user = await userResponse.json();
+    const user = unwrapApiData(await userResponse.json());
 
     // Stocker les tokens dans les cookies
     const cookieStore = await cookies();

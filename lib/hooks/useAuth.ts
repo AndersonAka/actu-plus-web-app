@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, UserRole } from '@/types';
 import { authConfig } from '../auth/config';
+import { unwrapApiData } from '../api/unwrap';
 
 export interface AuthState {
   user: User | null;
@@ -30,7 +31,7 @@ export function useAuth() {
 
         if (userCookie) {
           const userValue = userCookie.split('=')[1];
-          const user = JSON.parse(decodeURIComponent(userValue));
+          const user = unwrapApiData<User>(JSON.parse(decodeURIComponent(userValue)));
           setState({
             user,
             isAuthenticated: true,

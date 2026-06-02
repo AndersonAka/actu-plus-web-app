@@ -3,20 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils/cn';
-import { 
-  Bell, 
-  FileText, 
-  CreditCard, 
-  UserPlus, 
-  CheckCircle, 
-  XCircle,
-  AlertCircle,
-  Clock,
-  ChevronRight,
-  Check
-} from 'lucide-react';
+import { Bell, Clock, ChevronRight, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { getNotificationVisual } from '@/lib/utils/notification-display';
 
 interface Notification {
   id: string;
@@ -27,38 +17,6 @@ interface Notification {
   createdAt: string;
   data?: Record<string, any>;
 }
-
-const notificationIcons: Record<string, typeof Bell> = {
-  article_submitted: FileText,
-  article_approved: CheckCircle,
-  article_rejected: XCircle,
-  article_published: FileText,
-  subscription_created: CreditCard,
-  subscription_activated: CheckCircle,
-  subscription_expired: AlertCircle,
-  subscription_cancelled: XCircle,
-  payment_success: CreditCard,
-  payment_failed: AlertCircle,
-  user_registered: UserPlus,
-  user_deactivated: AlertCircle,
-  system: Bell,
-};
-
-const notificationColors: Record<string, string> = {
-  article_submitted: 'bg-primary-100 text-primary-600',
-  article_approved: 'bg-success-100 text-success-600',
-  article_rejected: 'bg-error-100 text-error-600',
-  article_published: 'bg-success-100 text-success-600',
-  subscription_created: 'bg-primary-100 text-primary-600',
-  subscription_activated: 'bg-success-100 text-success-600',
-  subscription_expired: 'bg-warning-100 text-warning-600',
-  subscription_cancelled: 'bg-error-100 text-error-600',
-  payment_success: 'bg-success-100 text-success-600',
-  payment_failed: 'bg-error-100 text-error-600',
-  user_registered: 'bg-primary-100 text-primary-600',
-  user_deactivated: 'bg-warning-100 text-warning-600',
-  system: 'bg-gray-100 text-gray-600',
-};
 
 export interface NotificationDropdownProps {
   variant?: 'header' | 'dashboard';
@@ -153,14 +111,6 @@ const NotificationDropdown = ({ variant = 'header', className }: NotificationDro
     }
   };
 
-  const getIcon = (type: string) => {
-    return notificationIcons[type] || Bell;
-  };
-
-  const getColor = (type: string) => {
-    return notificationColors[type] || 'bg-gray-100 text-gray-600';
-  };
-
   return (
     <div ref={dropdownRef} className={cn('relative', className)}>
       <button
@@ -212,9 +162,8 @@ const NotificationDropdown = ({ variant = 'header', className }: NotificationDro
             ) : (
               <div className="divide-y divide-gray-50">
                 {notifications.map((notification) => {
-                  const Icon = getIcon(notification.type);
-                  const colorClass = getColor(notification.type);
-                  
+                  const { Icon, circleClass } = getNotificationVisual(notification.type);
+
                   return (
                     <div
                       key={notification.id}
@@ -224,7 +173,7 @@ const NotificationDropdown = ({ variant = 'header', className }: NotificationDro
                         !notification.isRead ? 'bg-primary-50/50 hover:bg-primary-50' : 'hover:bg-gray-50'
                       )}
                     >
-                      <div className={cn('flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full', colorClass)}>
+                      <div className={cn('flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full', circleClass)}>
                         <Icon className="h-4 w-4" />
                       </div>
                       <div className="flex-1 min-w-0">

@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Card, EmptyState, Alert, Badge, Button } from '@/components/atoms';
 import { Pagination } from '@/components/molecules';
-import { Bell, Clock, FileText, Eye, EyeOff, Check } from 'lucide-react';
+import { Bell, Clock, Eye, EyeOff, Check } from 'lucide-react';
+import { getNotificationVisual } from '@/lib/utils/notification-display';
 
 interface Notification {
   id: string;
@@ -92,20 +93,14 @@ export default function VeilleurNotificationsPage() {
   };
 
   const getTypeIcon = (type: string) => {
-    if (type.startsWith('article')) return <FileText className="h-4 w-4" />;
-    return <Bell className="h-4 w-4" />;
+    const { Icon } = getNotificationVisual(type);
+    return <Icon className="h-4 w-4" />;
   };
 
   const getTypeBadge = (type: string) => {
-    const config: Record<string, { variant: 'info' | 'warning' | 'success' | 'error'; label: string }> = {
-      article_submitted: { variant: 'info', label: 'Article soumis' },
-      article_approved: { variant: 'success', label: 'Article validé' },
-      article_rejected: { variant: 'error', label: 'Article rejeté' },
-      article_published: { variant: 'success', label: 'Article publié' },
-      system: { variant: 'info', label: 'Système' },
-    };
-    const c = config[type] || { variant: 'info', label: type };
-    return <Badge variant={c.variant} size="sm">{c.label}</Badge>;
+    const { badgeVariant, label } = getNotificationVisual(type);
+    const variant = badgeVariant === 'default' ? 'info' : badgeVariant;
+    return <Badge variant={variant} size="sm">{label}</Badge>;
   };
 
   const notificationTypes = [

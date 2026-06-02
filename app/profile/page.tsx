@@ -8,6 +8,23 @@ import { Button, Input, Alert } from '@/components/atoms';
 import { User, Mail, Phone, Calendar, Crown, Heart, Bell, Shield, LogOut, Trash2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { User as UserType } from '@/types';
+
+type ProfileFormData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+};
+
+function userToFormData(u: Partial<UserType> | null | undefined): ProfileFormData {
+  return {
+    firstName: u?.firstName ?? '',
+    lastName: u?.lastName ?? '',
+    email: u?.email ?? '',
+    phone: u?.phone ?? '',
+  };
+}
 
 export default function ProfilePage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -16,12 +33,10 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [userData, setUserData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-  });
+  const [userData, setUserData] = useState<ProfileFormData>(userToFormData(null));
+  const [savedUserData, setSavedUserData] = useState<ProfileFormData>(userToFormData(null));
+  const [profileUser, setProfileUser] = useState<UserType | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
   const [subscription, setSubscription] = useState<any>(null);
   const [loadingSubscription, setLoadingSubscription] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -35,16 +50,53 @@ export default function ProfilePage() {
     }
   }, [authLoading, isAuthenticated, router]);
 
+  // Charger le profil depuis l'API (données à jour, notamment après OAuth)
   useEffect(() => {
-    if (user) {
-      setUserData({
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        email: user.email || '',
-        phone: user.phone || '',
-      });
+    if (authLoading || !isAuthenticated) {
+      return;
     }
-  }, [user]);
+
+    let cancelled = false;
+
+    const loadProfile = async () => {
+      setLoadingProfile(true);
+      try {
+        const response = await fetch('/api/proxy/auth/me', { credentials: 'include' });
+        if (!response.ok) {
+          throw new Error('Impossible de charger le profil');
+        }
+        const profile = (await response.json()) as UserType;
+        if (cancelled) return;
+
+        const form = userToFormData(profile);
+        setProfileUser(profile);
+        if (!isEditing) {
+          setUserData(form);
+          setSavedUserData(form);
+        }
+      } catch (err) {
+        console.error('Erreur chargement profil:', err);
+        if (!cancelled && user) {
+          const form = userToFormData(user);
+          setProfileUser(user);
+          if (!isEditing) {
+            setUserData(form);
+            setSavedUserData(form);
+          }
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingProfile(false);
+        }
+      }
+    };
+
+    loadProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, isAuthenticated]);
 
   // Charger l'abonnement actif depuis l'API
   useEffect(() => {
@@ -105,16 +157,25 @@ export default function ProfilePage() {
     setSuccess(null);
 
     try {
-      const response = await fetch('/api/proxy/users/profile', {
+      const { email: _email, ...patchBody } = userData;
+
+      const response = await fetch('/api/proxy/users/me', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
+        credentials: 'include',
+        body: JSON.stringify(patchBody),
       });
 
+      const updated = await response.json();
+
       if (!response.ok) {
-        throw new Error('Erreur lors de la mise à jour du profil');
+        throw new Error(updated.message || 'Erreur lors de la mise à jour du profil');
       }
 
+      const form = userToFormData(updated as UserType);
+      setUserData(form);
+      setSavedUserData(form);
+      setProfileUser(updated as UserType);
       setSuccess('Profil mis à jour avec succès');
       setIsEditing(false);
     } catch (err: any) {
@@ -188,6 +249,7 @@ export default function ProfilePage() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
+                          setUserData(savedUserData);
                           setIsEditing(false);
                           setError(null);
                         }}
@@ -206,6 +268,12 @@ export default function ProfilePage() {
                   )}
                 </div>
 
+                {loadingProfile ? (
+                  <div className="flex items-center gap-2 py-4 text-gray-600">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600" />
+                    <span className="text-sm">Chargement des informations…</span>
+                  </div>
+                ) : (
                 <div className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Input
@@ -243,6 +311,7 @@ export default function ProfilePage() {
                   />
 
                 </div>
+                )}
               </div>
 
               {/* Quick Actions */}
@@ -349,7 +418,7 @@ export default function ProfilePage() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600">Membre depuis</span>
                     <span className="font-medium text-gray-900">
-                      {format(new Date((user as any)?.createdAt || Date.now()), 'MMM yyyy', { locale: fr })}
+                      {format(new Date((profileUser ?? user)?.createdAt || Date.now()), 'MMM yyyy', { locale: fr })}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">

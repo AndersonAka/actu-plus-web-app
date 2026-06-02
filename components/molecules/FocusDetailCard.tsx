@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Article } from '@/types';
+import { getArticlePublicPath } from '@/lib/articles/article-url';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Calendar, Eye, ChevronRight, Crown } from 'lucide-react';
@@ -22,8 +23,8 @@ export const FocusDetailCard = ({
 }: FocusDetailCardProps) => {
   const imageUrl = article.coverImage || article.imageUrl;
   const articleUrl = fromCountry
-    ? `/articles/${article.id}?from=${fromCountry}`
-    : `/articles/${article.id}`;
+    ? `${getArticlePublicPath(article)}?from=${fromCountry}`
+    : getArticlePublicPath(article);
 
   const formattedDate = article.publishedAt
     ? format(new Date(article.publishedAt), "EEEE dd MMMM yyyy", { locale: fr })

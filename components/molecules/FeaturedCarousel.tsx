@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/atoms';
 import { Article } from '@/types';
+import { getArticlePublicPath } from '@/lib/articles/article-url';
 import { ChevronLeft, ChevronRight, Heart, Share2, Clock, Globe } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -84,7 +85,7 @@ const FeaturedCarousel = ({ articles, className }: FeaturedCarouselProps) => {
             key={article.id}
             className="w-full flex-shrink-0 snap-center"
           >
-            <Link href={`/articles/${article.id}`}>
+            <Link href={getArticlePublicPath(article)}>
               <div className="relative aspect-[21/9] overflow-hidden rounded-xl bg-gray-100">
                 {articleImage ? (
                   <Image

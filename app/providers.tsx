@@ -3,7 +3,7 @@
 import { ReactNode } from 'react';
 import { ToastProvider } from '@/lib/contexts/ToastContext';
 import { CookieConsentProvider } from '@/lib/contexts/CookieConsentContext';
-import { AxeptioIntegration } from '@/components/organisms';
+import { AxeptioIntegration, OneSignalProvider } from '@/components/organisms';
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
@@ -11,6 +11,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <CookieConsentProvider>
         {children}
         <AxeptioIntegration />
+        <OneSignalProvider />
       </CookieConsentProvider>
     </ToastProvider>
   );

@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/atoms';
 import { Calendar, Eye, Heart, Globe } from 'lucide-react';
 import { Article, ArticleStatus } from '@/types';
+import { getArticlePublicPath } from '@/lib/articles/article-url';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -39,9 +40,9 @@ const ArticleCard = ({
 }: ArticleCardProps) => {
   // Handle both coverImage and imageUrl from backend
   const imageUrl = article.coverImage || article.imageUrl;
-  const articleUrl = fromCountry 
-    ? `/articles/${article.id}?from=${fromCountry}` 
-    : `/articles/${article.id}`;
+  const articleUrl = fromCountry
+    ? `${getArticlePublicPath(article)}?from=${fromCountry}`
+    : getArticlePublicPath(article);
   const formattedDate = article.publishedAt
     ? format(new Date(article.publishedAt), 'dd MMM yyyy', { locale: fr })
     : format(new Date(article.createdAt), 'dd MMM yyyy', { locale: fr });

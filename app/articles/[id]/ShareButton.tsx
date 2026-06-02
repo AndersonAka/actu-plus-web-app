@@ -7,16 +7,17 @@ import { Button } from '@/components/atoms';
 interface ShareButtonProps {
   title: string;
   excerpt?: string;
-  articleId: string;
+  /** Chemin relatif, ex. /articles/mon-slug-123 */
+  articlePath: string;
 }
 
-export function ShareButton({ title, excerpt, articleId }: ShareButtonProps) {
+export function ShareButton({ title, excerpt, articlePath }: ShareButtonProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const shareUrl = typeof window !== 'undefined' 
-    ? `${window.location.origin}/articles/${articleId}`
-    : `/articles/${articleId}`;
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${articlePath}`
+    : articlePath;
 
   const shareText = excerpt ? `${title} - ${excerpt.substring(0, 100)}...` : title;
 

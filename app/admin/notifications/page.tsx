@@ -3,7 +3,11 @@
 import { useState, useEffect } from 'react';
 import { Card, EmptyState, Alert, Badge, Button } from '@/components/atoms';
 import { Pagination } from '@/components/molecules';
-import { Bell, Clock, FileText, CreditCard, UserPlus, Eye, EyeOff, Check } from 'lucide-react';
+import { Bell, Clock, Eye, EyeOff, Check } from 'lucide-react';
+import {
+  getNotificationVisual,
+  getNotificationTypeOptions,
+} from '@/lib/utils/notification-display';
 
 interface Notification {
   id: string;
@@ -90,47 +94,19 @@ export default function AdminNotificationsPage() {
   };
 
   const getTypeIcon = (type: string) => {
-    if (type.startsWith('article')) return <FileText className="h-4 w-4" />;
-    if (type.startsWith('subscription')) return <CreditCard className="h-4 w-4" />;
-    if (type.startsWith('payment')) return <CreditCard className="h-4 w-4" />;
-    if (type.startsWith('user')) return <UserPlus className="h-4 w-4" />;
-    return <Bell className="h-4 w-4" />;
+    const { Icon } = getNotificationVisual(type);
+    return <Icon className="h-4 w-4" />;
   };
 
   const getTypeBadge = (type: string) => {
-    const config: Record<string, { variant: 'info' | 'warning' | 'success' | 'error'; label: string }> = {
-      article_submitted: { variant: 'info', label: 'Article soumis' },
-      article_approved: { variant: 'success', label: 'Article validé' },
-      article_rejected: { variant: 'error', label: 'Article rejeté' },
-      article_published: { variant: 'success', label: 'Article publié' },
-      subscription_created: { variant: 'info', label: 'Abonnement créé' },
-      subscription_activated: { variant: 'success', label: 'Abonnement activé' },
-      subscription_expired: { variant: 'warning', label: 'Abonnement expiré' },
-      subscription_cancelled: { variant: 'error', label: 'Abonnement annulé' },
-      payment_success: { variant: 'success', label: 'Paiement réussi' },
-      payment_failed: { variant: 'error', label: 'Paiement échoué' },
-      user_registered: { variant: 'info', label: 'Inscription' },
-      user_deactivated: { variant: 'warning', label: 'Compte désactivé' },
-      system: { variant: 'info', label: 'Système' },
-    };
-    const c = config[type] || { variant: 'info', label: type };
-    return <Badge variant={c.variant} size="sm">{c.label}</Badge>;
+    const { badgeVariant, label } = getNotificationVisual(type);
+    const variant = badgeVariant === 'default' ? 'info' : badgeVariant;
+    return <Badge variant={variant} size="sm">{label}</Badge>;
   };
 
   const notificationTypes = [
     { value: '', label: 'Tous les types' },
-    { value: 'article_submitted', label: 'Article soumis' },
-    { value: 'article_approved', label: 'Article validé' },
-    { value: 'article_rejected', label: 'Article rejeté' },
-    { value: 'article_published', label: 'Article publié' },
-    { value: 'subscription_created', label: 'Abonnement créé' },
-    { value: 'subscription_activated', label: 'Abonnement activé' },
-    { value: 'subscription_expired', label: 'Abonnement expiré' },
-    { value: 'subscription_cancelled', label: 'Abonnement annulé' },
-    { value: 'payment_success', label: 'Paiement réussi' },
-    { value: 'payment_failed', label: 'Paiement échoué' },
-    { value: 'user_registered', label: 'Inscription' },
-    { value: 'user_deactivated', label: 'Compte désactivé' },
+    ...getNotificationTypeOptions(),
   ];
 
   const renderNotificationList = (notifList: Notification[]) => {

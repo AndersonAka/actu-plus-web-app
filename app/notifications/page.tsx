@@ -11,15 +11,11 @@ import {
   BellOff,
   ArrowLeft,
   CheckCheck,
-  CreditCard,
-  Crown,
-  AlertTriangle,
-  Info,
   Loader2,
-  Trash2,
 } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { getNotificationVisual } from '@/lib/utils/notification-display';
 
 interface Notification {
   id: string;
@@ -29,44 +25,6 @@ interface Notification {
   isRead: boolean;
   metadata?: any;
   createdAt: string;
-}
-
-function getNotificationIcon(type: string) {
-  switch (type) {
-    case 'payment_success':
-      return <CreditCard className="h-5 w-5 text-green-600" />;
-    case 'payment_failed':
-      return <CreditCard className="h-5 w-5 text-red-600" />;
-    case 'subscription_activated':
-      return <Crown className="h-5 w-5 text-blue-600" />;
-    case 'subscription_cancelled':
-      return <Crown className="h-5 w-5 text-orange-600" />;
-    case 'subscription_expired':
-      return <Crown className="h-5 w-5 text-gray-600" />;
-    case 'alert':
-      return <AlertTriangle className="h-5 w-5 text-yellow-600" />;
-    default:
-      return <Info className="h-5 w-5 text-primary-600" />;
-  }
-}
-
-function getNotificationBg(type: string) {
-  switch (type) {
-    case 'payment_success':
-      return 'bg-green-100';
-    case 'payment_failed':
-      return 'bg-red-100';
-    case 'subscription_activated':
-      return 'bg-blue-100';
-    case 'subscription_cancelled':
-      return 'bg-orange-100';
-    case 'subscription_expired':
-      return 'bg-gray-100';
-    case 'alert':
-      return 'bg-yellow-100';
-    default:
-      return 'bg-primary-100';
-  }
 }
 
 export default function NotificationsPage() {
@@ -249,7 +207,9 @@ export default function NotificationsPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {filteredNotifications.map((notification) => (
+              {filteredNotifications.map((notification) => {
+                const { Icon, bgClass, iconColorClass } = getNotificationVisual(notification.type);
+                return (
                 <div
                   key={notification.id}
                   onClick={() => !notification.isRead && markAsRead(notification.id)}
@@ -259,8 +219,8 @@ export default function NotificationsPage() {
                       : 'border-primary-200 bg-primary-50 hover:bg-primary-100'
                   }`}
                 >
-                  <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${getNotificationBg(notification.type)}`}>
-                    {getNotificationIcon(notification.type)}
+                  <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${bgClass}`}>
+                    <Icon className={`h-5 w-5 ${iconColorClass}`} />
                   </div>
 
                   <div className="min-w-0 flex-1">
@@ -283,7 +243,8 @@ export default function NotificationsPage() {
                     </p>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

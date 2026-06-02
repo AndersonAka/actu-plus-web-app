@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { authConfig } from './config';
 import { setSessionCookies, clearSessionCookies, getSession } from './session';
 import { apiConfig } from '@/config/api.config';
+import { unwrapApiData } from '@/lib/api/unwrap';
 import { LoginCredentials, RegisterData, AuthResponse, User } from '@/types';
 
 // Appel API vers le backend
@@ -150,7 +151,8 @@ export async function getProfileAction(): Promise<{
   error?: string;
 }> {
   try {
-    const user = await fetchBackendWithAuth<User>('/api/auth/me');
+    const response = await fetchBackendWithAuth<unknown>('/api/users/me');
+    const user = unwrapApiData<User>(response);
     return { success: true, user };
   } catch (error: any) {
     return {
@@ -165,10 +167,11 @@ export async function updateProfileAction(
   data: Partial<User>
 ): Promise<{ success: boolean; user?: User; error?: string }> {
   try {
-    const user = await fetchBackendWithAuth<User>('/api/users/me', {
+    const response = await fetchBackendWithAuth<unknown>('/api/users/me', {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
+    const user = unwrapApiData<User>(response);
 
     // Mettre à jour le cookie user
     const session = await getSession();

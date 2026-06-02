@@ -803,7 +803,7 @@ export default function EnterpriseSubscriptionsPage() {
 
       {/* ==================== CONFIRMATION RETRAIT EMPLOYÉ ==================== */}
       {showRemoveUserConfirm && removingUser && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-xl bg-white shadow-2xl">
             <div className="p-6">
               <div className="mb-4 flex items-center gap-3">

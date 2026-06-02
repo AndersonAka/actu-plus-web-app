@@ -17,3 +17,5 @@ export { ArticleView } from './ArticleView';
 export type { ArticleViewProps } from './ArticleView';
 
 export { AxeptioIntegration } from './AxeptioIntegration';
+
+export { OneSignalProvider } from './OneSignalProvider';
