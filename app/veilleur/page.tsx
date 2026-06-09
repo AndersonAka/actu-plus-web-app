@@ -31,23 +31,26 @@ export default function VeilleurDashboardPage() {
   useEffect(() => {
     const fetchMyArticles = async () => {
       try {
-        const response = await fetch('/api/proxy/articles/my');
+        const response = await fetch('/api/proxy/articles/my?page=1&limit=1000');
         if (response.ok) {
           const result = await response.json();
-          // Le backend enveloppe la réponse: { success, data: { data: articles[], meta }, timestamp }
+          const payload = result?.data ?? result;
           let articlesList: Article[] = [];
-          if (result.data?.data && Array.isArray(result.data.data)) {
-            articlesList = result.data.data;
-          } else if (result.data && Array.isArray(result.data)) {
-            articlesList = result.data;
+          if (payload?.data && Array.isArray(payload.data)) {
+            articlesList = payload.data;
+          } else if (Array.isArray(payload)) {
+            articlesList = payload;
           } else if (Array.isArray(result)) {
             articlesList = result;
           }
-          
+
+          const totalFromApi =
+            typeof payload?.total === 'number' ? payload.total : articlesList.length;
+
           setArticles(articlesList);
-          
+
           const newStats = {
-            total: articlesList.length,
+            total: totalFromApi,
             draft: articlesList.filter((a: any) => getArticleStatus(a) === ArticleStatus.DRAFT).length,
             pending: articlesList.filter((a: any) => getArticleStatus(a) === ArticleStatus.PENDING).length,
             approved: articlesList.filter((a: any) => getArticleStatus(a) === ArticleStatus.APPROVED).length,
@@ -64,6 +67,10 @@ export default function VeilleurDashboardPage() {
     };
 
     fetchMyArticles();
+
+    const onFocus = () => fetchMyArticles();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
   }, []);
 
   const statCards = [

@@ -8,6 +8,7 @@ import {
   getNotificationVisual,
   getNotificationTypeOptions,
 } from '@/lib/utils/notification-display';
+import { fetchNotificationsPage } from '@/lib/notifications/notification-filters';
 
 interface Notification {
   id: string;
@@ -39,17 +40,16 @@ export default function AdminNotificationsPage() {
       if (filterType) params.append('type', filterType);
       if (filterRead) params.append('isRead', filterRead);
 
-      const response = await fetch(`/api/proxy/notifications?${params}`);
-      if (response.ok) {
-        const result = await response.json();
-        const payload = result?.data ?? result;
-        const notifList = Array.isArray(payload) 
-          ? payload 
-          : (payload?.data || []);
-        const notifTotal = Array.isArray(payload) 
-          ? payload.length 
-          : (payload?.total || 0);
-        setNotifications(notifList);
+      const { items, total: notifTotal, error: fetchError } = await fetchNotificationsPage(
+        '/api/proxy/notifications/all',
+        params,
+      );
+      if (fetchError) {
+        setError(fetchError);
+        setNotifications([]);
+        setTotal(0);
+      } else {
+        setNotifications(items as Notification[]);
         setTotal(notifTotal);
       }
     } catch (err: any) {
@@ -229,7 +229,10 @@ export default function AdminNotificationsPage() {
         )}
         <select
           value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
+          onChange={(e) => {
+            setFilterType(e.target.value);
+            setPage(1);
+          }}
           aria-label="Filtrer les notifications par type"
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
         >
@@ -241,7 +244,10 @@ export default function AdminNotificationsPage() {
         </select>
         <select
           value={filterRead}
-          onChange={(e) => setFilterRead(e.target.value)}
+          onChange={(e) => {
+            setFilterRead(e.target.value);
+            setPage(1);
+          }}
           aria-label="Filtrer les notifications par statut de lecture"
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
         >

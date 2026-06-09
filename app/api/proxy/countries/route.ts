@@ -6,7 +6,13 @@ import { authConfig } from '@/lib/auth/config';
 // GET /api/proxy/countries - Liste des pays
 export async function GET(request: NextRequest) {
   try {
-    const response = await fetch(`${apiConfig.baseUrl}/api/countries`, {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.toString();
+    const backendUrl = query
+      ? `${apiConfig.baseUrl}/api/countries?${query}`
+      : `${apiConfig.baseUrl}/api/countries`;
+
+    const response = await fetch(backendUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

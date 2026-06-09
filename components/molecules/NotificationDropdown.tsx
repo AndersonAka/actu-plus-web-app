@@ -7,6 +7,7 @@ import { Bell, Clock, ChevronRight, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { getNotificationVisual } from '@/lib/utils/notification-display';
+import { parseUnreadCount } from '@/lib/notifications/parse-notifications';
 
 interface Notification {
   id: string;
@@ -57,7 +58,7 @@ const NotificationDropdown = ({ variant = 'header', className }: NotificationDro
         });
         if (response.ok) {
           const data = await response.json();
-          setUnreadCount(data.count || 0);
+          setUnreadCount(parseUnreadCount(data));
         }
       } catch {
         // Silently ignore (réseau indisponible ou composant démonté)

@@ -16,9 +16,11 @@ import {
   FileText,
   RotateCcw,
   Search,
-  X
+  X,
+  ExternalLink,
 } from 'lucide-react';
 import { Article, ArticleStatus } from '@/types';
+import { getArticlePublicPath } from '@/lib/articles/article-url';
 
 type ArchiveType = 'system' | 'watcher';
 const PAGE_SIZE = 10;
@@ -458,6 +460,14 @@ export default function AdminArchivesPage() {
                         )}
                       </Badge>
 
+                      <Link
+                        href={getArticlePublicPath(article)}
+                        target="_blank"
+                        className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Voir
+                      </Link>
                       <Button
                         variant="outline"
                         size="sm"

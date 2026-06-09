@@ -69,6 +69,13 @@ export default function ModerateurDashboardPage() {
     };
 
     fetchData();
+
+    const onFocus = () => {
+      setIsLoading(true);
+      fetchData();
+    };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
   }, []);
 
   const statCards = [

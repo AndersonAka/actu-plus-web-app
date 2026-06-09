@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Filter,
 } from 'lucide-react';
+import { CONTACT_INFO } from '@/lib/constants/contact';
 
 interface ContactMessage {
   id: string;
@@ -162,8 +163,13 @@ export default function AdminMessagesPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Messages de contact</h1>
           <p className="mt-1 text-gray-600">
+            E-mail de réponse plateforme :{' '}
+            <a href={`mailto:${CONTACT_INFO.email}`} className="font-medium text-primary-600 hover:underline">
+              {CONTACT_INFO.email}
+            </a>
             {unreadCount > 0 ? (
               <>
+                {' · '}
                 <span className="font-medium text-primary-600">{unreadCount}</span> message(s) non
                 lu(s)
               </>
@@ -386,6 +392,7 @@ export default function AdminMessagesPage() {
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-900">Confirmer la suppression</h2>
               <button
+                title="Fermer la modal de suppression"
                 onClick={closeDeleteConfirm}
                 className="text-gray-400 hover:text-gray-600"
                 disabled={isDeleting}

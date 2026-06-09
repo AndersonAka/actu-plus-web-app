@@ -4,7 +4,11 @@ import { useState, useEffect } from 'react';
 import { Card, EmptyState, Alert, Badge, Button } from '@/components/atoms';
 import { Pagination } from '@/components/molecules';
 import { Bell, Clock, Eye, EyeOff, Check } from 'lucide-react';
-import { getNotificationVisual } from '@/lib/utils/notification-display';
+import {
+  getNotificationVisual,
+  getNotificationTypeOptions,
+} from '@/lib/utils/notification-display';
+import { fetchNotificationsPage } from '@/lib/notifications/notification-filters';
 
 interface Notification {
   id: string;
@@ -38,17 +42,16 @@ export default function ModerateurNotificationsPage() {
       if (filterType) params.append('type', filterType);
       if (filterRead) params.append('isRead', filterRead);
 
-      const response = await fetch(`/api/proxy/notifications?${params}`);
-      if (response.ok) {
-        const result = await response.json();
-        const payload = result?.data ?? result;
-        const notifList = Array.isArray(payload) 
-          ? payload 
-          : (payload?.data || []);
-        const notifTotal = Array.isArray(payload) 
-          ? payload.length 
-          : (payload?.total || 0);
-        setNotifications(notifList);
+      const { items, total: notifTotal, error: fetchError } = await fetchNotificationsPage(
+        '/api/proxy/notifications',
+        params,
+      );
+      if (fetchError) {
+        setError(fetchError);
+        setNotifications([]);
+        setTotal(0);
+      } else {
+        setNotifications(items as Notification[]);
         setTotal(notifTotal);
       }
     } catch (err: any) {
@@ -105,10 +108,7 @@ export default function ModerateurNotificationsPage() {
 
   const notificationTypes = [
     { value: '', label: 'Tous les types' },
-    { value: 'article_submitted', label: 'Article soumis' },
-    { value: 'article_approved', label: 'Article validé' },
-    { value: 'article_rejected', label: 'Article rejeté' },
-    { value: 'article_published', label: 'Article publié' },
+    ...getNotificationTypeOptions(),
   ];
 
   const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
@@ -143,7 +143,10 @@ export default function ModerateurNotificationsPage() {
         )}
         <select
           value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
+          onChange={(e) => {
+            setFilterType(e.target.value);
+            setPage(1);
+          }}
           aria-label="Filtrer les notifications par type"
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
         >
@@ -155,7 +158,10 @@ export default function ModerateurNotificationsPage() {
         </select>
         <select
           value={filterRead}
-          onChange={(e) => setFilterRead(e.target.value)}
+          onChange={(e) => {
+            setFilterRead(e.target.value);
+            setPage(1);
+          }}
           aria-label="Filtrer les notifications par statut de lecture"
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
         >

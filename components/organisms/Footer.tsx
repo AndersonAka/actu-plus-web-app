@@ -4,7 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { cn } from '@/lib/utils/cn';
 import { useCookieConsent } from '@/lib/contexts/CookieConsentContext';
-import { Cookie } from 'lucide-react';
+import { Cookie, Mail, Phone } from 'lucide-react';
+import { CONTACT_INFO } from '@/lib/constants/contact';
 
 const Footer = ({ className }: { className?: string }) => {
   const { openSettings } = useCookieConsent();
@@ -76,6 +77,24 @@ const Footer = ({ className }: { className?: string }) => {
                   </Link>
                 </li>
               ))}
+              <li>
+                <a
+                  href={`mailto:${CONTACT_INFO.email}`}
+                  className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-primary-600"
+                >
+                  <Mail className="h-3.5 w-3.5" />
+                  {CONTACT_INFO.email}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`tel:${CONTACT_INFO.phoneTel}`}
+                  className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-primary-600"
+                >
+                  <Phone className="h-3.5 w-3.5" />
+                  {CONTACT_INFO.phoneDisplay}
+                </a>
+              </li>
             </ul>
           </div>
         </div>

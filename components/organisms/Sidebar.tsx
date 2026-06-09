@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { Avatar } from '@/components/atoms';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { parseUnreadCount } from '@/lib/notifications/parse-notifications';
 import {
   LayoutDashboard,
   FileText,
@@ -50,7 +51,7 @@ const Sidebar = ({ variant }: SidebarProps) => {
         });
         if (response.ok) {
           const data = await response.json();
-          setUnreadCount(data.count || 0);
+          setUnreadCount(parseUnreadCount(data));
         }
       } catch {
         // Silently ignore (réseau indisponible ou composant démonté)

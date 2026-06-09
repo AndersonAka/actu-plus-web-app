@@ -26,6 +26,7 @@ import {
   FileText,
   Users,
 } from 'lucide-react';
+import { CONTACT_INFO, SOCIAL_LINKS } from '@/lib/constants/contact';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -80,43 +81,57 @@ export default function ContactPage() {
     }
   };
 
+  const socialIconMap = {
+    facebook: Facebook,
+    twitter: Twitter,
+    linkedin: Linkedin,
+    instagram: Instagram,
+  } as const;
+
+  const socialColorMap = {
+    facebook: 'hover:bg-blue-600',
+    twitter: 'hover:bg-sky-500',
+    linkedin: 'hover:bg-blue-700',
+    instagram: 'hover:bg-pink-600',
+  } as const;
+
   const contactInfo = [
     {
       icon: Mail,
       label: 'Email',
-      value: 'contact@actuplus.com',
-      href: 'mailto:contact@actuplus.com',
+      value: CONTACT_INFO.email,
+      href: `mailto:${CONTACT_INFO.email}`,
       color: 'bg-blue-100 text-blue-600',
     },
     {
       icon: Phone,
       label: 'Téléphone',
-      value: '+225 07 00 00 00 00',
-      href: 'tel:+2250700000000',
+      value: CONTACT_INFO.phoneDisplay,
+      href: `tel:${CONTACT_INFO.phoneTel}`,
       color: 'bg-green-100 text-green-600',
     },
     {
       icon: MapPin,
       label: 'Adresse',
-      value: 'Abidjan, Côte d\'Ivoire',
+      value: CONTACT_INFO.address,
       href: '#',
       color: 'bg-orange-100 text-orange-600',
     },
     {
       icon: Clock,
       label: 'Horaires',
-      value: 'Lun - Ven: 8h - 18h',
+      value: CONTACT_INFO.hours,
       href: '#',
       color: 'bg-purple-100 text-purple-600',
     },
   ];
 
-  const socialLinks = [
-    { icon: Facebook, href: '#', label: 'Facebook', color: 'hover:bg-blue-600' },
-    { icon: Twitter, href: '#', label: 'Twitter', color: 'hover:bg-sky-500' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn', color: 'hover:bg-blue-700' },
-    { icon: Instagram, href: '#', label: 'Instagram', color: 'hover:bg-pink-600' },
-  ];
+  const socialLinks = SOCIAL_LINKS.map((link) => ({
+    icon: socialIconMap[link.id],
+    href: link.href,
+    label: link.label,
+    color: socialColorMap[link.id],
+  }));
 
   const contactTypes = [
     { value: 'general', label: 'Question générale', icon: HelpCircle },
@@ -287,7 +302,7 @@ export default function ContactPage() {
                         id="phone"
                         {...register('phone')}
                         className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-                        placeholder="+225 07 00 00 00 00"
+                        placeholder={CONTACT_INFO.phoneDisplay}
                       />
                     </div>
 

@@ -6,6 +6,7 @@ import {
   Building2, Plus, Users, Calendar, CheckCircle, XCircle, Edit2, Eye,
   Search, X, UserMinus, AlertTriangle, Phone, Mail, RefreshCw,
 } from 'lucide-react';
+import { unwrapApiData } from '@/lib/api/unwrap';
 
 interface EnterpriseSubscription {
   id: string;
@@ -119,7 +120,8 @@ export default function EnterpriseSubscriptionsPage() {
       const response = await fetch('/api/proxy/subscriptions/enterprise');
       if (response.ok) {
         const data = await response.json();
-        setSubscriptions(Array.isArray(data) ? data : []);
+        const list = unwrapApiData<EnterpriseSubscription[] | unknown>(data);
+        setSubscriptions(Array.isArray(list) ? list : []);
       }
     } catch (err) {
       console.error('Error fetching enterprise subscriptions:', err);
@@ -133,7 +135,8 @@ export default function EnterpriseSubscriptionsPage() {
       const response = await fetch('/api/proxy/subscriptions/plans?category=enterprise&all=true');
       if (response.ok) {
         const data = await response.json();
-        setPlans(Array.isArray(data) ? data : []);
+        const list = unwrapApiData<unknown>(data);
+        setPlans(Array.isArray(list) ? list : []);
       }
     } catch (err) {
       console.error('Error fetching plans:', err);

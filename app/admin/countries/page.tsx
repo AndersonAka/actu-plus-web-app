@@ -18,7 +18,7 @@ export default function AdminCountriesPage() {
   const fetchCountries = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/proxy/countries');
+      const response = await fetch('/api/proxy/countries?all=true');
       if (response.ok) {
         const res = await response.json();
         const payload = res?.data ?? res;
