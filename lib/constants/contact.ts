@@ -11,21 +11,21 @@ export const SOCIAL_LINKS = [
   {
     id: 'facebook',
     label: 'Facebook',
-    href: 'https://www.facebook.com/actuplusagence',
+    href: 'https://web.facebook.com/profile.php?id=61578594335893',
   },
   {
     id: 'twitter',
     label: 'Twitter',
-    href: 'https://twitter.com/actuplusagence',
+    href: 'https://x.com/ACTUPLUSINFOS',
   },
   {
     id: 'linkedin',
     label: 'LinkedIn',
-    href: 'https://www.linkedin.com/company/actuplusagence',
+    href: 'https://www.linkedin.com/company/agence-actu-plus/?viewAsMember=true',
   },
   {
     id: 'instagram',
     label: 'Instagram',
-    href: 'https://www.instagram.com/actuplusagence',
+    href: 'https://www.instagram.com/agenceactuplus/',
   },
 ] as const;
