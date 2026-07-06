@@ -16,7 +16,7 @@ function PaymentCallbackContent() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    // Notre backend ajoute ?payment_id=xxx dans le callback_url après le widget CinetPay
+    // Notre backend ajoute ?payment_id=xxx dans le callback_url après le paiement GeniusPay
     const paymentId = searchParams.get('payment_id');
     const trxref = searchParams.get('trxref');
     const reference = searchParams.get('reference');
@@ -35,11 +35,11 @@ function PaymentCallbackContent() {
         let payment;
 
         if (paymentId) {
-          // Vérifier via l'API CinetPay et activer l'abonnement si succès
-          payment = await paymentService.checkCinetPayStatus(paymentId);
+          // Vérifier via l'API GeniusPay et activer l'abonnement si succès
+          payment = await paymentService.verifyPayment(paymentId);
         } else {
           // Si on n'a qu'une référence externe, on ne peut pas vérifier directement
-          // car checkCinetPayStatus attend un paymentId
+          // car verifyPayment attend un paymentId
           setStatus('failed');
           setMessage('Impossible de vérifier le paiement. Veuillez contacter le support.');
           return;

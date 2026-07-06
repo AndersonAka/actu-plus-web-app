@@ -2,39 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Header, Footer } from '@/components/organisms';
 import { Button } from '@/components/atoms';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { paymentService } from '@/lib/services/payment.service';
 import { Check, Star, Building2, Zap, Crown, ArrowRight, Loader2, X, Users } from 'lucide-react';
 import { Suspense } from 'react';
-
-const CINETPAY_SEAMLESS_SDK_URL = 'https://cinetpay.com/cdn/seamless_sdk/latest/cinetpay.prod.min.js';
-
-// Charge le widget CinetPay une seule fois (script global côté client)
-function loadCinetPaySeamlessSdk(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if ((window as any).CinetPay) {
-      resolve();
-      return;
-    }
-
-    const existingScript = document.querySelector(`script[src="${CINETPAY_SEAMLESS_SDK_URL}"]`);
-    if (existingScript) {
-      existingScript.addEventListener('load', () => resolve());
-      existingScript.addEventListener('error', () => reject(new Error('Impossible de charger le widget CinetPay')));
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = CINETPAY_SEAMLESS_SDK_URL;
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Impossible de charger le widget CinetPay'));
-    document.head.appendChild(script);
-  });
-}
 
 interface SubscriptionPlan {
   id: string;
@@ -51,7 +25,6 @@ interface SubscriptionPlan {
 function SubscriptionsContent() {
   const { user, isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingPayment, setProcessingPayment] = useState(false);
@@ -246,8 +219,7 @@ function SubscriptionsContent() {
       return;
     }
 
-    // Flux CinetPay Seamless (v1) : le paiement se fait dans un widget in-page,
-    // sans redirection. Le statut réel est toujours vérifié côté serveur.
+    // Flux simplifié : créer le paiement et rediriger vers la page de checkout GeniusPay
     setSelectedPlan(planId);
     setProcessingPayment(true);
 
@@ -258,55 +230,19 @@ function SubscriptionsContent() {
       }
 
       // Créer le paiement via le backend
+      // GeniusPay gère tous les moyens de paiement sur sa page de checkout
       const payment = await paymentService.createPayment({
         subscriptionPlanId: plan.id,
         amount: plan.price,
         currency: plan.currency,
-        paymentMethod: 'mobile_money', // Le widget CinetPay gère le choix du moyen de paiement
+        paymentMethod: 'mobile_money', // GeniusPay gère le choix sur sa page
       });
 
-      // Récupérer les données de signature et charger le widget CinetPay
-      const [signatureData] = await Promise.all([
-        paymentService.getCinetPaySignatureData(payment.id),
-        loadCinetPaySeamlessSdk(),
-      ]);
+      // Récupérer l'URL de paiement GeniusPay et rediriger
+      const paymentUrl = await paymentService.getPaymentUrl(payment.id);
 
-      const CinetPay = (window as any).CinetPay;
-
-      CinetPay.setConfig({
-        apikey: signatureData.apikey,
-        site_id: signatureData.site_id,
-        notify_url: signatureData.notify_url,
-      });
-
-      CinetPay.on('paymentSuccessfull', async () => {
-        try {
-          // Source de vérité : vérification côté serveur, jamais l'événement seul
-          await paymentService.checkCinetPayStatus(payment.id);
-        } finally {
-          router.push(`/payment/callback?payment_id=${payment.id}`);
-        }
-      });
-
-      CinetPay.on('paymentPending', () => {
-        router.push(`/payment/callback?payment_id=${payment.id}`);
-      });
-
-      CinetPay.on('error', () => {
-        setError('Le paiement a échoué. Veuillez réessayer.');
-        setProcessingPayment(false);
-        setSelectedPlan(null);
-      });
-
-      CinetPay.setSignatureData({
-        amount: signatureData.amount,
-        trans_id: signatureData.trans_id,
-        currency: signatureData.currency,
-        designation: signatureData.designation,
-        custom: signatureData.custom,
-      });
-
-      CinetPay.getSignature();
+      // Rediriger vers la page de paiement GeniusPay
+      window.location.href = paymentUrl;
     } catch (err: any) {
       console.error('Erreur lors du paiement:', err);
       setError(err.message || 'Une erreur est survenue lors du paiement. Veuillez réessayer.');

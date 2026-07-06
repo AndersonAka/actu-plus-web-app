@@ -1,6 +1,6 @@
 /**
  * Service de paiement pour l'application web
- * Utilise Paystack via le backend
+ * Utilise GeniusPay via le backend
  */
 
 export enum PaymentStatus {
@@ -25,6 +25,7 @@ export interface Payment {
   provider?: string;
   status: PaymentStatus;
   transactionId?: string;
+  paymentUrl?: string;
   subscriptionId?: string;
   createdAt: string;
   updatedAt: string;
@@ -128,7 +129,7 @@ class PaymentService {
   }
 
   /**
-   * Récupère l'URL de paiement Paystack
+   * Récupère l'URL de paiement (checkout GeniusPay)
    */
   async getPaymentUrl(paymentId: string): Promise<string> {
     const response = await fetch(`${this.baseUrl}/payments/${paymentId}/payment-url`, {
@@ -210,57 +211,6 @@ class PaymentService {
    */
   async getCinetPayUrl(paymentId: string): Promise<string> {
     return this.getPaymentUrl(paymentId);
-  }
-
-  /**
-   * Récupère les données du widget CinetPay Seamless (v1) pour un paiement.
-   * Ces données sont transmises telles quelles au SDK JS CinetPay
-   * (window.CinetPay.setConfig / setSignatureData / getSignature).
-   */
-  async getCinetPaySignatureData(paymentId: string): Promise<{
-    apikey: string;
-    site_id: number;
-    notify_url: string;
-    amount: number;
-    trans_id: string;
-    currency: string;
-    designation: string;
-    custom: string;
-  }> {
-    const response = await fetch(`${this.baseUrl}/payments/${paymentId}/cinetpay-signature`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || 'Erreur lors de la récupération des données CinetPay');
-    }
-
-    return response.json();
-  }
-
-  /**
-   * Vérifie le statut d'un paiement CinetPay (v1) auprès du backend.
-   */
-  async checkCinetPayStatus(paymentId: string): Promise<Payment> {
-    const response = await fetch(`${this.baseUrl}/payments/${paymentId}/cinetpay-status`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || 'Erreur lors de la vérification du paiement');
-    }
-
-    return response.json();
   }
 
   /**
