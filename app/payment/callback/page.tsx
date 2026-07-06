@@ -16,12 +16,11 @@ function PaymentCallbackContent() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    // Paystack redirige avec ?trxref=xxx&reference=xxx
-    // Notre backend ajoute aussi ?payment_id=xxx dans le callback_url
+    // Notre backend ajoute ?payment_id=xxx dans le callback_url après le widget CinetPay
     const paymentId = searchParams.get('payment_id');
     const trxref = searchParams.get('trxref');
     const reference = searchParams.get('reference');
-    
+
     if (!paymentId && !trxref && !reference) {
       setStatus('failed');
       setMessage('ID de paiement manquant');
@@ -36,11 +35,11 @@ function PaymentCallbackContent() {
         let payment;
 
         if (paymentId) {
-          // Vérifier via Paystack API et activer l'abonnement si succès
-          payment = await paymentService.checkPaystackStatus(paymentId);
+          // Vérifier via l'API CinetPay et activer l'abonnement si succès
+          payment = await paymentService.checkCinetPayStatus(paymentId);
         } else {
-          // Si on n'a que la référence Paystack, on ne peut pas vérifier directement
-          // car checkPaystackStatus attend un paymentId
+          // Si on n'a qu'une référence externe, on ne peut pas vérifier directement
+          // car checkCinetPayStatus attend un paymentId
           setStatus('failed');
           setMessage('Impossible de vérifier le paiement. Veuillez contacter le support.');
           return;
