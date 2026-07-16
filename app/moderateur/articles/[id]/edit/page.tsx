@@ -23,6 +23,7 @@ const articleSchema = z.object({
   content: z.string().min(50, 'Le contenu doit contenir au moins 50 caractères'),
   categoryId: z.string().min(1, 'Veuillez sélectionner une catégorie'),
   countryId: z.string().optional(),
+  scope: z.enum(['national', 'international'], { message: 'Veuillez indiquer la portée de l\'article' }),
   coverImage: z.string().optional().or(z.literal('')),
   sources: z.array(sourceSchema).optional(),
 });
@@ -61,6 +62,7 @@ export default function ModerateurEditArticlePage({ params }: { params: Promise<
       content: '',
       categoryId: '',
       countryId: '',
+      scope: '' as any,
       coverImage: '',
       sources: [],
     },
@@ -136,6 +138,7 @@ export default function ModerateurEditArticlePage({ params }: { params: Promise<
         content: articleData.content || '',
         categoryId: articleData.categoryId || '',
         countryId: articleData.countryId || '',
+        scope: articleData.scope || ('' as any),
         coverImage: articleData.imageUrl || '',
       });
 
@@ -166,6 +169,7 @@ export default function ModerateurEditArticlePage({ params }: { params: Promise<
         content: formData.content,
         categoryId: formData.categoryId,
         countryId: formData.countryId || undefined,
+        scope: formData.scope,
         imageUrl: coverImage || undefined,
         sources: sources.filter((s) => s && s.name && s.name.trim() !== ''),
       };
@@ -302,6 +306,17 @@ export default function ModerateurEditArticlePage({ params }: { params: Promise<
                 )}
               />
             </div>
+
+            <Select
+              label="Portée de l'article *"
+              options={[
+                { value: '', label: 'Sélectionner la portée' },
+                { value: 'national', label: 'National' },
+                { value: 'international', label: 'International' },
+              ]}
+              error={errors.scope?.message}
+              {...register('scope')}
+            />
           </CardContent>
         </Card>
 

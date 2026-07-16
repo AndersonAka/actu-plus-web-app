@@ -27,6 +27,7 @@ function mapArticle(data: any): Article {
     isFeatured: data.isFeatured,
     isFeaturedHome: data.isFeaturedHome,
     isPremium: data.isPremium || false,
+    isArchive: data.isArchive || false,
     views: data.views || 0,
     publishedAt: data.publishedAt,
     createdAt: data.createdAt,
@@ -190,7 +191,18 @@ export default async function HomePage() {
                       {focusArticles.map((article) => (
                         <Link
                           key={article.id}
-                          href={article.country?.code ? `/country/${article.country.code.toLowerCase()}?tab=focus` : getArticlePublicPath(article)}
+                          href={
+                            // Un article Focus archivé n'apparaît plus dans l'onglet
+                            // Focus de sa page pays (celle-ci exclut les articles
+                            // archivés) alors qu'il reste visible un moment sur
+                            // l'accueil (comportement voulu). On pointe donc
+                            // directement vers sa page de détail — qui gère déjà
+                            // le paywall — plutôt que vers un onglet pays qui
+                            // afficherait "Aucun article Focus disponible".
+                            !article.isArchive && article.country?.code
+                              ? `/country/${article.country.code.toLowerCase()}?tab=focus`
+                              : getArticlePublicPath(article)
+                          }
                           className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
                         >
                           <div className="relative aspect-video w-full overflow-hidden">
