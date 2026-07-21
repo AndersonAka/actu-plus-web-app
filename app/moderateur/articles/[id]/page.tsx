@@ -128,6 +128,12 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
   };
 
   const handleUpdatePublishedOptions = async () => {
+    const finalSection = isEssentiel ? 'essentiel' : articleSection;
+    if (!isSummary && !finalSection) {
+      setError('Veuillez sélectionner une section de destination avant d\'enregistrer.');
+      return;
+    }
+
     setActionLoading('update-options');
     setError(null);
     try {
@@ -137,7 +143,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
         body: JSON.stringify({
           isPremium,
           isFeaturedHome,
-          articleSection: isEssentiel ? 'essentiel' : (articleSection || undefined),
+          articleSection: finalSection || undefined,
         }),
       });
 
@@ -152,7 +158,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
         ...prev,
         isPremium,
         isFeaturedHome,
-        articleSection: articleSection as any,
+        articleSection: finalSection as any,
       } : null);
     } catch (err: any) {
       setError(err.message);
@@ -272,6 +278,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
   const canPublish = article.status === ArticleStatus.APPROVED;
   const isPublished = article.status === ArticleStatus.PUBLISHED;
   const isSummary = article.contentType === 'summary';
+  const isSectionMissing = !isSummary && !isEssentiel && !articleSection;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -427,9 +434,13 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
                     setIsFeaturedHome(false);
                   }
                 }}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                className={`w-full rounded-lg border px-3 py-2 focus:ring-1 ${
+                  isSectionMissing
+                    ? 'border-error-400 focus:border-error-500 focus:ring-error-500'
+                    : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'
+                }`}
               >
-                <option value="">Sélectionner une section</option>
+                <option value="" disabled>Sélectionner une section</option>
                 <option value="toute-actualite">Toute l'actualité</option>
                 <option value="focus">Focus</option>
                 <option value="chronique">Chronique</option>
@@ -554,6 +565,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
                 variant="primary"
                 onClick={handleUpdatePublishedOptions}
                 isLoading={actionLoading === 'update-options'}
+                disabled={isSectionMissing}
                 leftIcon={<Save className="h-4 w-4" />}
               >
                 Enregistrer les modifications
@@ -587,7 +599,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
               </Link>
             )}
             {canPublish && (
-              <Button variant="primary" onClick={handlePublish} isLoading={actionLoading === 'publish'} leftIcon={<Send className="h-4 w-4" />}>
+              <Button variant="primary" onClick={handlePublish} isLoading={actionLoading === 'publish'} disabled={isSectionMissing} leftIcon={<Send className="h-4 w-4" />}>
                 Publier {isPremium ? '(Contenu Abonné)' : '(Public)'}
               </Button>
             )}
