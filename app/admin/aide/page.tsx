@@ -37,7 +37,7 @@ const sections: HelpSection[] = [
     ],
     images: [
       {
-        src: '/images/help/admin/dashboard.png',
+        src: '/images/help/admin/1-tableau-de-bord.jpg',
         alt: "Tableau de bord de l'administration",
         caption: "Vue d'ensemble du tableau de bord administrateur",
         defaultSize: 'lg',
@@ -61,7 +61,7 @@ const sections: HelpSection[] = [
     ],
     images: [
       {
-        src: '/images/help/admin/articles-list.png',
+        src: '/images/help/admin/2-page-article.jpg',
         alt: 'Liste des articles',
         caption: 'Gestion complète des articles avec filtres avancés',
         defaultSize: 'lg',
@@ -82,7 +82,7 @@ const sections: HelpSection[] = [
     ],
     images: [
       {
-        src: '/images/help/admin/users-list.png',
+        src: '/images/help/admin/3-gestion-utilisateur.jpg',
         alt: 'Liste des utilisateurs',
         caption: 'Liste des utilisateurs avec filtres par rôle',
         defaultSize: 'lg',
@@ -107,7 +107,7 @@ const sections: HelpSection[] = [
     ],
     images: [
       {
-        src: '/images/help/admin/create-user.png',
+        src: '/images/help/admin/4-creer-utilisateur.jpg',
         alt: "Formulaire de création d'utilisateur",
         caption: "Formulaire de création d'un nouveau compte",
         defaultSize: 'md',
@@ -131,7 +131,7 @@ const sections: HelpSection[] = [
     ],
     images: [
       {
-        src: '/images/help/admin/edit-user.png',
+        src: '/images/help/admin/5-modifier-utilisateur.jpg',
         alt: "Édition d'un utilisateur",
         caption: "Modal d'édition d'un utilisateur",
         defaultSize: 'md',
@@ -147,7 +147,7 @@ const sections: HelpSection[] = [
       "La page « Données statistiques » affiche des graphiques et indicateurs détaillés sur l'utilisation de la plateforme : nombre d'inscriptions, activité des utilisateurs, articles publiés, etc.",
     images: [
       {
-        src: '/images/help/admin/analytics.png',
+        src: '/images/help/admin/6-donnees-statistique.jpg',
         alt: 'Données statistiques',
         caption: 'Graphiques et indicateurs de la plateforme',
         defaultSize: 'lg',
@@ -163,7 +163,7 @@ const sections: HelpSection[] = [
       "La page « Suivi veilleurs » permet de visualiser l'activité de chaque veilleur : nombre d'articles soumis, publiés, rejetés, etc. C'est un outil de suivi de productivité.",
     images: [
       {
-        src: '/images/help/admin/veilleur-analytics.png',
+        src: '/images/help/admin/7-suivi-veilleur.jpg',
         alt: 'Suivi des veilleurs',
         caption: 'Tableau de suivi de l\'activité des veilleurs',
         defaultSize: 'lg',
@@ -206,7 +206,7 @@ const sections: HelpSection[] = [
     ],
     images: [
       {
-        src: '/images/help/admin/countries.png',
+        src: '/images/help/admin/8-gestion-des-pays.jpg',
         alt: 'Gestion des pays',
         caption: 'Liste des pays avec drapeaux',
         defaultSize: 'lg',
@@ -230,7 +230,7 @@ const sections: HelpSection[] = [
     ],
     images: [
       {
-        src: '/images/help/admin/subscriptions.png',
+        src: '/images/help/admin/9-gestion-des-abonnements.jpg',
         alt: 'Gestion des abonnements',
         caption: 'Plans d\'abonnement et liste des abonnés',
         defaultSize: 'lg',
@@ -258,7 +258,7 @@ const sections: HelpSection[] = [
     ],
     images: [
       {
-        src: '/images/help/admin/enterprise-list.png',
+        src: '/images/help/admin/10-compte-entreprise.jpg',
         alt: 'Liste des abonnements entreprise',
         caption: 'Tableau des abonnements entreprise avec filtres',
         defaultSize: 'lg',
@@ -270,7 +270,7 @@ const sections: HelpSection[] = [
         defaultSize: 'md',
       },
       {
-        src: '/images/help/admin/enterprise-create.png',
+        src: '/images/help/admin/11-compte-entreprise.jpg',
         alt: 'Création abonnement entreprise',
         caption: 'Formulaire de création d\'un abonnement entreprise',
         defaultSize: 'md',
@@ -291,7 +291,7 @@ const sections: HelpSection[] = [
     ],
     images: [
       {
-        src: '/images/help/admin/messages.png',
+        src: '/images/help/admin/12-message.jpg',
         alt: 'Messages de contact',
         caption: 'Liste des messages de contact',
         defaultSize: 'lg',
@@ -312,7 +312,7 @@ const sections: HelpSection[] = [
     ],
     images: [
       {
-        src: '/images/help/admin/notifications.png',
+        src: '/images/help/admin/13-notifications.jpg',
         alt: 'Notifications administrateur',
         caption: 'Liste des notifications de la plateforme',
         defaultSize: 'md',
@@ -341,7 +341,7 @@ const sections: HelpSection[] = [
     ],
     images: [
       {
-        src: '/images/help/admin/settings.png',
+        src: '/images/help/admin/14-parametres.jpg',
         alt: 'Paramètres',
         caption: 'Page de configuration des paramètres',
         defaultSize: 'md',
