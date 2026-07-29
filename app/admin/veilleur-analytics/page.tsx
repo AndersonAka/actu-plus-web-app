@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardContent, Badge, Avatar } from '@/components/atoms';
+import { Card, CardHeader, CardTitle, CardContent, Avatar } from '@/components/atoms';
 import {
   Users,
   FileText,
@@ -11,58 +10,13 @@ import {
   Send,
   Clock,
   Trophy,
-  TrendingUp,
   BarChart3,
   Eye,
   Medal,
   ArrowUpRight,
   ArrowDownRight,
   Activity,
-  Star,
-  Crown,
 } from 'lucide-react';
-
-interface ArticleData {
-  id: string;
-  title: string;
-  views: number;
-  likes: number;
-  isPremium: boolean;
-  category?: { id: string; name: string };
-  country?: { id: string; name: string; code: string; flag?: string };
-  author?: { id: string; firstName?: string; lastName?: string; email?: string };
-  publishedAt?: string;
-  createdAt: string;
-  status?: string;
-  articleSection?: string;
-}
-
-// Fetch paginated data — backend max 100 per page
-async function fetchAllArticles(): Promise<ArticleData[]> {
-  const allArticles: ArticleData[] = [];
-  let page = 1;
-  const limit = 100;
-  let totalPages = 1;
-
-  while (page <= totalPages) {
-    const res = await fetch(`/api/proxy/articles/admin?limit=${limit}&page=${page}`);
-    if (!res.ok) break;
-    const json = await res.json();
-    // Backend response: { success, data: { data: T[], total, page, limit, totalPages } }
-    const payload = json.data || json;
-    const items: ArticleData[] = Array.isArray(payload.data)
-      ? payload.data
-      : Array.isArray(payload)
-        ? payload
-        : [];
-    if (items.length === 0) break;
-    allArticles.push(...items);
-    totalPages = payload.totalPages || json.totalPages || 1;
-    page++;
-  }
-
-  return allArticles;
-}
 
 interface VeilleurStats {
   id: string;
@@ -79,23 +33,41 @@ interface VeilleurStats {
   publicationRate: number;
   acceptanceRate: number;
   lastArticleDate: string | null;
-  categories: Record<string, number>;
-  countries: Record<string, number>;
+  isActiveLast30Days: boolean;
+}
+
+interface GlobalStats {
+  totalArticles: number;
+  published: number;
+  pending: number;
+  rejected: number;
+  approved: number;
+  totalVeilleurs: number;
+  avgArticlesPerVeilleur: number;
+  activeVeilleurs: number;
+}
+
+async function fetchVeilleurStats(): Promise<{ veilleurs: VeilleurStats[]; global: GlobalStats }> {
+  const res = await fetch('/api/proxy/articles/veilleur-stats');
+  if (!res.ok) throw new Error('Erreur lors du chargement des statistiques');
+  const json = await res.json();
+  return json.data || json;
 }
 
 export default function VeilleurAnalyticsPage() {
-  const [articles, setArticles] = useState<ArticleData[]>([]);
+  const [veilleurStats, setVeilleurStats] = useState<VeilleurStats[]>([]);
+  const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState<'total' | 'published' | 'views' | 'rate'>('total');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch all articles with pagination (backend max 100/page)
-        const allArticles = await fetchAllArticles();
-        setArticles(allArticles);
+        const { veilleurs, global } = await fetchVeilleurStats();
+        setVeilleurStats(veilleurs);
+        setGlobalStats(global);
       } catch (error) {
-        console.error('Error fetching articles:', error);
+        console.error('Error fetching veilleur stats:', error);
       } finally {
         setIsLoading(false);
       }
@@ -103,72 +75,6 @@ export default function VeilleurAnalyticsPage() {
 
     fetchData();
   }, []);
-
-  // Build veilleur stats
-  const veilleurStats = useMemo(() => {
-    const statsMap: Record<string, VeilleurStats> = {};
-
-    articles.forEach(article => {
-      if (!article.author) return;
-      const authorId = article.author.id;
-      const authorName = [article.author.firstName, article.author.lastName].filter(Boolean).join(' ') || article.author.email || 'Inconnu';
-
-      if (!statsMap[authorId]) {
-        statsMap[authorId] = {
-          id: authorId,
-          name: authorName,
-          email: article.author.email,
-          total: 0,
-          published: 0,
-          approved: 0,
-          pending: 0,
-          rejected: 0,
-          draft: 0,
-          totalViews: 0,
-          avgViews: 0,
-          publicationRate: 0,
-          acceptanceRate: 0,
-          lastArticleDate: null,
-          categories: {},
-          countries: {},
-        };
-      }
-
-      const stat = statsMap[authorId];
-      stat.total += 1;
-
-      const status = article.status?.toLowerCase();
-      if (status === 'published') stat.published += 1;
-      else if (status === 'approved') stat.approved += 1;
-      else if (status === 'pending') stat.pending += 1;
-      else if (status === 'rejected') stat.rejected += 1;
-      else if (status === 'draft') stat.draft += 1;
-
-      stat.totalViews += article.views || 0;
-
-      if (article.category?.name) {
-        stat.categories[article.category.name] = (stat.categories[article.category.name] || 0) + 1;
-      }
-      if (article.country?.name) {
-        stat.countries[article.country.name] = (stat.countries[article.country.name] || 0) + 1;
-      }
-
-      const articleDate = article.publishedAt || article.createdAt;
-      if (!stat.lastArticleDate || articleDate > stat.lastArticleDate) {
-        stat.lastArticleDate = articleDate;
-      }
-    });
-
-    // Compute rates
-    Object.values(statsMap).forEach(stat => {
-      stat.avgViews = stat.published > 0 ? Math.round(stat.totalViews / stat.published) : 0;
-      stat.publicationRate = stat.total > 0 ? Math.round((stat.published / stat.total) * 100) : 0;
-      const reviewed = stat.published + stat.approved + stat.rejected;
-      stat.acceptanceRate = reviewed > 0 ? Math.round(((stat.published + stat.approved) / reviewed) * 100) : 0;
-    });
-
-    return Object.values(statsMap);
-  }, [articles]);
 
   // Sorted veilleurs
   const sortedVeilleurs = useMemo(() => {
@@ -183,36 +89,17 @@ export default function VeilleurAnalyticsPage() {
     });
   }, [veilleurStats, sortBy]);
 
-  // Global stats
-  const globalStats = useMemo(() => {
-    const totalArticles = articles.length;
-    const published = articles.filter(a => a.status === 'published').length;
-    const pending = articles.filter(a => a.status === 'pending').length;
-    const rejected = articles.filter(a => a.status === 'rejected').length;
-    const approved = articles.filter(a => a.status === 'approved').length;
-    const totalVeilleurs = veilleurStats.length;
-    const avgArticlesPerVeilleur = totalVeilleurs > 0 ? Math.round(totalArticles / totalVeilleurs) : 0;
-
-    return { totalArticles, published, pending, rejected, approved, totalVeilleurs, avgArticlesPerVeilleur };
-  }, [articles, veilleurStats]);
-
   // Top 3 veilleurs
   const topVeilleurs = sortedVeilleurs.slice(0, 3);
   const medalColors = ['text-amber-500', 'text-gray-400', 'text-orange-400'];
   const medalBgs = ['bg-amber-50 border-amber-200', 'bg-gray-50 border-gray-200', 'bg-orange-50 border-orange-200'];
-
-  // Recent activity (last 30 days)
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const recentArticles = articles.filter(a => new Date(a.createdAt) >= thirtyDaysAgo);
-  const activeVeilleurs = new Set(recentArticles.map(a => a.author?.id).filter(Boolean)).size;
 
   const formatDate = (date: string | null) => {
     if (!date) return '—';
     return new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  if (isLoading) {
+  if (isLoading || !globalStats) {
     return (
       <div className="space-y-6">
         <div className="mb-8">
@@ -245,7 +132,7 @@ export default function VeilleurAnalyticsPage() {
             <div>
               <p className="text-sm font-medium text-gray-500">Veilleurs actifs</p>
               <p className="mt-1 text-2xl font-bold text-gray-900">{globalStats.totalVeilleurs}</p>
-              <p className="mt-1 text-xs text-gray-400">{activeVeilleurs} actifs ces 30 derniers jours</p>
+              <p className="mt-1 text-xs text-gray-400">{globalStats.activeVeilleurs} actifs ces 30 derniers jours</p>
             </div>
             <div className="rounded-lg bg-purple-100 p-2.5">
               <Users className="h-5 w-5 text-purple-600" />
@@ -487,7 +374,6 @@ export default function VeilleurAnalyticsPage() {
           <CardContent>
             <div className="space-y-3">
               {sortedVeilleurs.map((veilleur) => {
-                const maxTotal = sortedVeilleurs[0]?.total || 1;
                 return (
                   <div key={veilleur.id}>
                     <div className="flex items-center justify-between mb-1">
