@@ -42,7 +42,9 @@ const Footer = ({ className }: { className?: string }) => {
               />
             </Link>
             <p className="mt-3 text-sm text-gray-600">
-              L'actualité et plus encore. Restez informé avec Actu Plus.
+              Actu Plus est une plateforme d'actualité dédiée à l'information en
+              Afrique de l'Ouest et au-delà, accessible sur le web et via
+              l'application mobile.
             </p>
           </div>
 
