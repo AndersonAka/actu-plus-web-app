@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button, Badge } from '@/components/atoms';
-import { ArticleCard, FeaturedCarousel, FloatingCTA } from '@/components/molecules';
+import { ArticleCard, FeaturedCarousel, SectionCarousel, FloatingCTA } from '@/components/molecules';
 import { Header, Footer } from '@/components/organisms';
 import { apiConfig } from '@/config/api.config';
 import { Article, ArticleStatus } from '@/types';
@@ -337,67 +337,26 @@ export default async function HomePage() {
                     </Link>
                   </div>
                   {focusArticles.length > 0 ? (
-                    <div className="grid gap-4">
-                      {focusArticles.map((article) => (
-                        <Link
-                          key={article.id}
-                          href={
-                            // Un article Focus archivé n'apparaît plus dans l'onglet
-                            // Focus de sa page pays (celle-ci exclut les articles
-                            // archivés) alors qu'il reste visible un moment sur
-                            // l'accueil (comportement voulu). On pointe donc
-                            // directement vers sa page de détail — qui gère déjà
-                            // le paywall — plutôt que vers un onglet pays qui
-                            // afficherait "Aucun article Focus disponible".
-                            !article.isArchive && article.country?.code
-                              ? `/country/${article.country.code.toLowerCase()}?tab=focus`
-                              : getArticlePublicPath(article)
-                          }
-                          className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
-                        >
-                          <div className="relative aspect-video w-full overflow-hidden">
-                            {(article.coverImage || article.imageUrl) ? (
-                              <img
-                                src={article.coverImage || article.imageUrl}
-                                alt={article.title}
-                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                              />
-                            ) : (
-                              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-red-50 to-red-100">
-                                <span className="text-3xl font-bold text-red-200">F</span>
-                              </div>
-                            )}
-                            {article.country && (
-                              <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm backdrop-blur-sm">
-                                {article.country.flag && <span className="text-sm">{article.country.flag}</span>}
-                                <span>{article.country.name}</span>
-                              </div>
-                            )}
-                            {article.isPremium && (
-                              <div className="absolute right-2 top-2 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
-                                Contenu abonné
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex flex-1 flex-col p-4">
-                            <div className="mb-2 flex items-center gap-2">
-                              <Badge variant="error" size="sm">Focus</Badge>
-                              {article.category?.name && (
-                                <Badge variant="secondary" size="sm">{article.category.name}</Badge>
-                              )}
-                            </div>
-                            <h3 className="mb-1.5 line-clamp-2 text-[0.95rem] font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
-                              {article.title}
-                            </h3>
-                            {article.excerpt && (
-                              <p className="line-clamp-2 text-sm text-gray-500 leading-relaxed">
-                                {article.excerpt}
-                              </p>
-                            )}
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
+                    <SectionCarousel
+                      articles={focusArticles}
+                      perView={2}
+                      badgeLabel="Focus"
+                      badgeVariant="error"
+                      placeholderClassName="from-red-50 to-red-100"
+                      placeholderLetter="F"
+                      getHref={(article) =>
+                        // Un article Focus archivé n'apparaît plus dans l'onglet
+                        // Focus de sa page pays (celle-ci exclut les articles
+                        // archivés) alors qu'il reste visible un moment sur
+                        // l'accueil (comportement voulu). On pointe donc
+                        // directement vers sa page de détail — qui gère déjà
+                        // le paywall — plutôt que vers un onglet pays qui
+                        // afficherait "Aucun article Focus disponible".
+                        !article.isArchive && article.country?.code
+                          ? `/country/${article.country.code.toLowerCase()}?tab=focus`
+                          : getArticlePublicPath(article)
+                      }
+                    />
                   ) : (
                     <div className="rounded-lg bg-white p-8 text-center">
                       <p className="text-gray-500">Aucun article Focus disponible pour le moment.</p>
