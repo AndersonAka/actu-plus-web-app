@@ -62,7 +62,7 @@ async function getFocusArticles(): Promise<Article[]> {
   try {
     // Try with articleSection parameter (backend may use this or 'section')
     const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles?articleSection=focus&limit=6&publishedToday=true`,
+      `${apiConfig.baseUrl}/api/articles?articleSection=focus&limit=3&publishedToday=true`,
       { cache: 'no-store' }
     );
     
@@ -329,6 +329,12 @@ export default async function HomePage() {
                       </div>
                       <h2 className="text-xl font-bold text-gray-900">Focus</h2>
                     </div>
+                    <Link
+                      href="/focus"
+                      className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
+                    >
+                      Voir plus <ArrowRight className="h-3 w-3" />
+                    </Link>
                   </div>
                   {focusArticles.length > 0 ? (
                     <div className="grid gap-4">
