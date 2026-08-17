@@ -229,42 +229,57 @@ export default async function HomePage() {
                       <p className="text-xs text-gray-500">Contenu réservé aux abonnés</p>
                     </div>
                   </div>
-                  <div className="divide-y divide-gray-100">
+                  <div className="p-4">
                     {summaryArticles.length > 0 ? (
-                      summaryArticles.map((article) => (
-                        <Link
-                          key={article.id}
-                          href={article.country?.code ? `/country/${article.country.code.toLowerCase()}` : getArticlePublicPath(article)}
-                          className="group flex gap-3 px-5 py-4 transition-colors hover:bg-gray-50"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors leading-snug">
-                              {article.title}
-                            </h3>
-                            {article.excerpt && (
-                              <p className="mt-1 line-clamp-2 text-xs text-gray-500 leading-relaxed">
-                                {article.excerpt}
-                              </p>
-                            )}
-                            <div className="mt-2 flex items-center gap-2">
-                              {article.country && (
-                                <span className="text-xs text-gray-400">
-                                  {article.country.flag && <span className="mr-1">{article.country.flag}</span>}
-                                  {article.country.name}
-                                </span>
-                              )}
-                              {article.isPremium && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-                                  <Lock className="h-2.5 w-2.5" />
-                                  Abonné
-                                </span>
+                      <div className="space-y-3">
+                        {summaryArticles.map((article) => (
+                          <Link
+                            key={article.id}
+                            href={article.country?.code ? `/country/${article.country.code.toLowerCase()}` : getArticlePublicPath(article)}
+                            className="group flex gap-3 rounded-xl border border-gray-100 p-2.5 transition-all duration-200 hover:border-gray-200 hover:shadow-md"
+                          >
+                            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg">
+                              {(article.coverImage || article.imageUrl) ? (
+                                <img
+                                  src={article.coverImage || article.imageUrl}
+                                  alt={article.title}
+                                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-amber-50 to-amber-100">
+                                  <span className="text-lg font-bold text-amber-200">R</span>
+                                </div>
                               )}
                             </div>
-                          </div>
-                        </Link>
-                      ))
+                            <div className="min-w-0 flex-1 py-0.5">
+                              <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors leading-snug">
+                                {article.title}
+                              </h3>
+                              {article.excerpt && (
+                                <p className="mt-1 line-clamp-1 text-xs text-gray-500 leading-relaxed">
+                                  {article.excerpt}
+                                </p>
+                              )}
+                              <div className="mt-1.5 flex items-center gap-2">
+                                {article.country && (
+                                  <span className="text-xs text-gray-400">
+                                    {article.country.flag && <span className="mr-1">{article.country.flag}</span>}
+                                    {article.country.name}
+                                  </span>
+                                )}
+                                {article.isPremium && (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                                    <Lock className="h-2.5 w-2.5" />
+                                    Abonné
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
                     ) : (
-                      <div className="px-5 py-8 text-center">
+                      <div className="py-8 text-center">
                         <p className="text-sm text-gray-500">Aucun résumé disponible</p>
                       </div>
                     )}
@@ -287,28 +302,48 @@ export default async function HomePage() {
                       Voir plus <ArrowRight className="h-3 w-3" />
                     </Link>
                   </div>
-                  <div className="divide-y divide-gray-100">
+                  <div className="p-4">
                     {internationalArticles.length > 0 ? (
-                      internationalArticles.map((article) => (
-                        <Link
-                          key={article.id}
-                          href={getArticlePublicPath(article)}
-                          className="group flex gap-3 px-5 py-4 transition-colors hover:bg-gray-50"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors leading-snug">
-                              {article.title}
-                            </h3>
-                            {article.excerpt && (
-                              <p className="mt-1 line-clamp-2 text-xs text-gray-500 leading-relaxed">
-                                {article.excerpt}
-                              </p>
-                            )}
-                          </div>
-                        </Link>
-                      ))
+                      <div className="space-y-3">
+                        {internationalArticles.map((article) => (
+                          <Link
+                            key={article.id}
+                            href={getArticlePublicPath(article)}
+                            className="group flex gap-3 rounded-xl border border-gray-100 p-2.5 transition-all duration-200 hover:border-gray-200 hover:shadow-md"
+                          >
+                            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg">
+                              {(article.coverImage || article.imageUrl) ? (
+                                <img
+                                  src={article.coverImage || article.imageUrl}
+                                  alt={article.title}
+                                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-indigo-50 to-indigo-100">
+                                  <Globe2 className="h-6 w-6 text-indigo-200" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1 py-0.5">
+                              {article.category?.name && (
+                                <Badge variant="secondary" size="sm" className="mb-1">
+                                  {article.category.name}
+                                </Badge>
+                              )}
+                              <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors leading-snug">
+                                {article.title}
+                              </h3>
+                              {article.excerpt && (
+                                <p className="mt-1 line-clamp-1 text-xs text-gray-500 leading-relaxed">
+                                  {article.excerpt}
+                                </p>
+                              )}
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
                     ) : (
-                      <div className="px-5 py-8 text-center">
+                      <div className="py-8 text-center">
                         <p className="text-sm text-gray-500">Aucune actualité internationale</p>
                       </div>
                     )}
