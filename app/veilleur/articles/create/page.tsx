@@ -25,11 +25,15 @@ const articleSchema = z.object({
   scope: z.enum(['national', 'international'], { message: 'Veuillez indiquer la portée de l\'article' }),
   contentType: z.enum(['article', 'summary']),
   articleSection: z.string().optional(),
+  zone: z.enum(['uemoa', 'hors-uemoa']).optional().or(z.literal('')),
   coverImage: z.string().optional().or(z.literal('')),
   sources: z.array(sourceSchema).optional(),
 }).refine(
   (data) => data.contentType !== 'article' || (data.coverImage && data.coverImage.trim() !== ''),
   { message: 'L\'image de couverture est obligatoire pour un article standard', path: ['coverImage'] }
+).refine(
+  (data) => data.articleSection !== 'veille-sectorielle' || !!data.zone,
+  { message: 'Veuillez indiquer la zone (UEMOA ou Hors UEMOA)', path: ['zone'] }
 );
 
 interface Source {
@@ -67,6 +71,7 @@ export default function CreateArticlePage() {
       contentType: 'article',
       scope: '' as any,
       articleSection: 'toute-actualite',
+      zone: '' as any,
       coverImage: '',
       sources: [],
     },
@@ -133,6 +138,9 @@ export default function CreateArticlePage() {
           contentType: contentType,
           scope: articleData.scope,
           articleSection: contentType === 'article' ? articleData.articleSection : undefined,
+          zone: contentType === 'article' && articleData.articleSection === 'veille-sectorielle'
+            ? (articleData.zone || undefined)
+            : undefined,
           imageUrl: contentType === 'article' ? (coverImage || undefined) : undefined,
           sources: sources.filter(s => s.name.trim() !== ''),
         }),
@@ -339,6 +347,7 @@ export default function CreateArticlePage() {
                 label="Dans quelle section cet article doit-il apparaître ?"
                 options={[
                   { value: 'toute-actualite', label: "Toute l'actualité" },
+                  { value: 'veille-sectorielle', label: 'Veille Sectorielle' },
                 ]}
                 error={errors.articleSection?.message}
                 {...register('articleSection')}
@@ -346,6 +355,21 @@ export default function CreateArticlePage() {
               <p className="mt-2 text-sm text-gray-500">
                 Les autres sections (L'Essentiel, Focus, Chronique) sont gérées par les modérateurs et administrateurs.
               </p>
+
+              {watch('articleSection') === 'veille-sectorielle' && (
+                <div className="mt-4">
+                  <Select
+                    label="Zone *"
+                    options={[
+                      { value: '', label: 'Sélectionner la zone' },
+                      { value: 'uemoa', label: 'Zone UEMOA' },
+                      { value: 'hors-uemoa', label: 'Hors UEMOA' },
+                    ]}
+                    error={errors.zone?.message}
+                    {...register('zone')}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

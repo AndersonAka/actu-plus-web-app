@@ -5,7 +5,7 @@ import { Header, Footer } from '@/components/organisms';
 import { apiConfig } from '@/config/api.config';
 import { Article, ArticleStatus } from '@/types';
 import { HomePageClient } from './HomePageClient';
-import { Lock } from 'lucide-react';
+import { Lock, Globe2, Radar, ArrowRight } from 'lucide-react';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
 
 // Force dynamic rendering
@@ -116,11 +116,59 @@ async function getSummaryArticles(): Promise<Article[]> {
   }
 }
 
+async function getVeilleSectorielleArticles(): Promise<Article[]> {
+  try {
+    const response = await fetch(
+      `${apiConfig.baseUrl}/api/articles?articleSection=veille-sectorielle&limit=3&publishedToday=true`,
+      { cache: 'no-store' }
+    );
+    if (!response.ok) return [];
+    const result = await response.json();
+    let articles: any[] = [];
+    if (Array.isArray(result)) {
+      articles = result;
+    } else if (Array.isArray(result.data)) {
+      articles = result.data;
+    } else if (result.data?.data && Array.isArray(result.data.data)) {
+      articles = result.data.data;
+    }
+    return articles.map(mapArticle);
+  } catch (error) {
+    console.error('Error fetching veille sectorielle articles:', error);
+    return [];
+  }
+}
+
+async function getInternationalArticles(): Promise<Article[]> {
+  try {
+    const response = await fetch(
+      `${apiConfig.baseUrl}/api/articles?scope=international&limit=3&publishedToday=true`,
+      { cache: 'no-store' }
+    );
+    if (!response.ok) return [];
+    const result = await response.json();
+    let articles: any[] = [];
+    if (Array.isArray(result)) {
+      articles = result;
+    } else if (Array.isArray(result.data)) {
+      articles = result.data;
+    } else if (result.data?.data && Array.isArray(result.data.data)) {
+      articles = result.data.data;
+    }
+    return articles.map(mapArticle);
+  } catch (error) {
+    console.error('Error fetching international articles:', error);
+    return [];
+  }
+}
+
 export default async function HomePage() {
-  const [featuredArticles, focusArticles, summaryArticles] = await Promise.all([
+  const [featuredArticles, focusArticles, summaryArticles, veilleSectorielleArticles, internationalArticles] = await Promise.all([
     getFeaturedArticles(),
     getFocusArticles(),
     getSummaryArticles(),
+    getVeilleSectorielleArticles(),
+    getInternationalArticles(),
   ]);
 
   return (
@@ -145,29 +193,12 @@ export default async function HomePage() {
         {/* Country Tabs */}
         <HomePageClient />
 
-        {/* Main content: Left (À la une + Focus) + Right (Résumé) */}
+        {/* Main content: Left (Focus + Veille Sectorielle) + Right (À la une + Résumé + Actualités Internationales) */}
         <section className="py-6">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row lg:items-stretch gap-8">
-              {/* Left column: À la une + Focus */}
+              {/* Left column: Focus + Veille Sectorielle */}
               <div className="flex-1 min-w-0">
-                {/* À la une */}
-                <div className="mb-8">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-xl font-bold text-gray-900">À la une</h2>
-                  </div>
-                  {featuredArticles.length > 0 ? (
-                    <FeaturedCarousel articles={featuredArticles} />
-                  ) : (
-                    <div className="aspect-video rounded-xl bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center">
-                      <div className="text-center text-white">
-                        <span className="text-6xl font-bold opacity-20">A+</span>
-                        <p className="mt-4 text-lg">Aucun article à la une</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
                 {/* Focus */}
                 <div className="p-6">
                   <div className="mb-6 flex items-center justify-between">
@@ -257,10 +288,95 @@ export default async function HomePage() {
                     </div>
                   )}
                 </div>
+
+                {/* Veille Sectorielle */}
+                <div className="p-6">
+                  <div className="mb-6 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-100">
+                        <Radar className="h-5 w-5 text-teal-600" />
+                      </div>
+                      <h2 className="text-xl font-bold text-gray-900">Veille Sectorielle</h2>
+                    </div>
+                    <Link
+                      href="/veille-sectorielle"
+                      className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700"
+                    >
+                      Voir plus <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                  {veilleSectorielleArticles.length > 0 ? (
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      {veilleSectorielleArticles.map((article) => (
+                        <Link
+                          key={article.id}
+                          href={getArticlePublicPath(article)}
+                          className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+                        >
+                          <div className="relative aspect-video w-full overflow-hidden">
+                            {(article.coverImage || article.imageUrl) ? (
+                              <img
+                                src={article.coverImage || article.imageUrl}
+                                alt={article.title}
+                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-teal-50 to-teal-100">
+                                <span className="text-3xl font-bold text-teal-200">V</span>
+                              </div>
+                            )}
+                            {article.zone && (
+                              <div className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm backdrop-blur-sm">
+                                {article.zone === 'uemoa' ? 'Zone UEMOA' : 'Hors UEMOA'}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-1 flex-col p-4">
+                            <div className="mb-2 flex items-center gap-2">
+                              <Badge variant="secondary" size="sm">Veille Sectorielle</Badge>
+                              {article.category?.name && (
+                                <Badge variant="secondary" size="sm">{article.category.name}</Badge>
+                              )}
+                            </div>
+                            <h3 className="mb-1.5 line-clamp-2 text-[0.95rem] font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
+                              {article.title}
+                            </h3>
+                            {article.excerpt && (
+                              <p className="line-clamp-2 text-sm text-gray-500 leading-relaxed">
+                                {article.excerpt}
+                              </p>
+                            )}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg bg-white p-8 text-center">
+                      <p className="text-gray-500">Aucun article de Veille Sectorielle disponible pour le moment.</p>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Right sidebar: Résumé de l'actualité */}
-              <aside className="w-full lg:w-[360px] shrink-0 flex flex-col">
+              {/* Right sidebar: À la une + Résumé + Actualités Internationales */}
+              <aside className="w-full lg:w-[360px] shrink-0 flex flex-col gap-6">
+                {/* À la une */}
+                <div>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-gray-900">À la une</h2>
+                  </div>
+                  {featuredArticles.length > 0 ? (
+                    <FeaturedCarousel articles={featuredArticles} />
+                  ) : (
+                    <div className="aspect-video rounded-xl bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <span className="text-6xl font-bold opacity-20">A+</span>
+                        <p className="mt-4 text-lg">Aucun article à la une</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex flex-col flex-1 rounded-2xl bg-white shadow-sm overflow-hidden">
                   <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100">
@@ -323,6 +439,50 @@ export default async function HomePage() {
                       </Link>
                     </div>
                   )} */}
+                </div>
+
+                {/* Actualités Internationales */}
+                <div className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
+                  <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
+                        <Globe2 className="h-5 w-5 text-indigo-600" />
+                      </div>
+                      <h2 className="text-lg font-bold text-gray-900">Actualités Internationales</h2>
+                    </div>
+                    <Link
+                      href="/actualites-internationales"
+                      className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
+                    >
+                      Voir plus <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {internationalArticles.length > 0 ? (
+                      internationalArticles.map((article) => (
+                        <Link
+                          key={article.id}
+                          href={getArticlePublicPath(article)}
+                          className="group flex gap-3 px-5 py-4 transition-colors hover:bg-gray-50"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors leading-snug">
+                              {article.title}
+                            </h3>
+                            {article.excerpt && (
+                              <p className="mt-1 line-clamp-2 text-xs text-gray-500 leading-relaxed">
+                                {article.excerpt}
+                              </p>
+                            )}
+                          </div>
+                        </Link>
+                      ))
+                    ) : (
+                      <div className="px-5 py-8 text-center">
+                        <p className="text-sm text-gray-500">Aucune actualité internationale</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </aside>
             </div>

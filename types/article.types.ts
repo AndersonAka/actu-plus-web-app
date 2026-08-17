@@ -7,7 +7,10 @@ export enum ArticleSection {
   ARCHIVE = 'archive',
   FOCUS = 'focus',
   CHRONIQUE = 'chronique',
+  VEILLE_SECTORIELLE = 'veille-sectorielle',
 }
+
+export type Zone = 'uemoa' | 'hors-uemoa';
 
 // Statuts du workflow de publication
 export enum ArticleStatus {
@@ -42,6 +45,7 @@ export interface Article {
   status: ArticleStatus;
   contentType?: ContentType; // Type de contenu (article, alert, summary, press-review)
   scope?: ArticleScope;      // Portée de l'article (national ou international)
+  zone?: Zone;               // Zone géographique (Veille Sectorielle uniquement)
   isFeatured: boolean;
   isPremium: boolean;        // Article premium (abonnement requis) ou public
   isPublished?: boolean;
