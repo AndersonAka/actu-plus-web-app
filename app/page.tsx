@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button, Badge } from '@/components/atoms';
-import { ArticleCard, FeaturedCarousel, SectionCarousel, FloatingCTA } from '@/components/molecules';
+import { ArticleCard, FeaturedCarousel, FloatingCTA } from '@/components/molecules';
 import { Header, Footer } from '@/components/organisms';
 import { apiConfig } from '@/config/api.config';
 import { Article, ArticleStatus } from '@/types';
@@ -62,7 +62,7 @@ async function getFocusArticles(): Promise<Article[]> {
   try {
     // Try with articleSection parameter (backend may use this or 'section')
     const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles?articleSection=focus&limit=3&publishedToday=true`,
+      `${apiConfig.baseUrl}/api/articles?articleSection=focus&limit=6&publishedToday=true`,
       { cache: 'no-store' }
     );
     
@@ -119,7 +119,7 @@ async function getSummaryArticles(): Promise<Article[]> {
 async function getVeilleSectorielleArticles(): Promise<Article[]> {
   try {
     const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles?articleSection=veille-sectorielle&limit=3&publishedToday=true`,
+      `${apiConfig.baseUrl}/api/articles?articleSection=veille-sectorielle&limit=6&publishedToday=true`,
       { cache: 'no-store' }
     );
     if (!response.ok) return [];
@@ -372,22 +372,48 @@ export default async function HomePage() {
                     </Link>
                   </div>
                   {focusArticles.length > 0 ? (
-                    <SectionCarousel
-                      articles={focusArticles}
-                      perView={2}
-                      badgeLabel="Focus"
-                      badgeVariant="error"
-                      placeholderClassName="from-red-50 to-red-100"
-                      placeholderLetter="F"
-                      // Un article Focus archivé n'apparaît plus dans l'onglet
-                      // Focus de sa page pays (celle-ci exclut les articles
-                      // archivés) alors qu'il reste visible un moment sur
-                      // l'accueil (comportement voulu) : il pointe alors vers
-                      // sa page de détail — qui gère déjà le paywall — plutôt
-                      // que vers un onglet pays qui afficherait "Aucun article
-                      // Focus disponible".
-                      countryTabParam="focus"
-                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      {focusArticles.map((article) => (
+                        <Link
+                          key={article.id}
+                          href={
+                            // Un article Focus archivé n'apparaît plus dans l'onglet
+                            // Focus de sa page pays (celle-ci exclut les articles
+                            // archivés) alors qu'il reste visible un moment sur
+                            // l'accueil (comportement voulu). On pointe donc
+                            // directement vers sa page de détail — qui gère déjà
+                            // le paywall — plutôt que vers un onglet pays qui
+                            // afficherait "Aucun article Focus disponible".
+                            !article.isArchive && article.country?.code
+                              ? `/country/${article.country.code.toLowerCase()}?tab=focus`
+                              : getArticlePublicPath(article)
+                          }
+                          className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+                        >
+                          <div className="relative aspect-video w-full overflow-hidden">
+                            {(article.coverImage || article.imageUrl) ? (
+                              <img
+                                src={article.coverImage || article.imageUrl}
+                                alt={article.title}
+                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-red-50 to-red-100">
+                                <span className="text-2xl font-bold text-red-200">F</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-1 flex-col p-2.5">
+                            <Badge variant="error" size="sm" className="mb-1.5 self-start">
+                              Focus
+                            </Badge>
+                            <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
+                              {article.title}
+                            </h3>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
                   ) : (
                     <div className="rounded-lg bg-white p-8 text-center">
                       <p className="text-gray-500">Aucun article Focus disponible pour le moment.</p>
@@ -415,7 +441,7 @@ export default async function HomePage() {
                     </Link>
                   </div>
                   {veilleSectorielleArticles.length > 0 ? (
-                    <div className="grid gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                       {veilleSectorielleArticles.map((article) => (
                         <Link
                           key={article.id}
@@ -431,30 +457,22 @@ export default async function HomePage() {
                               />
                             ) : (
                               <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-teal-50 to-teal-100">
-                                <span className="text-3xl font-bold text-teal-200">V</span>
+                                <span className="text-2xl font-bold text-teal-200">V</span>
                               </div>
                             )}
                             {article.zone && (
-                              <div className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm backdrop-blur-sm">
-                                {article.zone === 'uemoa' ? 'Zone UEMOA' : 'Hors UEMOA'}
+                              <div className="absolute bottom-1.5 left-1.5 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-gray-700 shadow-sm backdrop-blur-sm">
+                                {article.zone === 'uemoa' ? 'UEMOA' : 'Hors UEMOA'}
                               </div>
                             )}
                           </div>
-                          <div className="flex flex-1 flex-col p-4">
-                            <div className="mb-2 flex items-center gap-2">
-                              <Badge variant="secondary" size="sm">Veille Sectorielle</Badge>
-                              {article.category?.name && (
-                                <Badge variant="secondary" size="sm">{article.category.name}</Badge>
-                              )}
-                            </div>
-                            <h3 className="mb-1.5 line-clamp-2 text-[0.95rem] font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
+                          <div className="flex flex-1 flex-col p-2.5">
+                            <Badge variant="secondary" size="sm" className="mb-1.5 self-start">
+                              Veille Sectorielle
+                            </Badge>
+                            <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
                               {article.title}
                             </h3>
-                            {article.excerpt && (
-                              <p className="line-clamp-2 text-sm text-gray-500 leading-relaxed">
-                                {article.excerpt}
-                              </p>
-                            )}
                           </div>
                         </Link>
                       ))}

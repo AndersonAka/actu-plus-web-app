@@ -28,9 +28,6 @@ export type { CountryTabsProps, CountryCode, Country } from './CountryTabs';
 export { FeaturedCarousel } from './FeaturedCarousel';
 export type { FeaturedCarouselProps } from './FeaturedCarousel';
 
-export { SectionCarousel } from './SectionCarousel';
-export type { SectionCarouselProps } from './SectionCarousel';
-
 export { SummarySection } from './SummarySection';
 export type { SummarySectionProps } from './SummarySection';
 
