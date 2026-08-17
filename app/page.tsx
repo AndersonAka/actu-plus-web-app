@@ -344,18 +344,14 @@ export default async function HomePage() {
                       badgeVariant="error"
                       placeholderClassName="from-red-50 to-red-100"
                       placeholderLetter="F"
-                      getHref={(article) =>
-                        // Un article Focus archivé n'apparaît plus dans l'onglet
-                        // Focus de sa page pays (celle-ci exclut les articles
-                        // archivés) alors qu'il reste visible un moment sur
-                        // l'accueil (comportement voulu). On pointe donc
-                        // directement vers sa page de détail — qui gère déjà
-                        // le paywall — plutôt que vers un onglet pays qui
-                        // afficherait "Aucun article Focus disponible".
-                        !article.isArchive && article.country?.code
-                          ? `/country/${article.country.code.toLowerCase()}?tab=focus`
-                          : getArticlePublicPath(article)
-                      }
+                      // Un article Focus archivé n'apparaît plus dans l'onglet
+                      // Focus de sa page pays (celle-ci exclut les articles
+                      // archivés) alors qu'il reste visible un moment sur
+                      // l'accueil (comportement voulu) : il pointe alors vers
+                      // sa page de détail — qui gère déjà le paywall — plutôt
+                      // que vers un onglet pays qui afficherait "Aucun article
+                      // Focus disponible".
+                      countryTabParam="focus"
                     />
                   ) : (
                     <div className="rounded-lg bg-white p-8 text-center">

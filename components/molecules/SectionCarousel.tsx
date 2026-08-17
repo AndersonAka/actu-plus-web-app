@@ -5,13 +5,19 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/atoms';
 import { Article } from '@/types';
+import { getArticlePublicPath } from '@/lib/articles/article-url';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export interface SectionCarouselProps {
   articles: Article[];
   /** Nombre de cartes visibles par vue (défaut 2) */
   perView?: number;
-  getHref: (article: Article) => string;
+  /**
+   * Si renseigné, un article non-archivé pointe vers son onglet pays
+   * (/country/{code}?tab={countryTabParam}) plutôt que sa page de détail
+   * (utilisé par Focus). Un article archivé pointe toujours vers sa page de détail.
+   */
+  countryTabParam?: string;
   badgeLabel: string;
   badgeVariant?: 'primary' | 'secondary' | 'error' | 'success' | 'warning';
   placeholderClassName?: string;
@@ -23,7 +29,7 @@ export interface SectionCarouselProps {
 const SectionCarousel = ({
   articles,
   perView = 2,
-  getHref,
+  countryTabParam,
   badgeLabel,
   badgeVariant = 'secondary',
   placeholderClassName = 'from-gray-100 to-gray-200',
@@ -103,10 +109,14 @@ const SectionCarousel = ({
           >
             {page.map((article) => {
               const articleImage = article.coverImage || article.imageUrl;
+              const href =
+                countryTabParam && !article.isArchive && article.country?.code
+                  ? `/country/${article.country.code.toLowerCase()}?tab=${countryTabParam}`
+                  : getArticlePublicPath(article);
               return (
                 <Link
                   key={article.id}
-                  href={getHref(article)}
+                  href={href}
                   className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
                 >
                   <div className="relative aspect-video w-full overflow-hidden">
