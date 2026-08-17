@@ -193,15 +193,134 @@ export default async function HomePage() {
         {/* Country Tabs */}
         <HomePageClient />
 
-        {/* Main content: Left (Focus + Veille Sectorielle) + Right (À la une + Résumé + Actualités Internationales) */}
+        {/* Main content: Left (À la une + Résumé + Actualités Internationales) + Right (Focus + Veille Sectorielle) */}
         <section className="py-6">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row lg:items-stretch gap-8">
-              {/* Left column: Focus + Veille Sectorielle */}
+              {/* Left column: À la une + Résumé + Actualités Internationales */}
               <div className="flex-1 min-w-0">
+                {/* À la une */}
+                <div className="mb-8">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-gray-900">À la une</h2>
+                  </div>
+                  {featuredArticles.length > 0 ? (
+                    <FeaturedCarousel articles={featuredArticles} />
+                  ) : (
+                    <div className="aspect-video rounded-xl bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <span className="text-6xl font-bold opacity-20">A+</span>
+                        <p className="mt-4 text-lg">Aucun article à la une</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Résumé de l'actualité */}
+                <div className="mb-8 flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
+                  <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100">
+                      <svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900">Résumé de l'actualité</h2>
+                      <p className="text-xs text-gray-500">Contenu réservé aux abonnés</p>
+                    </div>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {summaryArticles.length > 0 ? (
+                      summaryArticles.map((article) => (
+                        <Link
+                          key={article.id}
+                          href={article.country?.code ? `/country/${article.country.code.toLowerCase()}` : getArticlePublicPath(article)}
+                          className="group flex gap-3 px-5 py-4 transition-colors hover:bg-gray-50"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors leading-snug">
+                              {article.title}
+                            </h3>
+                            {article.excerpt && (
+                              <p className="mt-1 line-clamp-2 text-xs text-gray-500 leading-relaxed">
+                                {article.excerpt}
+                              </p>
+                            )}
+                            <div className="mt-2 flex items-center gap-2">
+                              {article.country && (
+                                <span className="text-xs text-gray-400">
+                                  {article.country.flag && <span className="mr-1">{article.country.flag}</span>}
+                                  {article.country.name}
+                                </span>
+                              )}
+                              {article.isPremium && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                                  <Lock className="h-2.5 w-2.5" />
+                                  Abonné
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </Link>
+                      ))
+                    ) : (
+                      <div className="px-5 py-8 text-center">
+                        <p className="text-sm text-gray-500">Aucun résumé disponible</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actualités Internationales */}
+                <div className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
+                  <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
+                        <Globe2 className="h-5 w-5 text-indigo-600" />
+                      </div>
+                      <h2 className="text-lg font-bold text-gray-900">Actualités Internationales</h2>
+                    </div>
+                    <Link
+                      href="/actualites-internationales"
+                      className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
+                    >
+                      Voir plus <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {internationalArticles.length > 0 ? (
+                      internationalArticles.map((article) => (
+                        <Link
+                          key={article.id}
+                          href={getArticlePublicPath(article)}
+                          className="group flex gap-3 px-5 py-4 transition-colors hover:bg-gray-50"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors leading-snug">
+                              {article.title}
+                            </h3>
+                            {article.excerpt && (
+                              <p className="mt-1 line-clamp-2 text-xs text-gray-500 leading-relaxed">
+                                {article.excerpt}
+                              </p>
+                            )}
+                          </div>
+                        </Link>
+                      ))
+                    ) : (
+                      <div className="px-5 py-8 text-center">
+                        <p className="text-sm text-gray-500">Aucune actualité internationale</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right sidebar: Focus + Veille Sectorielle */}
+              <aside className="w-full lg:w-90 shrink-0 flex flex-col gap-8">
                 {/* Focus */}
-                <div className="p-6">
-                  <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-100">
                         <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -210,15 +329,9 @@ export default async function HomePage() {
                       </div>
                       <h2 className="text-xl font-bold text-gray-900">Focus</h2>
                     </div>
-                    {/* <Link
-                      href="/articles?section=focus"
-                      className="text-sm font-medium text-primary-600 hover:text-primary-700"
-                    >
-                      Voir tout →
-                    </Link> */}
                   </div>
                   {focusArticles.length > 0 ? (
-                    <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="grid gap-4">
                       {focusArticles.map((article) => (
                         <Link
                           key={article.id}
@@ -290,8 +403,8 @@ export default async function HomePage() {
                 </div>
 
                 {/* Veille Sectorielle */}
-                <div className="p-6">
-                  <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-100">
                         <Radar className="h-5 w-5 text-teal-600" />
@@ -300,13 +413,13 @@ export default async function HomePage() {
                     </div>
                     <Link
                       href="/veille-sectorielle"
-                      className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700"
+                      className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
                     >
-                      Voir plus <ArrowRight className="h-3.5 w-3.5" />
+                      Voir plus <ArrowRight className="h-3 w-3" />
                     </Link>
                   </div>
                   {veilleSectorielleArticles.length > 0 ? (
-                    <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="grid gap-4">
                       {veilleSectorielleArticles.map((article) => (
                         <Link
                           key={article.id}
@@ -355,134 +468,6 @@ export default async function HomePage() {
                       <p className="text-gray-500">Aucun article de Veille Sectorielle disponible pour le moment.</p>
                     </div>
                   )}
-                </div>
-              </div>
-
-              {/* Right sidebar: À la une + Résumé + Actualités Internationales */}
-              <aside className="w-full lg:w-[360px] shrink-0 flex flex-col gap-6">
-                {/* À la une */}
-                <div>
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-xl font-bold text-gray-900">À la une</h2>
-                  </div>
-                  {featuredArticles.length > 0 ? (
-                    <FeaturedCarousel articles={featuredArticles} />
-                  ) : (
-                    <div className="aspect-video rounded-xl bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center">
-                      <div className="text-center text-white">
-                        <span className="text-6xl font-bold opacity-20">A+</span>
-                        <p className="mt-4 text-lg">Aucun article à la une</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex flex-col flex-1 rounded-2xl bg-white shadow-sm overflow-hidden">
-                  <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100">
-                      <svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-gray-900">Résumé de l'actualité</h2>
-                      <p className="text-xs text-gray-500">Contenu réservé aux abonnés</p>
-                    </div>
-                  </div>
-                  <div className="flex-1 divide-y divide-gray-100 overflow-y-auto">
-                    {summaryArticles.length > 0 ? (
-                      summaryArticles.map((article) => (
-                        <Link
-                          key={article.id}
-                          href={article.country?.code ? `/country/${article.country.code.toLowerCase()}` : getArticlePublicPath(article)}
-                          className="group flex gap-3 px-5 py-4 transition-colors hover:bg-gray-50"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors leading-snug">
-                              {article.title}
-                            </h3>
-                            {article.excerpt && (
-                              <p className="mt-1 line-clamp-2 text-xs text-gray-500 leading-relaxed">
-                                {article.excerpt}
-                              </p>
-                            )}
-                            <div className="mt-2 flex items-center gap-2">
-                              {article.country && (
-                                <span className="text-xs text-gray-400">
-                                  {article.country.flag && <span className="mr-1">{article.country.flag}</span>}
-                                  {article.country.name}
-                                </span>
-                              )}
-                              {article.isPremium && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-                                  <Lock className="h-2.5 w-2.5" />
-                                  Abonné
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </Link>
-                      ))
-                    ) : (
-                      <div className="px-5 py-8 text-center">
-                        <p className="text-sm text-gray-500">Aucun résumé disponible</p>
-                      </div>
-                    )}
-                  </div>
-                  {/* {summaryArticles.length > 0 && (
-                    <div className="border-t border-gray-100 px-5 py-3">
-                      <Link
-                        href="/articles?contentType=summary"
-                        className="text-sm font-medium text-primary-600 hover:text-primary-700"
-                      >
-                        Voir tous les résumés →
-                      </Link>
-                    </div>
-                  )} */}
-                </div>
-
-                {/* Actualités Internationales */}
-                <div className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
-                  <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
-                        <Globe2 className="h-5 w-5 text-indigo-600" />
-                      </div>
-                      <h2 className="text-lg font-bold text-gray-900">Actualités Internationales</h2>
-                    </div>
-                    <Link
-                      href="/actualites-internationales"
-                      className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
-                    >
-                      Voir plus <ArrowRight className="h-3 w-3" />
-                    </Link>
-                  </div>
-                  <div className="divide-y divide-gray-100">
-                    {internationalArticles.length > 0 ? (
-                      internationalArticles.map((article) => (
-                        <Link
-                          key={article.id}
-                          href={getArticlePublicPath(article)}
-                          className="group flex gap-3 px-5 py-4 transition-colors hover:bg-gray-50"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors leading-snug">
-                              {article.title}
-                            </h3>
-                            {article.excerpt && (
-                              <p className="mt-1 line-clamp-2 text-xs text-gray-500 leading-relaxed">
-                                {article.excerpt}
-                              </p>
-                            )}
-                          </div>
-                        </Link>
-                      ))
-                    ) : (
-                      <div className="px-5 py-8 text-center">
-                        <p className="text-sm text-gray-500">Aucune actualité internationale</p>
-                      </div>
-                    )}
-                  </div>
                 </div>
               </aside>
             </div>
