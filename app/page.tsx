@@ -5,7 +5,7 @@ import { Header, Footer } from '@/components/organisms';
 import { apiConfig } from '@/config/api.config';
 import { Article, ArticleStatus } from '@/types';
 import { HomePageClient } from './HomePageClient';
-import { Lock, Globe2, Radar, ArrowRight, Newspaper } from 'lucide-react';
+import { Lock, Globe2, Radar, ArrowRight, Newspaper, Flame } from 'lucide-react';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
 
 // Force dynamic rendering
@@ -234,7 +234,10 @@ export default async function HomePage() {
         {/* À la une */}
         <section className="py-6">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-100">
+                <Flame className="h-5 w-5 text-primary-600 animate-pulse-slow" />
+              </div>
               <h2 className="text-xl font-bold text-gray-900">À la une</h2>
             </div>
             {featuredArticles.length > 0 ? (
@@ -256,9 +259,9 @@ export default async function HomePage() {
             <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
               {/* Revue de presse : liste des pays */}
               <div className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
-                <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
+                <div className="flex items-center gap-3 px-5 py-4">
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100">
-                    <Newspaper className="h-5 w-5 text-blue-600" />
+                    <Newspaper className="h-5 w-5 text-blue-600 animate-bounce-slow" />
                   </div>
                   <h2 className="text-lg font-bold text-gray-900">Revue de presse</h2>
                 </div>
@@ -287,10 +290,10 @@ export default async function HomePage() {
 
               {/* Actualités Internationales : par zone */}
               <div className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
+                <div className="flex items-center justify-between gap-3 px-5 py-4">
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
-                      <Globe2 className="h-5 w-5 text-indigo-600" />
+                      <Globe2 className="h-5 w-5 text-indigo-600 animate-spin-slow" />
                     </div>
                     <h2 className="text-lg font-bold text-gray-900">Actualités Internationales</h2>
                   </div>
@@ -368,9 +371,9 @@ export default async function HomePage() {
         <section className="pb-6">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
-              <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
+              <div className="flex items-center gap-3 px-5 py-4">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100">
-                  <svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="h-5 w-5 text-amber-600 animate-pulse-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                   </svg>
                 </div>
@@ -447,7 +450,7 @@ export default async function HomePage() {
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-100">
-                      <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="h-5 w-5 text-red-600 animate-bounce-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                       </svg>
                     </div>
@@ -518,7 +521,7 @@ export default async function HomePage() {
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-100">
-                      <Radar className="h-5 w-5 text-teal-600" />
+                      <Radar className="h-5 w-5 text-teal-600 animate-spin-slow" />
                     </div>
                     <h2 className="text-xl font-bold text-gray-900">Veille Sectorielle</h2>
                   </div>
