@@ -27,14 +27,14 @@ export default function AdminDashboardPage() {
       try {
         const [
           articlesAdminRes,
-          articlesPublishedRes,
+          statusCountsRes,
           categoriesRes,
           countriesRes,
           usersRes,
           subscriptionsRes,
         ] = await Promise.all([
           fetch('/api/proxy/articles/admin?limit=1'),
-          fetch('/api/proxy/articles?limit=1'),
+          fetch('/api/proxy/articles/status-counts'),
           fetch('/api/proxy/categories'),
           fetch('/api/proxy/countries'),
           fetch('/api/proxy/users'),
@@ -46,10 +46,16 @@ export default function AdminDashboardPage() {
           const data = res.data || res;
           setStats(prev => ({ ...prev, articles: data.total || 0 }));
         }
-        if (articlesPublishedRes.ok) {
-          const res = await articlesPublishedRes.json();
+        if (statusCountsRes.ok) {
+          const res = await statusCountsRes.json();
           const data = res.data || res;
-          setStats(prev => ({ ...prev, articlesPublished: data.total || 0 }));
+          setStats(prev => ({
+            ...prev,
+            articlesPending: data.pending || 0,
+            articlesApproved: data.approved || 0,
+            articlesRejected: data.rejected || 0,
+            articlesPublished: data.published || 0,
+          }));
         }
         if (categoriesRes.ok) {
           const res = await categoriesRes.json();
@@ -98,9 +104,9 @@ export default function AdminDashboardPage() {
   ];
 
   const articleStatusStats = [
-    { label: 'En attente', value: stats.articlesPending, icon: Clock, color: 'text-warning-600', bg: 'bg-warning-100', unavailable: true },
-    { label: 'Validés', value: stats.articlesApproved, icon: CheckCircle, color: 'text-primary-600', bg: 'bg-primary-100', unavailable: true },
-    { label: 'Rejetés', value: stats.articlesRejected, icon: XCircle, color: 'text-error-600', bg: 'bg-error-100', unavailable: true },
+    { label: 'En attente', value: stats.articlesPending, icon: Clock, color: 'text-warning-600', bg: 'bg-warning-100' },
+    { label: 'Validés', value: stats.articlesApproved, icon: CheckCircle, color: 'text-primary-600', bg: 'bg-primary-100' },
+    { label: 'Rejetés', value: stats.articlesRejected, icon: XCircle, color: 'text-error-600', bg: 'bg-error-100' },
     { label: 'Publiés', value: stats.articlesPublished, icon: Send, color: 'text-success-600', bg: 'bg-success-100' },
   ];
 
@@ -200,7 +206,7 @@ export default function AdminDashboardPage() {
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-gray-900">
-                        {isLoading ? '...' : (stat as any).unavailable ? '0' : stat.value}
+                        {isLoading ? '...' : stat.value}
                       </p>
                       <p className="text-sm text-gray-500">{stat.label}</p>
                     </div>

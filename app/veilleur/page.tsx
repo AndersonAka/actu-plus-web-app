@@ -31,9 +31,26 @@ export default function VeilleurDashboardPage() {
   useEffect(() => {
     const fetchMyArticles = async () => {
       try {
-        const response = await fetch('/api/proxy/articles/my?page=1&limit=1000');
-        if (response.ok) {
-          const result = await response.json();
+        const [statsRes, recentRes] = await Promise.all([
+          fetch('/api/proxy/articles/my/stats'),
+          fetch('/api/proxy/articles/my?page=1&limit=5'),
+        ]);
+
+        if (statsRes.ok) {
+          const result = await statsRes.json();
+          const data = result?.data ?? result;
+          setStats({
+            total: data.total || 0,
+            draft: data.draft || 0,
+            pending: data.pending || 0,
+            approved: data.approved || 0,
+            rejected: data.rejected || 0,
+            published: data.published || 0,
+          });
+        }
+
+        if (recentRes.ok) {
+          const result = await recentRes.json();
           const payload = result?.data ?? result;
           let articlesList: Article[] = [];
           if (payload?.data && Array.isArray(payload.data)) {
@@ -43,21 +60,7 @@ export default function VeilleurDashboardPage() {
           } else if (Array.isArray(result)) {
             articlesList = result;
           }
-
-          const totalFromApi =
-            typeof payload?.total === 'number' ? payload.total : articlesList.length;
-
           setArticles(articlesList);
-
-          const newStats = {
-            total: totalFromApi,
-            draft: articlesList.filter((a: any) => getArticleStatus(a) === ArticleStatus.DRAFT).length,
-            pending: articlesList.filter((a: any) => getArticleStatus(a) === ArticleStatus.PENDING).length,
-            approved: articlesList.filter((a: any) => getArticleStatus(a) === ArticleStatus.APPROVED).length,
-            rejected: articlesList.filter((a: any) => getArticleStatus(a) === ArticleStatus.REJECTED).length,
-            published: articlesList.filter((a: any) => getArticleStatus(a) === ArticleStatus.PUBLISHED).length,
-          };
-          setStats(newStats);
         }
       } catch (error) {
         console.error('Error fetching articles:', error);
