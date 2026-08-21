@@ -258,7 +258,7 @@ export default async function HomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
               {/* Revue de presse : liste des pays */}
-              <div className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
+              <div className="flex flex-col bg-white shadow-sm overflow-hidden">
                 <div className="flex items-center gap-3 px-5 py-4">
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100">
                     <Newspaper className="h-5 w-5 text-blue-600 animate-bounce-slow" />
@@ -289,7 +289,7 @@ export default async function HomePage() {
               </div>
 
               {/* Actualités Internationales : par zone */}
-              <div className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
+              <div className="flex flex-col bg-white shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between gap-3 px-5 py-4">
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
@@ -370,7 +370,7 @@ export default async function HomePage() {
         {/* Résumé de l'actualité */}
         <section className="pb-6">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
+            <div className="flex flex-col bg-white shadow-sm overflow-hidden">
               <div className="flex items-center gap-3 px-5 py-4">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100">
                   <svg className="h-5 w-5 text-amber-600 animate-pulse-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
