@@ -4,7 +4,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Article, ArticleSection } from '@/types/article.types';
-import { ArticleCard, FocusDetailCard } from '@/components/molecules';
+import { ArticleCard, FocusDetailCard, SummaryItemsList } from '@/components/molecules';
 import { Button } from '@/components/atoms';
 import { Header, Footer } from '@/components/organisms';
 import { 
@@ -340,10 +340,13 @@ export default function CountryPage() {
               <h3 className="mb-3 text-xl font-bold text-gray-900">
                 Résumé de l'actualité
               </h3>
-              <div 
-                className="article-content prose prose-gray max-w-none text-gray-600 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: summary.content }}
-              />
+              <div className="article-content prose prose-gray max-w-none text-gray-600 leading-relaxed">
+                {summary.summaryItems && summary.summaryItems.length > 0 ? (
+                  <SummaryItemsList items={summary.summaryItems} />
+                ) : (
+                  <div dangerouslySetInnerHTML={{ __html: summary.content }} />
+                )}
+              </div>
             </div>
           </div>
         ) : (
