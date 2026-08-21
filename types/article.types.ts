@@ -12,6 +12,14 @@ export enum ArticleSection {
 
 export type Zone = 'uemoa' | 'hors-uemoa';
 
+export type Sector = 'banque-assurance' | 'energie' | 'agro-industrielle';
+
+export interface SummaryItem {
+  title: string;
+  summary: string;
+  link?: string;
+}
+
 // Statuts du workflow de publication
 export enum ArticleStatus {
   DRAFT = 'draft',           // Brouillon (créé par Veilleur)
@@ -45,7 +53,11 @@ export interface Article {
   status: ArticleStatus;
   contentType?: ContentType; // Type de contenu (article, alert, summary, press-review)
   scope?: ArticleScope;      // Portée de l'article (national ou international)
-  zone?: Zone;               // Zone géographique (Veille Sectorielle uniquement)
+  zone?: Zone;               // Zone géographique (Article International uniquement)
+  sector?: Sector;           // Secteur (Veille Sectorielle uniquement)
+  internationalCountryName?: string; // Pays international (Article International uniquement)
+  internationalCountryFlag?: string;
+  summaryItems?: SummaryItem[]; // Résumé multi-entrées (Titre/Résumé/Lien)
   isFeatured: boolean;
   isPremium: boolean;        // Article premium (abonnement requis) ou public
   isPublished?: boolean;

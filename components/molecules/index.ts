@@ -31,6 +31,9 @@ export type { FeaturedCarouselProps } from './FeaturedCarousel';
 export { SummarySection } from './SummarySection';
 export type { SummarySectionProps } from './SummarySection';
 
+export { SummaryItemsList } from './SummaryItemsList';
+export type { SummaryItemsListProps } from './SummaryItemsList';
+
 export { FloatingCTA } from './FloatingCTA';
 export type { FloatingCTAProps } from './FloatingCTA';
 

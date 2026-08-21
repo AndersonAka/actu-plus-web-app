@@ -6,7 +6,7 @@ import { Header, Footer } from '@/components/organisms';
 import { ArticleCard, Pagination } from '@/components/molecules';
 import { Button } from '@/components/atoms';
 import { parseArticlesPaginatedResponse } from '@/lib/utils/system-archives';
-import { Article, ArticleStatus, Category, Zone } from '@/types';
+import { Article, ArticleStatus, Country, Sector } from '@/types';
 import { Radar, ArrowLeft, Loader2 } from 'lucide-react';
 
 const PAGE_SIZE = 12;
@@ -44,7 +44,7 @@ function mapArticle(data: Record<string, unknown>): Article {
     status: data.isPublished ? ArticleStatus.PUBLISHED : ArticleStatus.DRAFT,
     contentType: data.contentType as Article['contentType'],
     articleSection: data.articleSection as Article['articleSection'],
-    zone: data.zone as Article['zone'],
+    sector: data.sector as Article['sector'],
     isFeatured: Boolean(data.isFeatured),
     isPremium: Boolean(data.isPremium),
     isPublished: Boolean(data.isPublished),
@@ -55,36 +55,37 @@ function mapArticle(data: Record<string, unknown>): Article {
   };
 }
 
-const zoneFilters: { label: string; value: Zone | 'all' }[] = [
-  { label: 'Toutes zones', value: 'all' },
-  { label: 'Zone UEMOA', value: 'uemoa' },
-  { label: 'Hors UEMOA', value: 'hors-uemoa' },
+const sectorFilters: { label: string; value: Sector | 'all' }[] = [
+  { label: 'Tous secteurs', value: 'all' },
+  { label: 'Banque et assurance', value: 'banque-assurance' },
+  { label: 'Énergie', value: 'energie' },
+  { label: 'Agro Industrielle', value: 'agro-industrielle' },
 ];
 
 export default function VeilleSectoriellePage() {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [zoneFilter, setZoneFilter] = useState<Zone | 'all'>('all');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [sectorFilter, setSectorFilter] = useState<Sector | 'all'>('all');
+  const [countryFilter, setCountryFilter] = useState<string>('all');
 
   useEffect(() => {
-    fetch('/api/proxy/categories')
+    fetch('/api/proxy/countries')
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         if (!json) return;
-        const cats = json.data || json;
-        setCategories(Array.isArray(cats) ? cats : []);
+        const ctrs = json.data || json;
+        setCountries(Array.isArray(ctrs) ? ctrs : []);
       })
       .catch(() => {});
   }, []);
 
   const loadArticles = useCallback(
-    async (page: number, zone: Zone | 'all', categoryId: string) => {
+    async (page: number, sector: Sector | 'all', countryId: string) => {
       try {
         setLoading(true);
         setError(null);
@@ -96,8 +97,8 @@ export default function VeilleSectoriellePage() {
           sortBy: 'date',
           sortOrder: 'DESC',
         });
-        if (zone !== 'all') params.set('zone', zone);
-        if (categoryId !== 'all') params.set('categoryId', categoryId);
+        if (sector !== 'all') params.set('sector', sector);
+        if (countryId !== 'all') params.set('countryId', countryId);
 
         const response = await fetch(`/api/proxy/articles?${params.toString()}`);
 
@@ -123,11 +124,11 @@ export default function VeilleSectoriellePage() {
   );
 
   useEffect(() => {
-    loadArticles(1, zoneFilter, categoryFilter);
-  }, [zoneFilter, categoryFilter, loadArticles]);
+    loadArticles(1, sectorFilter, countryFilter);
+  }, [sectorFilter, countryFilter, loadArticles]);
 
   const handlePageChange = (page: number) => {
-    loadArticles(page, zoneFilter, categoryFilter);
+    loadArticles(page, sectorFilter, countryFilter);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -153,20 +154,20 @@ export default function VeilleSectoriellePage() {
                 <p className="text-sm text-gray-500">
                   {totalCount > 0
                     ? `${totalCount} article${totalCount !== 1 ? 's' : ''}`
-                    : 'Politique, Économie, Social — Zone UEMOA et Hors UEMOA'}
+                    : 'Banque et assurance, Énergie, Agro Industrielle'}
                 </p>
               </div>
             </div>
           </div>
 
           <div className="mb-4 flex flex-wrap gap-2">
-            {zoneFilters.map((filter) => (
+            {sectorFilters.map((filter) => (
               <button
                 key={filter.value}
                 type="button"
-                onClick={() => setZoneFilter(filter.value)}
+                onClick={() => setSectorFilter(filter.value)}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  zoneFilter === filter.value
+                  sectorFilter === filter.value
                     ? 'bg-teal-500 text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
@@ -176,31 +177,31 @@ export default function VeilleSectoriellePage() {
             ))}
           </div>
 
-          {categories.length > 0 && (
+          {countries.length > 0 && (
             <div className="mb-6 flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={() => setCategoryFilter('all')}
+                onClick={() => setCountryFilter('all')}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  categoryFilter === 'all'
+                  countryFilter === 'all'
                     ? 'bg-gray-800 text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                Toutes catégories
+                Tous pays
               </button>
-              {categories.map((cat) => (
+              {countries.map((c) => (
                 <button
-                  key={cat.id}
+                  key={c.id}
                   type="button"
-                  onClick={() => setCategoryFilter(cat.id)}
+                  onClick={() => setCountryFilter(c.id)}
                   className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                    categoryFilter === cat.id
+                    countryFilter === c.id
                       ? 'bg-gray-800 text-white'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  {cat.name}
+                  {c.flag ? `${c.flag} ` : ''}{c.name}
                 </button>
               ))}
             </div>
@@ -217,7 +218,7 @@ export default function VeilleSectoriellePage() {
                 variant="outline"
                 size="sm"
                 className="mt-4"
-                onClick={() => loadArticles(currentPage, zoneFilter, categoryFilter)}
+                onClick={() => loadArticles(currentPage, sectorFilter, countryFilter)}
               >
                 Réessayer
               </Button>

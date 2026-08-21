@@ -3,10 +3,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { Header, Footer } from '@/components/organisms';
-import { ArticleCard, Pagination } from '@/components/molecules';
+import { Pagination } from '@/components/molecules';
 import { Button } from '@/components/atoms';
 import { parseArticlesPaginatedResponse } from '@/lib/utils/system-archives';
-import { Article, ArticleStatus } from '@/types';
+import { getArticlePublicPath } from '@/lib/articles/article-url';
+import { Article, ArticleStatus, Zone } from '@/types';
 import { Globe2, ArrowLeft, Loader2 } from 'lucide-react';
 
 const PAGE_SIZE = 12;
@@ -44,6 +45,9 @@ function mapArticle(data: Record<string, unknown>): Article {
     status: data.isPublished ? ArticleStatus.PUBLISHED : ArticleStatus.DRAFT,
     contentType: data.contentType as Article['contentType'],
     articleSection: data.articleSection as Article['articleSection'],
+    zone: data.zone as Article['zone'],
+    internationalCountryName: data.internationalCountryName as string | undefined,
+    internationalCountryFlag: data.internationalCountryFlag as string | undefined,
     isFeatured: Boolean(data.isFeatured),
     isPremium: Boolean(data.isPremium),
     isPublished: Boolean(data.isPublished),
@@ -54,6 +58,12 @@ function mapArticle(data: Record<string, unknown>): Article {
   };
 }
 
+const zoneFilters: { label: string; value: Zone | 'all' }[] = [
+  { label: 'Toutes zones', value: 'all' },
+  { label: 'Zone UEMOA', value: 'uemoa' },
+  { label: 'Hors UEMOA', value: 'hors-uemoa' },
+];
+
 export default function ActualitesInternationalesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,8 +71,9 @@ export default function ActualitesInternationalesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [zoneFilter, setZoneFilter] = useState<Zone | 'all'>('all');
 
-  const loadArticles = useCallback(async (page: number) => {
+  const loadArticles = useCallback(async (page: number, zone: Zone | 'all') => {
     try {
       setLoading(true);
       setError(null);
@@ -74,6 +85,8 @@ export default function ActualitesInternationalesPage() {
         sortBy: 'date',
         sortOrder: 'DESC',
       });
+      if (zone !== 'all') params.set('zone', zone);
+
       const response = await fetch(`/api/proxy/articles?${params.toString()}`);
 
       if (!response.ok) {
@@ -96,11 +109,11 @@ export default function ActualitesInternationalesPage() {
   }, []);
 
   useEffect(() => {
-    loadArticles(1);
-  }, [loadArticles]);
+    loadArticles(1, zoneFilter);
+  }, [zoneFilter, loadArticles]);
 
   const handlePageChange = (page: number) => {
-    loadArticles(page);
+    loadArticles(page, zoneFilter);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -132,6 +145,23 @@ export default function ActualitesInternationalesPage() {
             </div>
           </div>
 
+          <div className="mb-6 flex flex-wrap gap-2">
+            {zoneFilters.map((filter) => (
+              <button
+                key={filter.value}
+                type="button"
+                onClick={() => setZoneFilter(filter.value)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  zoneFilter === filter.value
+                    ? 'bg-indigo-500 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
@@ -139,7 +169,7 @@ export default function ActualitesInternationalesPage() {
           ) : error ? (
             <div className="rounded-lg bg-red-50 p-8 text-center">
               <p className="text-red-600">{error}</p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={() => loadArticles(currentPage)}>
+              <Button variant="outline" size="sm" className="mt-4" onClick={() => loadArticles(currentPage, zoneFilter)}>
                 Réessayer
               </Button>
             </div>
@@ -153,7 +183,49 @@ export default function ActualitesInternationalesPage() {
             <>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {articles.map((article) => (
-                  <ArticleCard key={article.id} article={article} variant="compact" />
+                  <Link
+                    key={article.id}
+                    href={getArticlePublicPath(article)}
+                    className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+                  >
+                    <div className="relative aspect-video w-full overflow-hidden">
+                      {(article.coverImage || article.imageUrl) ? (
+                        <img
+                          src={article.coverImage || article.imageUrl}
+                          alt={article.title}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-indigo-50 to-indigo-100">
+                          <Globe2 className="h-8 w-8 text-indigo-200" />
+                        </div>
+                      )}
+                      {article.internationalCountryName && (
+                        <div className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm backdrop-blur-sm">
+                          {article.internationalCountryFlag && <span className="mr-1">{article.internationalCountryFlag}</span>}
+                          {article.internationalCountryName}
+                        </div>
+                      )}
+                      {article.zone && (
+                        <div className="absolute top-2 right-2 rounded-full bg-indigo-600/90 px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm backdrop-blur-sm">
+                          {article.zone === 'uemoa' ? 'UEMOA' : 'Hors UEMOA'}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-1 flex-col p-4">
+                      {article.category?.name && (
+                        <span className="mb-1.5 self-start rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                          {article.category.name}
+                        </span>
+                      )}
+                      <h3 className="mb-1.5 line-clamp-2 text-sm font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
+                        {article.title}
+                      </h3>
+                      {article.excerpt && (
+                        <p className="line-clamp-2 text-sm text-gray-500 leading-relaxed">{article.excerpt}</p>
+                      )}
+                    </div>
+                  </Link>
                 ))}
               </div>
 

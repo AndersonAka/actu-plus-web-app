@@ -5,11 +5,17 @@ import { Header, Footer } from '@/components/organisms';
 import { apiConfig } from '@/config/api.config';
 import { Article, ArticleStatus } from '@/types';
 import { HomePageClient } from './HomePageClient';
-import { Lock, Globe2, Radar, ArrowRight } from 'lucide-react';
+import { Lock, Globe2, Radar, ArrowRight, Newspaper } from 'lucide-react';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
+
+const SECTOR_LABELS: Record<string, string> = {
+  'banque-assurance': 'Banque & Assurance',
+  'energie': 'Énergie',
+  'agro-industrielle': 'Agro Industrielle',
+};
 
 // Mapper les données du backend vers le type Article du frontend
 function mapArticle(data: any): Article {
@@ -20,10 +26,18 @@ function mapArticle(data: any): Article {
     content: data.content,
     excerpt: data.excerpt,
     coverImage: data.imageUrl, // Backend utilise imageUrl
+    imageUrl: data.imageUrl,
     category: data.category,
     country: data.country,
     author: data.author,
     status: data.isPublished ? ArticleStatus.PUBLISHED : ArticleStatus.DRAFT,
+    contentType: data.contentType,
+    scope: data.scope,
+    zone: data.zone,
+    sector: data.sector,
+    internationalCountryName: data.internationalCountryName,
+    internationalCountryFlag: data.internationalCountryFlag,
+    summaryItems: data.summaryItems,
     isFeatured: data.isFeatured,
     isFeaturedHome: data.isFeaturedHome,
     isPremium: data.isPremium || false,
@@ -142,7 +156,7 @@ async function getVeilleSectorielleArticles(): Promise<Article[]> {
 async function getInternationalArticles(): Promise<Article[]> {
   try {
     const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles?scope=international&limit=3&publishedToday=true`,
+      `${apiConfig.baseUrl}/api/articles?scope=international&limit=6&publishedToday=true`,
       { cache: 'no-store' }
     );
     if (!response.ok) return [];
@@ -162,14 +176,38 @@ async function getInternationalArticles(): Promise<Article[]> {
   }
 }
 
+interface CountryListItem {
+  id: string;
+  name: string;
+  code: string;
+  flag?: string;
+}
+
+async function getCountries(): Promise<CountryListItem[]> {
+  try {
+    const response = await fetch(`${apiConfig.baseUrl}/api/countries`, { cache: 'no-store' });
+    if (!response.ok) return [];
+    const result = await response.json();
+    const countries = result.data || result;
+    return Array.isArray(countries) ? countries : [];
+  } catch (error) {
+    console.error('Error fetching countries:', error);
+    return [];
+  }
+}
+
 export default async function HomePage() {
-  const [featuredArticles, focusArticles, summaryArticles, veilleSectorielleArticles, internationalArticles] = await Promise.all([
+  const [featuredArticles, focusArticles, summaryArticles, veilleSectorielleArticles, internationalArticles, countries] = await Promise.all([
     getFeaturedArticles(),
     getFocusArticles(),
     getSummaryArticles(),
     getVeilleSectorielleArticles(),
     getInternationalArticles(),
+    getCountries(),
   ]);
+
+  const internationalUemoa = internationalArticles.filter((a) => a.zone === 'uemoa');
+  const internationalHorsUemoa = internationalArticles.filter((a) => a.zone === 'hors-uemoa');
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
@@ -193,301 +231,350 @@ export default async function HomePage() {
         {/* Country Tabs */}
         <HomePageClient />
 
-        {/* Main content: Left (À la une + Résumé + Actualités Internationales) + Right (Focus + Veille Sectorielle) */}
+        {/* À la une */}
         <section className="py-6">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col lg:flex-row lg:items-stretch gap-8">
-              {/* Left column: À la une + Résumé + Actualités Internationales */}
-              <div className="flex-1 min-w-0">
-                {/* À la une */}
-                <div className="mb-8">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-xl font-bold text-gray-900">À la une</h2>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">À la une</h2>
+            </div>
+            {featuredArticles.length > 0 ? (
+              <FeaturedCarousel articles={featuredArticles} />
+            ) : (
+              <div className="aspect-video rounded-xl bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+                <div className="text-center text-white">
+                  <span className="text-6xl font-bold opacity-20">A+</span>
+                  <p className="mt-4 text-lg">Aucun article à la une</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Revue de presse + Actualités Internationales */}
+        <section className="pb-6">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+              {/* Revue de presse : liste des pays */}
+              <div className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
+                <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100">
+                    <Newspaper className="h-5 w-5 text-blue-600" />
                   </div>
-                  {featuredArticles.length > 0 ? (
-                    <FeaturedCarousel articles={featuredArticles} />
+                  <h2 className="text-lg font-bold text-gray-900">Revue de presse</h2>
+                </div>
+                <div className="p-4">
+                  {countries.length > 0 ? (
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {countries.map((country) => (
+                        <Link
+                          key={country.id}
+                          href={`/country/${country.code.toLowerCase()}`}
+                          className="group flex items-center gap-3 rounded-xl border border-gray-100 px-4 py-3 transition-all duration-200 hover:border-primary-200 hover:bg-primary-50"
+                        >
+                          {country.flag && <span className="text-xl">{country.flag}</span>}
+                          <span className="flex-1 font-medium text-gray-900 group-hover:text-primary-600">{country.name}</span>
+                          <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-primary-500" />
+                        </Link>
+                      ))}
+                    </div>
                   ) : (
-                    <div className="aspect-video rounded-xl bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center">
-                      <div className="text-center text-white">
-                        <span className="text-6xl font-bold opacity-20">A+</span>
-                        <p className="mt-4 text-lg">Aucun article à la une</p>
-                      </div>
+                    <div className="py-8 text-center">
+                      <p className="text-sm text-gray-500">Aucun pays disponible</p>
                     </div>
                   )}
-                </div>
-
-                {/* Résumé de l'actualité */}
-                <div className="mb-8 flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
-                  <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100">
-                      <svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-gray-900">Résumé de l'actualité</h2>
-                      <p className="text-xs text-gray-500">Contenu réservé aux abonnés</p>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    {summaryArticles.length > 0 ? (
-                      <div className="space-y-3">
-                        {summaryArticles.map((article) => (
-                          <Link
-                            key={article.id}
-                            href={article.country?.code ? `/country/${article.country.code.toLowerCase()}` : getArticlePublicPath(article)}
-                            className="group flex gap-3 rounded-xl border border-gray-100 p-2.5 transition-all duration-200 hover:border-gray-200 hover:shadow-md"
-                          >
-                            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg">
-                              {(article.coverImage || article.imageUrl) ? (
-                                <img
-                                  src={article.coverImage || article.imageUrl}
-                                  alt={article.title}
-                                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                />
-                              ) : (
-                                <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-amber-50 to-amber-100">
-                                  <span className="text-lg font-bold text-amber-200">R</span>
-                                </div>
-                              )}
-                            </div>
-                            <div className="min-w-0 flex-1 py-0.5">
-                              <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors leading-snug">
-                                {article.title}
-                              </h3>
-                              {article.excerpt && (
-                                <p className="mt-1 line-clamp-1 text-xs text-gray-500 leading-relaxed">
-                                  {article.excerpt}
-                                </p>
-                              )}
-                              <div className="mt-1.5 flex items-center gap-2">
-                                {article.country && (
-                                  <span className="text-xs text-gray-400">
-                                    {article.country.flag && <span className="mr-1">{article.country.flag}</span>}
-                                    {article.country.name}
-                                  </span>
-                                )}
-                                {article.isPremium && (
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-                                    <Lock className="h-2.5 w-2.5" />
-                                    Abonné
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="py-8 text-center">
-                        <p className="text-sm text-gray-500">Aucun résumé disponible</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Actualités Internationales */}
-                <div className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
-                  <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
-                        <Globe2 className="h-5 w-5 text-indigo-600" />
-                      </div>
-                      <h2 className="text-lg font-bold text-gray-900">Actualités Internationales</h2>
-                    </div>
-                    <Link
-                      href="/actualites-internationales"
-                      className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
-                    >
-                      Voir plus <ArrowRight className="h-3 w-3" />
-                    </Link>
-                  </div>
-                  <div className="p-4">
-                    {internationalArticles.length > 0 ? (
-                      <div className="space-y-3">
-                        {internationalArticles.map((article) => (
-                          <Link
-                            key={article.id}
-                            href={getArticlePublicPath(article)}
-                            className="group flex gap-3 rounded-xl border border-gray-100 p-2.5 transition-all duration-200 hover:border-gray-200 hover:shadow-md"
-                          >
-                            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg">
-                              {(article.coverImage || article.imageUrl) ? (
-                                <img
-                                  src={article.coverImage || article.imageUrl}
-                                  alt={article.title}
-                                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                />
-                              ) : (
-                                <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-indigo-50 to-indigo-100">
-                                  <Globe2 className="h-6 w-6 text-indigo-200" />
-                                </div>
-                              )}
-                            </div>
-                            <div className="min-w-0 flex-1 py-0.5">
-                              {article.category?.name && (
-                                <Badge variant="secondary" size="sm" className="mb-1">
-                                  {article.category.name}
-                                </Badge>
-                              )}
-                              <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors leading-snug">
-                                {article.title}
-                              </h3>
-                              {article.excerpt && (
-                                <p className="mt-1 line-clamp-1 text-xs text-gray-500 leading-relaxed">
-                                  {article.excerpt}
-                                </p>
-                              )}
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="py-8 text-center">
-                        <p className="text-sm text-gray-500">Aucune actualité internationale</p>
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
 
-              {/* Right sidebar: Focus + Veille Sectorielle */}
-              <aside className="w-full lg:w-90 shrink-0 flex flex-col gap-8">
-                {/* Focus */}
-                <div>
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-100">
-                        <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
-                      </div>
-                      <h2 className="text-xl font-bold text-gray-900">Focus</h2>
+              {/* Actualités Internationales : par zone */}
+              <div className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
+                <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
+                      <Globe2 className="h-5 w-5 text-indigo-600" />
                     </div>
-                    <Link
-                      href="/focus"
-                      className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
-                    >
-                      Voir plus <ArrowRight className="h-3 w-3" />
-                    </Link>
+                    <h2 className="text-lg font-bold text-gray-900">Actualités Internationales</h2>
                   </div>
-                  {focusArticles.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-3">
-                      {focusArticles.map((article) => (
-                        <Link
-                          key={article.id}
-                          href={
-                            // Un article Focus archivé n'apparaît plus dans l'onglet
-                            // Focus de sa page pays (celle-ci exclut les articles
-                            // archivés) alors qu'il reste visible un moment sur
-                            // l'accueil (comportement voulu). On pointe donc
-                            // directement vers sa page de détail — qui gère déjà
-                            // le paywall — plutôt que vers un onglet pays qui
-                            // afficherait "Aucun article Focus disponible".
-                            !article.isArchive && article.country?.code
-                              ? `/country/${article.country.code.toLowerCase()}?tab=focus`
-                              : getArticlePublicPath(article)
-                          }
-                          className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
-                        >
-                          <div className="relative aspect-video w-full overflow-hidden">
-                            {(article.coverImage || article.imageUrl) ? (
-                              <img
-                                src={article.coverImage || article.imageUrl}
-                                alt={article.title}
-                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                              />
-                            ) : (
-                              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-red-50 to-red-100">
-                                <span className="text-2xl font-bold text-red-200">F</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex flex-1 flex-col p-2.5">
-                            <Badge variant="error" size="sm" className="mb-1.5 self-start">
-                              Focus
-                            </Badge>
-                            <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
-                              {article.title}
-                            </h3>
-                          </div>
-                        </Link>
-                      ))}
+                  <Link
+                    href="/actualites-internationales"
+                    className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
+                  >
+                    Voir plus <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+                <div className="p-4 space-y-5">
+                  {internationalArticles.length === 0 ? (
+                    <div className="py-8 text-center">
+                      <p className="text-sm text-gray-500">Aucune actualité internationale</p>
                     </div>
                   ) : (
-                    <div className="rounded-lg bg-white p-8 text-center">
-                      <p className="text-gray-500">Aucun article Focus disponible pour le moment.</p>
-                      <p className="mt-2 text-sm text-gray-400">
-                        Revenez bientôt pour découvrir nos analyses approfondies.
-                      </p>
-                    </div>
+                    [
+                      { label: 'Zone UEMOA', items: internationalUemoa },
+                      { label: 'Hors UEMOA', items: internationalHorsUemoa },
+                    ].map(
+                      (group) =>
+                        group.items.length > 0 && (
+                          <div key={group.label}>
+                            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{group.label}</h3>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              {group.items.map((article) => (
+                                <Link
+                                  key={article.id}
+                                  href={getArticlePublicPath(article)}
+                                  className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-md"
+                                >
+                                  <div className="relative aspect-video w-full overflow-hidden">
+                                    {(article.coverImage || article.imageUrl) ? (
+                                      <img
+                                        src={article.coverImage || article.imageUrl}
+                                        alt={article.title}
+                                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                      />
+                                    ) : (
+                                      <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-indigo-50 to-indigo-100">
+                                        <Globe2 className="h-6 w-6 text-indigo-200" />
+                                      </div>
+                                    )}
+                                    {article.internationalCountryName && (
+                                      <div className="absolute bottom-1.5 left-1.5 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-gray-700 shadow-sm backdrop-blur-sm">
+                                        {article.internationalCountryFlag && <span className="mr-1">{article.internationalCountryFlag}</span>}
+                                        {article.internationalCountryName}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex flex-1 flex-col p-2.5">
+                                    {article.category?.name && (
+                                      <Badge variant="secondary" size="sm" className="mb-1.5 self-start">
+                                        {article.category.name}
+                                      </Badge>
+                                    )}
+                                    <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
+                                      {article.title}
+                                    </h3>
+                                  </div>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        ),
+                    )
                   )}
                 </div>
-
-                {/* Veille Sectorielle */}
-                <div>
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-100">
-                        <Radar className="h-5 w-5 text-teal-600" />
-                      </div>
-                      <h2 className="text-xl font-bold text-gray-900">Veille Sectorielle</h2>
-                    </div>
-                    <Link
-                      href="/veille-sectorielle"
-                      className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
-                    >
-                      Voir plus <ArrowRight className="h-3 w-3" />
-                    </Link>
-                  </div>
-                  {veilleSectorielleArticles.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-3">
-                      {veilleSectorielleArticles.map((article) => (
-                        <Link
-                          key={article.id}
-                          href={getArticlePublicPath(article)}
-                          className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
-                        >
-                          <div className="relative aspect-video w-full overflow-hidden">
-                            {(article.coverImage || article.imageUrl) ? (
-                              <img
-                                src={article.coverImage || article.imageUrl}
-                                alt={article.title}
-                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                              />
-                            ) : (
-                              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-teal-50 to-teal-100">
-                                <span className="text-2xl font-bold text-teal-200">V</span>
-                              </div>
-                            )}
-                            {article.zone && (
-                              <div className="absolute bottom-1.5 left-1.5 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-gray-700 shadow-sm backdrop-blur-sm">
-                                {article.zone === 'uemoa' ? 'UEMOA' : 'Hors UEMOA'}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex flex-1 flex-col p-2.5">
-                            <Badge variant="secondary" size="sm" className="mb-1.5 self-start">
-                              Veille Sectorielle
-                            </Badge>
-                            <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
-                              {article.title}
-                            </h3>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="rounded-lg bg-white p-8 text-center">
-                      <p className="text-gray-500">Aucun article de Veille Sectorielle disponible pour le moment.</p>
-                    </div>
-                  )}
-                </div>
-              </aside>
+              </div>
             </div>
           </div>
         </section>
 
+        {/* Résumé de l'actualité */}
+        <section className="pb-6">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
+              <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100">
+                  <svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Résumé de l'actualité</h2>
+                  <p className="text-xs text-gray-500">Contenu réservé aux abonnés</p>
+                </div>
+              </div>
+              <div className="p-4">
+                {summaryArticles.length > 0 ? (
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {summaryArticles.map((article) => (
+                      <Link
+                        key={article.id}
+                        href={article.country?.code ? `/country/${article.country.code.toLowerCase()}` : getArticlePublicPath(article)}
+                        className="group flex gap-3 rounded-xl border border-gray-100 p-2.5 transition-all duration-200 hover:border-gray-200 hover:shadow-md"
+                      >
+                        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg">
+                          {(article.coverImage || article.imageUrl) ? (
+                            <img
+                              src={article.coverImage || article.imageUrl}
+                              alt={article.title}
+                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-amber-50 to-amber-100">
+                              <span className="text-lg font-bold text-amber-200">R</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1 py-0.5">
+                          <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors leading-snug">
+                            {article.title}
+                          </h3>
+                          {article.excerpt && (
+                            <p className="mt-1 line-clamp-1 text-xs text-gray-500 leading-relaxed">
+                              {article.excerpt}
+                            </p>
+                          )}
+                          <div className="mt-1.5 flex items-center gap-2">
+                            {article.country && (
+                              <span className="text-xs text-gray-400">
+                                {article.country.flag && <span className="mr-1">{article.country.flag}</span>}
+                                {article.country.name}
+                              </span>
+                            )}
+                            {article.isPremium && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                                <Lock className="h-2.5 w-2.5" />
+                                Abonné
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-8 text-center">
+                    <p className="text-sm text-gray-500">Aucun résumé disponible</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Focus + Veille Sectorielle */}
+        <section className="pb-10">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-8 lg:grid-cols-2">
+              {/* Focus */}
+              <div>
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-100">
+                      <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900">Focus</h2>
+                  </div>
+                  <Link
+                    href="/focus"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
+                  >
+                    Voir plus <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+                {focusArticles.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    {focusArticles.map((article) => (
+                      <Link
+                        key={article.id}
+                        href={
+                          // Un article Focus archivé n'apparaît plus dans l'onglet
+                          // Focus de sa page pays (celle-ci exclut les articles
+                          // archivés) alors qu'il reste visible un moment sur
+                          // l'accueil (comportement voulu). On pointe donc
+                          // directement vers sa page de détail — qui gère déjà
+                          // le paywall — plutôt que vers un onglet pays qui
+                          // afficherait "Aucun article Focus disponible".
+                          !article.isArchive && article.country?.code
+                            ? `/country/${article.country.code.toLowerCase()}?tab=focus`
+                            : getArticlePublicPath(article)
+                        }
+                        className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+                      >
+                        <div className="relative aspect-video w-full overflow-hidden">
+                          {(article.coverImage || article.imageUrl) ? (
+                            <img
+                              src={article.coverImage || article.imageUrl}
+                              alt={article.title}
+                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-red-50 to-red-100">
+                              <span className="text-2xl font-bold text-red-200">F</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-1 flex-col p-2.5">
+                          <Badge variant="error" size="sm" className="mb-1.5 self-start">
+                            Focus
+                          </Badge>
+                          <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
+                            {article.title}
+                          </h3>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-lg bg-white p-8 text-center">
+                    <p className="text-gray-500">Aucun article Focus disponible pour le moment.</p>
+                    <p className="mt-2 text-sm text-gray-400">
+                      Revenez bientôt pour découvrir nos analyses approfondies.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Veille Sectorielle */}
+              <div>
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-100">
+                      <Radar className="h-5 w-5 text-teal-600" />
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900">Veille Sectorielle</h2>
+                  </div>
+                  <Link
+                    href="/veille-sectorielle"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
+                  >
+                    Voir plus <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+                {veilleSectorielleArticles.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    {veilleSectorielleArticles.map((article) => (
+                      <Link
+                        key={article.id}
+                        href={getArticlePublicPath(article)}
+                        className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+                      >
+                        <div className="relative aspect-video w-full overflow-hidden">
+                          {(article.coverImage || article.imageUrl) ? (
+                            <img
+                              src={article.coverImage || article.imageUrl}
+                              alt={article.title}
+                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-teal-50 to-teal-100">
+                              <span className="text-2xl font-bold text-teal-200">V</span>
+                            </div>
+                          )}
+                          {article.sector && (
+                            <div className="absolute bottom-1.5 left-1.5 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-gray-700 shadow-sm backdrop-blur-sm">
+                              {SECTOR_LABELS[article.sector]}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-1 flex-col p-2.5">
+                          <Badge variant="secondary" size="sm" className="mb-1.5 self-start">
+                            Veille Sectorielle
+                          </Badge>
+                          <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
+                            {article.title}
+                          </h3>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-lg bg-white p-8 text-center">
+                    <p className="text-gray-500">Aucun article de Veille Sectorielle disponible pour le moment.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
       

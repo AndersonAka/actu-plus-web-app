@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button, Card, CardHeader, CardTitle, CardContent, Badge, Alert, TextArea } from '@/components/atoms';
-import { StatusBadge } from '@/components/molecules';
+import { StatusBadge, SummaryItemsList } from '@/components/molecules';
 import { Article, ArticleStatus } from '@/types';
 import { ArrowLeft, CheckCircle, XCircle, Send, Calendar, User, MapPin, Tag, Link as LinkIcon, Crown, Star, Clock, Layers, Save, EyeOff, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
@@ -365,10 +365,13 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
               <p className="text-gray-700 italic">{article.excerpt}</p>
             </div>
           )}
-          <div 
-            className="article-content prose prose-gray max-w-none"
-            dangerouslySetInnerHTML={{ __html: article.content }} 
-          />
+          <div className="article-content prose prose-gray max-w-none">
+            {article.summaryItems && article.summaryItems.length > 0 ? (
+              <SummaryItemsList items={article.summaryItems} />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: article.content }} />
+            )}
+          </div>
         </CardContent>
       </Card>
 

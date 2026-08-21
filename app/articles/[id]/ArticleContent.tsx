@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { Article } from '@/types';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
 import { Button } from '@/components/atoms';
+import { SummaryItemsList } from '@/components/molecules';
 import { Lock, Crown } from 'lucide-react';
 
 interface ArticleContentProps {
@@ -74,26 +75,34 @@ export function ArticleContent({ article }: ArticleContentProps) {
     );
   }
 
+  const hasSummaryItems = article.summaryItems && article.summaryItems.length > 0;
+
   // Accès autorisé : afficher le contenu complet
   if (hasAccess) {
     return (
       <article className="prose prose-lg max-w-none">
-        <div dangerouslySetInnerHTML={{ __html: article.content }} />
+        {hasSummaryItems ? (
+          <SummaryItemsList items={article.summaryItems!} />
+        ) : (
+          <div dangerouslySetInnerHTML={{ __html: article.content }} />
+        )}
       </article>
     );
   }
 
   // Accès refusé : afficher un aperçu et un message
-  const previewContent = article.content.substring(0, 500) + '...';
-
   return (
     <div>
       {/* Aperçu du contenu */}
       <article className="prose prose-lg max-w-none relative">
-        <div 
-          dangerouslySetInnerHTML={{ __html: previewContent }} 
-          className="relative"
-        />
+        {hasSummaryItems ? (
+          <SummaryItemsList items={article.summaryItems!} limit={1} />
+        ) : (
+          <div
+            dangerouslySetInnerHTML={{ __html: article.content.substring(0, 500) + '...' }}
+            className="relative"
+          />
+        )}
         {/* Gradient de fondu */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
       </article>
