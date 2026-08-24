@@ -25,7 +25,7 @@ function buildArticleSchema(template: Template) {
       title: z.string().min(5, 'Le titre doit contenir au moins 5 caractères'),
       excerpt: z.string().optional(),
       content: z.string().optional(),
-      categoryId: z.string().min(1, 'Veuillez sélectionner une catégorie'),
+      categoryId: z.string().optional().or(z.literal('')),
       countryId: z.string().optional(),
       coverImage: z.string().optional().or(z.literal('')),
       sector: z.string().optional().or(z.literal('')),
@@ -34,6 +34,9 @@ function buildArticleSchema(template: Template) {
       sources: z.array(sourceSchema).optional(),
     })
     .superRefine((data, ctx) => {
+      if (template !== 'veille-sectorielle' && !data.categoryId) {
+        ctx.addIssue({ code: 'custom', path: ['categoryId'], message: 'Veuillez sélectionner une catégorie' });
+      }
       if (template === 'standard' || template === 'veille-sectorielle') {
         if (!data.countryId) {
           ctx.addIssue({ code: 'custom', path: ['countryId'], message: 'Veuillez sélectionner un pays' });
@@ -182,7 +185,7 @@ export default function CreateArticlePage() {
       const body: Record<string, unknown> = {
         title: data.title,
         excerpt: data.excerpt,
-        categoryId: data.categoryId,
+        categoryId: template === 'veille-sectorielle' ? undefined : data.categoryId,
         contentType: template === 'summary' ? 'summary' : 'article',
         scope: template === 'international' ? 'international' : 'national',
         articleSection: template === 'veille-sectorielle' ? 'veille-sectorielle' : (template === 'summary' ? undefined : 'toute-actualite'),
@@ -387,13 +390,15 @@ export default function CreateArticlePage() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Select
-                label="Catégorie"
-                options={categories.map((cat) => ({ value: cat.id, label: cat.name }))}
-                placeholder="Sélectionner"
-                error={errors.categoryId?.message}
-                {...register('categoryId')}
-              />
+              {template !== 'veille-sectorielle' && (
+                <Select
+                  label="Catégorie"
+                  options={categories.map((cat) => ({ value: cat.id, label: cat.name }))}
+                  placeholder="Sélectionner"
+                  error={errors.categoryId?.message}
+                  {...register('categoryId')}
+                />
+              )}
 
               {(template === 'standard' || template === 'veille-sectorielle') && (
                 <Select

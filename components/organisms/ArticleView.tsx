@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardContent, Button, Alert } from '@/components/atoms';
-import { StatusBadge } from '@/components/molecules';
+import { StatusBadge, SummaryItemsList } from '@/components/molecules';
 import { Article, ArticleStatus } from '@/types';
 import { canEditArticleContent, type ArticleEditorRole } from '@/lib/articles/edit-permissions';
 import { ArrowLeft, Calendar, MapPin, Tag, User, Edit, EyeOff } from 'lucide-react';
@@ -169,10 +169,14 @@ export function ArticleView({
           )}
 
           {/* Contenu */}
-          <div 
-            className="prose prose-gray max-w-none"
-            dangerouslySetInnerHTML={{ __html: article.content }}
-          />
+          {article.summaryItems && article.summaryItems.length > 0 ? (
+            <SummaryItemsList items={article.summaryItems} />
+          ) : (
+            <div
+              className="prose prose-gray max-w-none"
+              dangerouslySetInnerHTML={{ __html: article.content || '' }}
+            />
+          )}
 
           {/* Sources */}
           {article.sources && Array.isArray(article.sources) && article.sources.length > 0 && (

@@ -11,6 +11,7 @@ import { ArrowLeft, CheckCircle, XCircle, Send, Calendar, User, MapPin, Tag, Lin
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
+import { getArticleCategoryLabel } from '@/lib/articles/article-labels';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -327,13 +328,15 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
                 {article.author?.firstName} {article.author?.lastName}
               </p>
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Catégorie</p>
-              <p className="font-medium flex items-center gap-2">
-                <Tag className="h-4 w-4 text-gray-400" />
-                {article.category?.name}
-              </p>
-            </div>
+            {getArticleCategoryLabel(article) && (
+              <div>
+                <p className="text-sm text-gray-500">Catégorie</p>
+                <p className="font-medium flex items-center gap-2">
+                  <Tag className="h-4 w-4 text-gray-400" />
+                  {getArticleCategoryLabel(article)}
+                </p>
+              </div>
+            )}
             {article.country && (
               <div>
                 <p className="text-sm text-gray-500">Pays</p>
@@ -369,7 +372,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
             {article.summaryItems && article.summaryItems.length > 0 ? (
               <SummaryItemsList items={article.summaryItems} />
             ) : (
-              <div dangerouslySetInnerHTML={{ __html: article.content }} />
+              <div dangerouslySetInnerHTML={{ __html: article.content || '' }} />
             )}
           </div>
         </CardContent>

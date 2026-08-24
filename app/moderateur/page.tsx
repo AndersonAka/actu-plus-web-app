@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/atoms';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Article } from '@/types';
+import { getArticleCategoryLabel } from '@/lib/articles/article-labels';
 import { Clock, CheckCircle, XCircle, Send, Eye } from 'lucide-react';
 
 export default function ModerateurDashboardPage() {
@@ -148,7 +149,8 @@ export default function ModerateurDashboardPage() {
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-gray-900">{article.title}</p>
                     <p className="text-sm text-gray-500">
-                      Par {article.author.firstName} {article.author.lastName} • {article.category.name}
+                      Par {article.author.firstName} {article.author.lastName}
+                      {getArticleCategoryLabel(article) && ` • ${getArticleCategoryLabel(article)}`}
                     </p>
                   </div>
                   <Link href={`/moderateur/articles/${article.id}`}>

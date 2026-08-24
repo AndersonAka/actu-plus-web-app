@@ -9,9 +9,8 @@ import { Button } from '@/components/atoms';
 import { Header, Footer } from '@/components/organisms';
 import { 
   Lock, 
-  Newspaper, 
-  TrendingUp, 
-  BookOpen, 
+  Newspaper,
+  TrendingUp,
   Star,
   Clock,
   Globe2,
@@ -63,7 +62,7 @@ export default function CountryPage() {
   const [chroniqueArticle, setChroniqueArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<string>(
-    searchParams.get('tab') || 'resume'
+    searchParams.get('tab') === 'chronique' ? 'resume' : searchParams.get('tab') || 'resume'
   );
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [canAccessCountryPage, setCanAccessCountryPage] = useState(false);
@@ -253,7 +252,6 @@ export default function CountryPage() {
     { id: 'resume', label: "Résumé de l'actualité", icon: FileText, premium: true },
     { id: 'essentiel', label: "L'Essentiel", icon: Star, premium: false },
     { id: 'focus', label: 'Focus', icon: TrendingUp, premium: true },
-    { id: 'chronique', label: 'Chroniques', icon: BookOpen, premium: true },
     { id: 'toute-actualite', label: "Toute l'actualité", icon: Newspaper, premium: false },
   ];
 
@@ -344,7 +342,7 @@ export default function CountryPage() {
                 {summary.summaryItems && summary.summaryItems.length > 0 ? (
                   <SummaryItemsList items={summary.summaryItems} />
                 ) : (
-                  <div dangerouslySetInnerHTML={{ __html: summary.content }} />
+                  <div dangerouslySetInnerHTML={{ __html: summary.content || '' }} />
                 )}
               </div>
             </div>

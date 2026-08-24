@@ -43,11 +43,11 @@ export interface Article {
   id: string;
   title: string;
   slug: string;
-  content: string;
+  content: string | null;     // Absent pour un Résumé de l'actualité (voir summaryItems)
   excerpt?: string;
   coverImage?: string;
   imageUrl?: string;         // URL de l'image de couverture
-  category: Category;
+  category: Category | null;  // Absente pour la Veille Sectorielle
   country: Country;
   author: ArticleAuthor;
   status: ArticleStatus;

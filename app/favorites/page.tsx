@@ -67,9 +67,9 @@ export default function FavoritesPage() {
       
       // Filtrer par type de contenu si nécessaire
       if (contentFilter === 'summary') {
-        fetchedArticles = fetchedArticles.filter((a) => a.content?.length < 500);
+        fetchedArticles = fetchedArticles.filter((a) => (a.content?.length ?? 0) < 500);
       } else if (contentFilter === 'article') {
-        fetchedArticles = fetchedArticles.filter((a) => a.content?.length >= 500);
+        fetchedArticles = fetchedArticles.filter((a) => (a.content?.length ?? 0) >= 500);
       }
       
       setArticles(fetchedArticles);

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button, Card, EmptyState } from '@/components/atoms';
 import { Pagination, StatusBadge } from '@/components/molecules';
 import { Article } from '@/types';
+import { getArticleCategoryLabel } from '@/lib/articles/article-labels';
 import { Eye, Clock, Archive } from 'lucide-react';
 
 export default function ModerateurPendingPage() {
@@ -115,8 +116,12 @@ export default function ModerateurPendingPage() {
                     <p className="font-medium text-gray-900">{article.title}</p>
                     <div className="mt-1 flex items-center gap-3 text-sm text-gray-500">
                       <span>Par {article.author.firstName} {article.author.lastName}</span>
-                      <span>•</span>
-                      <span>{article.category.name}</span>
+                      {getArticleCategoryLabel(article) && (
+                        <>
+                          <span>•</span>
+                          <span>{getArticleCategoryLabel(article)}</span>
+                        </>
+                      )}
                       <span>•</span>
                       <span>{new Date(article.createdAt).toLocaleDateString('fr-FR')}</span>
                     </div>

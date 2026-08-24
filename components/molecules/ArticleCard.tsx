@@ -7,6 +7,7 @@ import { Badge } from '@/components/atoms';
 import { Calendar, Eye, Heart, Globe } from 'lucide-react';
 import { Article, ArticleStatus } from '@/types';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
+import { getArticleCategoryLabel } from '@/lib/articles/article-labels';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -48,6 +49,7 @@ const ArticleCard = ({
     : format(new Date(article.createdAt), 'dd MMM yyyy', { locale: fr });
 
   const scopeLabel = article.scope === 'international' ? 'International' : article.scope === 'national' ? 'National' : null;
+  const categoryLabel = getArticleCategoryLabel(article);
 
   if (variant === 'compact') {
     return (
@@ -127,9 +129,11 @@ const ArticleCard = ({
         <div className="flex flex-1 flex-col justify-between py-0.5 min-w-0">
           <div>
             <div className="mb-1.5 flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" size="sm">
-                {article.category.name}
-              </Badge>
+              {categoryLabel && (
+                <Badge variant="secondary" size="sm">
+                  {categoryLabel}
+                </Badge>
+              )}
               {scopeLabel && (
                 <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700">
                   <Globe className="h-2.5 w-2.5" />
@@ -212,9 +216,11 @@ const ArticleCard = ({
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <div className="mb-2 flex gap-2 flex-wrap">
-            <Badge variant="primary">
-              {article.category.name}
-            </Badge>
+            {categoryLabel && (
+              <Badge variant="primary">
+                {categoryLabel}
+              </Badge>
+            )}
             {scopeLabel && (
               <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
                 <Globe className="h-3 w-3" />
@@ -297,9 +303,11 @@ const ArticleCard = ({
       </Link>
       <div className="p-4">
         <div className="mb-2 flex items-center gap-2">
-          <Badge variant="secondary" size="sm">
-            {article.category.name}
-          </Badge>
+          {categoryLabel && (
+            <Badge variant="secondary" size="sm">
+              {categoryLabel}
+            </Badge>
+          )}
           {article.country && (
             <span className="text-xs text-gray-500">{article.country.name}</span>
           )}
