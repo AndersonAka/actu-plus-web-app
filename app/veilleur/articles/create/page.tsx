@@ -197,7 +197,7 @@ export default function CreateArticlePage() {
       if (template === 'standard' || template === 'veille-sectorielle') {
         body.countryId = data.countryId;
       }
-      if (template === 'standard' || template === 'international') {
+      if (template === 'standard' || template === 'international' || template === 'veille-sectorielle') {
         body.imageUrl = data.coverImage || undefined;
       }
       if (template === 'summary') {
@@ -451,10 +451,12 @@ export default function CreateArticlePage() {
         </Card>
 
         {/* Image de couverture */}
-        {(template === 'standard' || template === 'international') && (
+        {(template === 'standard' || template === 'international' || template === 'veille-sectorielle') && (
           <Card>
             <CardHeader>
-              <CardTitle>Image de couverture *</CardTitle>
+              <CardTitle>
+                {template === 'veille-sectorielle' ? 'Image de couverture (optionnel)' : 'Image de couverture *'}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <Controller
