@@ -20,3 +20,9 @@ export function sanitizeArticleContent(html: string | null | undefined): string 
     isInternalPrivateLink(href) ? innerHtml : fullMatch,
   );
 }
+
+/** Retire tous les liens (quelle que soit leur cible), en gardant le texte visible. */
+export function stripAllLinks(html: string | null | undefined): string {
+  if (!html) return '';
+  return html.replace(ANCHOR_REGEX, (_fullMatch, _href: string, innerHtml: string) => innerHtml);
+}
