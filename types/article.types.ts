@@ -18,6 +18,9 @@ export interface SummaryItem {
   title: string;
   summary: string;
   link?: string;
+  sector?: string;        // Veille Sectorielle uniquement
+  categoryId?: string;    // Résumé de l'actualité uniquement
+  categoryName?: string;  // Dénormalisé pour l'affichage
 }
 
 // Statuts du workflow de publication

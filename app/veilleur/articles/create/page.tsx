@@ -22,38 +22,35 @@ const sourceSchema = z.object({
 function buildArticleSchema(template: Template) {
   return z
     .object({
-      title: z.string().min(5, 'Le titre doit contenir au moins 5 caractères'),
+      title: z.string().optional().or(z.literal('')),
       excerpt: z.string().optional(),
       content: z.string().optional(),
       categoryId: z.string().optional().or(z.literal('')),
       countryId: z.string().optional(),
       coverImage: z.string().optional().or(z.literal('')),
-      sector: z.string().optional().or(z.literal('')),
       zone: z.string().optional().or(z.literal('')),
       internationalCountryCode: z.string().optional().or(z.literal('')),
       sources: z.array(sourceSchema).optional(),
     })
     .superRefine((data, ctx) => {
-      if (template !== 'veille-sectorielle' && !data.categoryId) {
-        ctx.addIssue({ code: 'custom', path: ['categoryId'], message: 'Veuillez sélectionner une catégorie' });
-      }
-      if (template === 'standard' || template === 'veille-sectorielle') {
-        if (!data.countryId) {
-          ctx.addIssue({ code: 'custom', path: ['countryId'], message: 'Veuillez sélectionner un pays' });
-        }
-      }
       if (template === 'standard' || template === 'international') {
+        if (!data.title || data.title.length < 5) {
+          ctx.addIssue({ code: 'custom', path: ['title'], message: 'Le titre doit contenir au moins 5 caractères' });
+        }
+        if (!data.categoryId) {
+          ctx.addIssue({ code: 'custom', path: ['categoryId'], message: 'Veuillez sélectionner une catégorie' });
+        }
         if (!data.coverImage || !data.coverImage.trim()) {
           ctx.addIssue({ code: 'custom', path: ['coverImage'], message: "L'image de couverture est obligatoire" });
         }
-      }
-      if (template === 'standard' || template === 'veille-sectorielle' || template === 'international') {
         if (!data.content || data.content.length < 50) {
           ctx.addIssue({ code: 'custom', path: ['content'], message: 'Le contenu doit contenir au moins 50 caractères' });
         }
       }
-      if (template === 'veille-sectorielle' && !data.sector) {
-        ctx.addIssue({ code: 'custom', path: ['sector'], message: 'Veuillez sélectionner un secteur' });
+      if (template === 'standard' || template === 'veille-sectorielle' || template === 'summary') {
+        if (!data.countryId) {
+          ctx.addIssue({ code: 'custom', path: ['countryId'], message: 'Veuillez sélectionner un pays' });
+        }
       }
       if (template === 'international') {
         if (!data.zone) {
@@ -75,6 +72,8 @@ interface SummaryItem {
   title: string;
   summary: string;
   link: string;
+  sector: string;
+  categoryId: string;
 }
 
 type ArticleFormData = z.infer<ReturnType<typeof buildArticleSchema>>;
@@ -82,7 +81,7 @@ type ArticleFormData = z.infer<ReturnType<typeof buildArticleSchema>>;
 const TEMPLATE_OPTIONS: { value: Template; label: string; description: string; icon: typeof Newspaper }[] = [
   { value: 'standard', label: 'Article standard', description: 'Image + texte complet', icon: Newspaper },
   { value: 'summary', label: "Résumé de l'actualité", description: 'Plusieurs entrées Titre/Résumé/Lien', icon: FileText },
-  { value: 'veille-sectorielle', label: 'Veille Sectorielle', description: 'Pays, secteur, contenu', icon: Radar },
+  { value: 'veille-sectorielle', label: 'Veille Sectorielle', description: 'Pays + entrées par secteur', icon: Radar },
   { value: 'international', label: 'Article International', description: 'Zone, pays international', icon: Globe2 },
 ];
 
@@ -115,7 +114,6 @@ export default function CreateArticlePage() {
       categoryId: '',
       countryId: '',
       coverImage: '',
-      sector: '',
       zone: '',
       internationalCountryCode: '',
       sources: [],
@@ -163,9 +161,9 @@ export default function CreateArticlePage() {
     setTemplate(value);
     setValue('countryId', '');
     setValue('coverImage', '');
-    setValue('sector', '');
     setValue('zone', '');
     setValue('internationalCountryCode', '');
+    setSummaryItems([]);
   };
 
   const onSubmit = async (data: ArticleFormData, submitForReview: boolean = false) => {
@@ -173,20 +171,29 @@ export default function CreateArticlePage() {
     setError(null);
 
     try {
-      if (template === 'summary') {
-        const validItems = summaryItems.filter((it) => it.title.trim() && it.summary.trim());
+      const isContainer = template === 'summary' || template === 'veille-sectorielle';
+      let validItems: SummaryItem[] = [];
+
+      if (isContainer) {
+        validItems = summaryItems.filter((it) => it.title.trim() && it.summary.trim());
         if (validItems.length === 0) {
           throw new Error('Ajoutez au moins une entrée (titre + résumé)');
+        }
+        if (template === 'veille-sectorielle' && validItems.some((it) => !it.sector)) {
+          throw new Error('Sélectionnez un secteur pour chaque entrée');
+        }
+        if (template === 'summary' && validItems.some((it) => !it.categoryId)) {
+          throw new Error('Sélectionnez une catégorie pour chaque entrée');
         }
       }
 
       const internationalCountry = WORLD_COUNTRIES.find((c) => c.code === data.internationalCountryCode);
 
       const body: Record<string, unknown> = {
-        title: data.title,
-        excerpt: data.excerpt,
-        categoryId: template === 'veille-sectorielle' ? undefined : data.categoryId,
-        contentType: template === 'summary' ? 'summary' : 'article',
+        title: isContainer ? undefined : data.title,
+        excerpt: isContainer ? undefined : data.excerpt,
+        categoryId: isContainer ? undefined : data.categoryId,
+        contentType: isContainer ? 'summary' : 'article',
         scope: template === 'international' ? 'international' : 'national',
         articleSection: template === 'veille-sectorielle' ? 'veille-sectorielle' : (template === 'summary' ? undefined : 'toute-actualite'),
         sources: (template === 'standard' || template === 'international')
@@ -194,21 +201,28 @@ export default function CreateArticlePage() {
           : undefined,
       };
 
-      if (template === 'standard' || template === 'veille-sectorielle') {
+      if (template === 'standard' || template === 'veille-sectorielle' || template === 'summary') {
         body.countryId = data.countryId;
       }
-      if (template === 'standard' || template === 'international' || template === 'veille-sectorielle') {
+      if (template === 'standard' || template === 'international') {
         body.imageUrl = data.coverImage || undefined;
       }
-      if (template === 'summary') {
-        body.summaryItems = summaryItems
-          .filter((it) => it.title.trim() && it.summary.trim())
-          .map((it) => ({ title: it.title, summary: it.summary, link: it.link || undefined }));
+      if (isContainer) {
+        body.summaryItems = validItems.map((it) => {
+          if (template === 'veille-sectorielle') {
+            return { title: it.title, summary: it.summary, link: it.link || undefined, sector: it.sector || undefined };
+          }
+          const category = categories.find((c) => c.id === it.categoryId);
+          return {
+            title: it.title,
+            summary: it.summary,
+            link: it.link || undefined,
+            categoryId: it.categoryId || undefined,
+            categoryName: category?.name,
+          };
+        });
       } else {
         body.content = data.content;
-      }
-      if (template === 'veille-sectorielle') {
-        body.sector = data.sector;
       }
       if (template === 'international') {
         body.zone = data.zone;
@@ -290,7 +304,7 @@ export default function CreateArticlePage() {
     setSources(newSources);
   };
 
-  const addSummaryItem = () => setSummaryItems([...summaryItems, { title: '', summary: '', link: '' }]);
+  const addSummaryItem = () => setSummaryItems([...summaryItems, { title: '', summary: '', link: '', sector: '', categoryId: '' }]);
   const removeSummaryItem = (index: number) => setSummaryItems(summaryItems.filter((_, i) => i !== index));
   const updateSummaryItem = (index: number, field: keyof SummaryItem, value: string) => {
     const newItems = [...summaryItems];
@@ -312,7 +326,7 @@ export default function CreateArticlePage() {
           <h1 className="text-2xl font-bold text-gray-900">Nouvel article</h1>
           <p className="mt-1 text-gray-600">Créez un nouvel article</p>
         </div>
-        {template !== 'summary' && (
+        {(template === 'standard' || template === 'international') && (
           <Button type="button" variant="outline" onClick={handleAutoFill} leftIcon={<Wand2 className="h-4 w-4" />}>
             Remplissage auto
           </Button>
@@ -370,27 +384,29 @@ export default function CreateArticlePage() {
             <CardTitle>Informations générales</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Input label="Titre" placeholder="Titre de l'article" error={errors.title?.message} {...register('title')} />
+            {(template === 'standard' || template === 'international') && (
+              <>
+                <Input label="Titre" placeholder="Titre de l'article" error={errors.title?.message} {...register('title')} />
 
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-gray-700">Résumé (optionnel)</label>
-                {template !== 'summary' && (
-                  <button
-                    type="button"
-                    onClick={generateExcerptFromContent}
-                    className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 font-medium"
-                    title="Générer à partir du contenu"
-                  >
-                    Générer auto
-                  </button>
-                )}
-              </div>
-              <TextArea placeholder="Bref résumé..." rows={3} error={errors.excerpt?.message} {...register('excerpt')} />
-            </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-medium text-gray-700">Résumé (optionnel)</label>
+                    <button
+                      type="button"
+                      onClick={generateExcerptFromContent}
+                      className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 font-medium"
+                      title="Générer à partir du contenu"
+                    >
+                      Générer auto
+                    </button>
+                  </div>
+                  <TextArea placeholder="Bref résumé..." rows={3} error={errors.excerpt?.message} {...register('excerpt')} />
+                </div>
+              </>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-2">
-              {template !== 'veille-sectorielle' && (
+              {(template === 'standard' || template === 'international') && (
                 <Select
                   label="Catégorie"
                   options={categories.map((cat) => ({ value: cat.id, label: cat.name }))}
@@ -400,7 +416,7 @@ export default function CreateArticlePage() {
                 />
               )}
 
-              {(template === 'standard' || template === 'veille-sectorielle') && (
+              {(template === 'standard' || template === 'veille-sectorielle' || template === 'summary') && (
                 <Select
                   label="Pays *"
                   options={[{ value: '', label: 'Sélectionner un pays' }, ...countries.map((c) => ({ value: c.id, label: c.name }))]}
@@ -409,20 +425,6 @@ export default function CreateArticlePage() {
                 />
               )}
             </div>
-
-            {template === 'veille-sectorielle' && (
-              <Select
-                label="Secteur *"
-                options={[
-                  { value: '', label: 'Sélectionner un secteur' },
-                  { value: 'banque-assurance', label: 'Banque et assurance' },
-                  { value: 'energie', label: 'Énergie' },
-                  { value: 'agro-industrielle', label: 'Agro Industrielle' },
-                ]}
-                error={errors.sector?.message}
-                {...register('sector')}
-              />
-            )}
 
             {template === 'international' && (
               <div className="grid gap-4 sm:grid-cols-2">
@@ -451,12 +453,10 @@ export default function CreateArticlePage() {
         </Card>
 
         {/* Image de couverture */}
-        {(template === 'standard' || template === 'international' || template === 'veille-sectorielle') && (
+        {(template === 'standard' || template === 'international') && (
           <Card>
             <CardHeader>
-              <CardTitle>
-                {template === 'veille-sectorielle' ? 'Image de couverture (optionnel)' : 'Image de couverture *'}
-              </CardTitle>
+              <CardTitle>Image de couverture *</CardTitle>
             </CardHeader>
             <CardContent>
               <Controller
@@ -470,8 +470,8 @@ export default function CreateArticlePage() {
           </Card>
         )}
 
-        {/* Contenu (standard / veille sectorielle / international) */}
-        {template !== 'summary' && (
+        {/* Contenu (standard / international) */}
+        {(template === 'standard' || template === 'international') && (
           <Card>
             <CardHeader>
               <CardTitle>Contenu</CardTitle>
@@ -495,12 +495,12 @@ export default function CreateArticlePage() {
           </Card>
         )}
 
-        {/* Entrées du résumé (Titre / Résumé / Lien) */}
-        {template === 'summary' && (
+        {/* Entrées (Titre / Résumé / Lien + classificateur par entrée) */}
+        {(template === 'summary' || template === 'veille-sectorielle') && (
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Entrées du résumé</CardTitle>
+                <CardTitle>{template === 'veille-sectorielle' ? "Entrées d'article" : 'Entrées du résumé'}</CardTitle>
                 <Button type="button" variant="outline" size="sm" onClick={addSummaryItem} leftIcon={<Plus className="h-4 w-4" />}>
                   Ajouter une entrée
                 </Button>
@@ -511,7 +511,9 @@ export default function CreateArticlePage() {
                 <div className="text-center py-8 text-gray-500">
                   <FileText className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                   <p>Aucune entrée ajoutée</p>
-                  <p className="text-sm">Cliquez sur "Ajouter une entrée" pour composer le résumé</p>
+                  <p className="text-sm">
+                    Cliquez sur "Ajouter une entrée" pour composer {template === 'veille-sectorielle' ? "la veille" : 'le résumé'}
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-5">
@@ -534,6 +536,29 @@ export default function CreateArticlePage() {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
+                      {template === 'veille-sectorielle' ? (
+                        <Select
+                          label="Secteur"
+                          options={[
+                            { value: '', label: 'Sélectionner un secteur' },
+                            { value: 'banque-assurance', label: 'Banque et assurance' },
+                            { value: 'energie', label: 'Énergie' },
+                            { value: 'agro-industrielle', label: 'Agro Industrielle' },
+                          ]}
+                          value={item.sector}
+                          onChange={(e) => updateSummaryItem(index, 'sector', e.target.value)}
+                        />
+                      ) : (
+                        <Select
+                          label="Catégorie"
+                          options={[
+                            { value: '', label: 'Sélectionner une catégorie' },
+                            ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
+                          ]}
+                          value={item.categoryId}
+                          onChange={(e) => updateSummaryItem(index, 'categoryId', e.target.value)}
+                        />
+                      )}
                       <RichTextEditor
                         value={item.summary}
                         onChange={(value) => updateSummaryItem(index, 'summary', value)}

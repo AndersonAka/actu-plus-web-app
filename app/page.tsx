@@ -130,25 +130,29 @@ async function getSummaryArticles(): Promise<Article[]> {
   }
 }
 
-async function getVeilleSectorielleArticles(): Promise<Article[]> {
+interface VeilleSectorielleEntry {
+  articleId: string;
+  articleSlug: string;
+  sector?: string;
+  title: string;
+  summary: string;
+  link?: string;
+  publishedAt: string | null;
+  country: { id: string; code: string; name: string; flag?: string } | null;
+}
+
+async function getVeilleSectorielleEntries(): Promise<VeilleSectorielleEntry[]> {
   try {
     const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles?articleSection=veille-sectorielle&limit=6&publishedToday=true`,
+      `${apiConfig.baseUrl}/api/articles/veille-sectorielle/entries?limit=6`,
       { cache: 'no-store' }
     );
     if (!response.ok) return [];
     const result = await response.json();
-    let articles: any[] = [];
-    if (Array.isArray(result)) {
-      articles = result;
-    } else if (Array.isArray(result.data)) {
-      articles = result.data;
-    } else if (result.data?.data && Array.isArray(result.data.data)) {
-      articles = result.data.data;
-    }
-    return articles.map(mapArticle);
+    const entries = result.data?.data || result.data || [];
+    return Array.isArray(entries) ? entries : [];
   } catch (error) {
-    console.error('Error fetching veille sectorielle articles:', error);
+    console.error('Error fetching veille sectorielle entries:', error);
     return [];
   }
 }
@@ -197,11 +201,11 @@ async function getCountries(): Promise<CountryListItem[]> {
 }
 
 export default async function HomePage() {
-  const [featuredArticles, focusArticles, summaryArticles, veilleSectorielleArticles, internationalArticles, countries] = await Promise.all([
+  const [featuredArticles, focusArticles, summaryArticles, veilleSectorielleEntries, internationalArticles, countries] = await Promise.all([
     getFeaturedArticles(),
     getFocusArticles(),
     getSummaryArticles(),
-    getVeilleSectorielleArticles(),
+    getVeilleSectorielleEntries(),
     getInternationalArticles(),
     getCountries(),
   ]);
@@ -493,46 +497,36 @@ export default async function HomePage() {
                     Voir plus <ArrowRight className="h-3 w-3" />
                   </Link>
                 </div>
-                {veilleSectorielleArticles.length > 0 ? (
+                {veilleSectorielleEntries.length > 0 ? (
                   <div className="grid grid-cols-2 gap-3">
-                    {veilleSectorielleArticles.map((article) => (
+                    {veilleSectorielleEntries.map((entry, index) => (
                       <Link
-                        key={article.id}
-                        href={getArticlePublicPath(article)}
-                        className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+                        key={`${entry.articleId}-${index}`}
+                        href={entry.country?.code ? `/country/${entry.country.code.toLowerCase()}?tab=veille-sectorielle` : `/articles/${entry.articleSlug}`}
+                        className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white p-2.5 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
                       >
-                        <div className="relative aspect-video w-full overflow-hidden">
-                          {(article.coverImage || article.imageUrl) ? (
-                            <img
-                              src={article.coverImage || article.imageUrl}
-                              alt={article.title}
-                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-teal-50 to-teal-100">
-                              <span className="text-2xl font-bold text-teal-200">V</span>
-                            </div>
+                        <div className="mb-1.5 flex items-center gap-1.5 flex-wrap">
+                          {entry.sector && (
+                            <Badge variant="secondary" size="sm">
+                              {SECTOR_LABELS[entry.sector]}
+                            </Badge>
                           )}
-                          {article.sector && (
-                            <div className="absolute bottom-1.5 left-1.5 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-gray-700 backdrop-blur-sm">
-                              {SECTOR_LABELS[article.sector]}
-                            </div>
+                          {entry.country && (
+                            <span className="text-xs text-gray-400">
+                              {entry.country.flag && <span className="mr-1">{entry.country.flag}</span>}
+                              {entry.country.name}
+                            </span>
                           )}
                         </div>
-                        <div className="flex flex-1 flex-col p-2.5">
-                          <Badge variant="secondary" size="sm" className="mb-1.5 self-start">
-                            Veille Sectorielle
-                          </Badge>
-                          <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
-                            {article.title}
-                          </h3>
-                        </div>
+                        <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
+                          {entry.title}
+                        </h3>
                       </Link>
                     ))}
                   </div>
                 ) : (
                   <div className="rounded-lg bg-white p-8 text-center">
-                    <p className="text-gray-500">Aucun article de Veille Sectorielle disponible pour le moment.</p>
+                    <p className="text-gray-500">Aucune veille sectorielle disponible pour le moment.</p>
                   </div>
                 )}
               </div>

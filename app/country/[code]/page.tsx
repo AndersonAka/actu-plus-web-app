@@ -7,8 +7,8 @@ import { Article, ArticleSection } from '@/types/article.types';
 import { ArticleCard, FocusDetailCard, SummaryItemsList } from '@/components/molecules';
 import { Button } from '@/components/atoms';
 import { Header, Footer } from '@/components/organisms';
-import { 
-  Lock, 
+import {
+  Lock,
   Newspaper,
   TrendingUp,
   Star,
@@ -16,7 +16,8 @@ import {
   Globe2,
   LayoutGrid,
   List,
-  FileText
+  FileText,
+  Radar
 } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import dynamic from 'next/dynamic';
@@ -61,6 +62,7 @@ export default function CountryPage() {
   const [allArticles, setAllArticles] = useState<Article[]>([]);
   const [focusArticle, setFocusArticle] = useState<Article | null>(null);
   const [chroniqueArticle, setChroniqueArticle] = useState<Article | null>(null);
+  const [veilleSectorielleArticle, setVeilleSectorielleArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<string>(
     searchParams.get('tab') === 'chronique' ? 'resume' : searchParams.get('tab') || 'resume'
@@ -134,12 +136,13 @@ export default function CountryPage() {
         }
 
         // Fetch all sections in parallel (today-only for daily sections)
-        const [summaryRes, essentielRes, allRes, focusRes, chroniquesRes] = await Promise.all([
+        const [summaryRes, essentielRes, allRes, focusRes, chroniquesRes, veilleSectorielleRes] = await Promise.all([
           fetch(`/api/proxy/articles/country/${code}/summary`),
           fetch(`/api/proxy/articles/country/${code}/essentiel?limit=${ESSENTIEL_LIMIT}&page=1&publishedToday=true`),
           fetch(`/api/proxy/articles/country/${code}/all?limit=10&publishedToday=true`),
           fetch(`/api/proxy/articles/country/${code}/focus`),
           fetch(`/api/proxy/articles/country/${code}/chroniques?limit=1`),
+          fetch(`/api/proxy/articles/country/${code}/veille-sectorielle`),
         ]);
 
         if (summaryRes.ok) {
@@ -195,6 +198,22 @@ export default function CountryPage() {
             chroniqueData = data[0] || null;
           }
           setChroniqueArticle(chroniqueData ? mapArticle(chroniqueData) : null);
+        }
+
+        // Veille Sectorielle - single article (like Focus)
+        if (veilleSectorielleRes.ok) {
+          const data = await veilleSectorielleRes.json();
+          let veilleSectorielleData = null;
+          if (data.data) {
+            if (Array.isArray(data.data)) {
+              veilleSectorielleData = data.data[0] || null;
+            } else {
+              veilleSectorielleData = data.data;
+            }
+          } else if (Array.isArray(data)) {
+            veilleSectorielleData = data[0] || null;
+          }
+          setVeilleSectorielleArticle(veilleSectorielleData ? mapArticle(veilleSectorielleData) : null);
         }
       } catch (error) {
         console.error('Error fetching country data:', error);
@@ -253,6 +272,7 @@ export default function CountryPage() {
     { id: 'resume', label: "Résumé de l'actualité", icon: FileText, premium: true },
     { id: 'essentiel', label: "L'Essentiel", icon: Star, premium: false },
     { id: 'focus', label: 'Focus', icon: TrendingUp, premium: true },
+    { id: 'veille-sectorielle', label: 'Veille Sectorielle', icon: Radar, premium: false },
     { id: 'toute-actualite', label: "Toute l'actualité", icon: Newspaper, premium: false },
   ];
 
@@ -350,6 +370,23 @@ export default function CountryPage() {
           </div>
         ) : (
           <p className="text-center text-gray-500">Aucun résumé disponible pour aujourd'hui.</p>
+        );
+
+      case 'veille-sectorielle':
+        return veilleSectorielleArticle?.summaryItems && veilleSectorielleArticle.summaryItems.length > 0 ? (
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-teal-100">
+              <Radar className="h-6 w-6 text-teal-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="mb-3 text-xl font-bold text-gray-900">Veille Sectorielle</h3>
+              <div className="article-content prose prose-gray max-w-none text-gray-600 leading-relaxed">
+                <SummaryItemsList items={veilleSectorielleArticle.summaryItems} hideLinks />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-center text-gray-500">Aucune veille sectorielle disponible pour aujourd'hui.</p>
         );
 
       case 'essentiel':

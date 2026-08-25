@@ -3,56 +3,35 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { Header, Footer } from '@/components/organisms';
-import { ArticleCard, Pagination } from '@/components/molecules';
+import { Pagination } from '@/components/molecules';
 import { Button } from '@/components/atoms';
-import { parseArticlesPaginatedResponse } from '@/lib/utils/system-archives';
-import { Article, ArticleStatus, Country, Sector } from '@/types';
-import { Radar, ArrowLeft, Loader2 } from 'lucide-react';
+import { Country, Sector } from '@/types';
+import { Radar, ArrowLeft, Loader2, Calendar } from 'lucide-react';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 const PAGE_SIZE = 12;
 
-function mapArticle(data: Record<string, unknown>): Article {
-  const category = (data.category as Article['category']) || {
-    id: '',
-    name: 'Actualité',
-    slug: 'actualite',
-  };
-  const country = (data.country as Article['country']) || {
-    id: '',
-    name: '',
-    code: '',
-    flag: '',
-  };
-  const author = (data.author as Article['author']) || {
-    id: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-  };
+interface VeilleSectorielleEntry {
+  articleId: string;
+  articleSlug: string;
+  sector?: string;
+  title: string;
+  summary: string;
+  link?: string;
+  publishedAt: string | null;
+  country: { id: string; code: string; name: string; flag?: string } | null;
+}
 
-  return {
-    id: String(data.id),
-    title: String(data.title ?? ''),
-    slug: String(data.slug ?? ''),
-    content: String(data.content ?? ''),
-    excerpt: data.excerpt ? String(data.excerpt) : undefined,
-    coverImage: data.imageUrl ? String(data.imageUrl) : undefined,
-    imageUrl: data.imageUrl ? String(data.imageUrl) : undefined,
-    category,
-    country,
-    author,
-    status: data.isPublished ? ArticleStatus.PUBLISHED : ArticleStatus.DRAFT,
-    contentType: data.contentType as Article['contentType'],
-    articleSection: data.articleSection as Article['articleSection'],
-    sector: data.sector as Article['sector'],
-    isFeatured: Boolean(data.isFeatured),
-    isPremium: Boolean(data.isPremium),
-    isPublished: Boolean(data.isPublished),
-    views: Number(data.views) || 0,
-    publishedAt: data.publishedAt ? String(data.publishedAt) : undefined,
-    createdAt: String(data.createdAt ?? ''),
-    updatedAt: String(data.updatedAt ?? ''),
-  };
+const SECTOR_LABELS: Record<string, string> = {
+  'banque-assurance': 'Banque & Assurance',
+  energie: 'Énergie',
+  'agro-industrielle': 'Agro Industrielle',
+};
+
+function getTextPreview(html: string, maxLength: number = 160): string {
+  const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 }
 
 const sectorFilters: { label: string; value: Sector | 'all' }[] = [
@@ -63,7 +42,7 @@ const sectorFilters: { label: string; value: Sector | 'all' }[] = [
 ];
 
 export default function VeilleSectoriellePage() {
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [entries, setEntries] = useState<VeilleSectorielleEntry[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,34 +63,32 @@ export default function VeilleSectoriellePage() {
       .catch(() => {});
   }, []);
 
-  const loadArticles = useCallback(
+  const loadEntries = useCallback(
     async (page: number, sector: Sector | 'all', countryId: string) => {
       try {
         setLoading(true);
         setError(null);
 
         const params = new URLSearchParams({
-          articleSection: 'veille-sectorielle',
           page: String(page),
           limit: String(PAGE_SIZE),
-          sortBy: 'date',
-          sortOrder: 'DESC',
         });
         if (sector !== 'all') params.set('sector', sector);
         if (countryId !== 'all') params.set('countryId', countryId);
 
-        const response = await fetch(`/api/proxy/articles?${params.toString()}`);
+        const response = await fetch(`/api/proxy/articles/veille-sectorielle/entries?${params.toString()}`);
 
         if (!response.ok) {
           throw new Error('Erreur lors du chargement de la Veille Sectorielle');
         }
 
         const result = await response.json();
-        const { articles: raw, total, totalPages: pages } = parseArticlesPaginatedResponse(result);
+        const payload = result.data?.data ? result.data : result;
+        const rawEntries = payload.data || [];
 
-        setArticles(raw.map((item) => mapArticle(item as Record<string, unknown>)));
-        setTotalCount(total);
-        setTotalPages(Math.max(1, pages));
+        setEntries(Array.isArray(rawEntries) ? rawEntries : []);
+        setTotalCount(payload.total || 0);
+        setTotalPages(Math.max(1, payload.totalPages || Math.ceil((payload.total || 0) / PAGE_SIZE)));
         setCurrentPage(page);
       } catch (err) {
         console.error('Erreur lors du chargement de la Veille Sectorielle:', err);
@@ -124,11 +101,11 @@ export default function VeilleSectoriellePage() {
   );
 
   useEffect(() => {
-    loadArticles(1, sectorFilter, countryFilter);
-  }, [sectorFilter, countryFilter, loadArticles]);
+    loadEntries(1, sectorFilter, countryFilter);
+  }, [sectorFilter, countryFilter, loadEntries]);
 
   const handlePageChange = (page: number) => {
-    loadArticles(page, sectorFilter, countryFilter);
+    loadEntries(page, sectorFilter, countryFilter);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -153,7 +130,7 @@ export default function VeilleSectoriellePage() {
                 <h1 className="text-2xl font-bold text-gray-900">Veille Sectorielle</h1>
                 <p className="text-sm text-gray-500">
                   {totalCount > 0
-                    ? `${totalCount} article${totalCount !== 1 ? 's' : ''}`
+                    ? `${totalCount} entrée${totalCount !== 1 ? 's' : ''}`
                     : 'Banque et assurance, Énergie, Agro Industrielle'}
                 </p>
               </div>
@@ -218,22 +195,52 @@ export default function VeilleSectoriellePage() {
                 variant="outline"
                 size="sm"
                 className="mt-4"
-                onClick={() => loadArticles(currentPage, sectorFilter, countryFilter)}
+                onClick={() => loadEntries(currentPage, sectorFilter, countryFilter)}
               >
                 Réessayer
               </Button>
             </div>
-          ) : articles.length === 0 ? (
+          ) : entries.length === 0 ? (
             <div className="rounded-lg bg-gray-50 p-12 text-center">
               <Radar className="mx-auto h-12 w-12 text-gray-300" />
-              <h3 className="mt-4 text-lg font-medium text-gray-900">Aucun article</h3>
-              <p className="mt-2 text-sm text-gray-500">Aucun article de Veille Sectorielle pour ce filtre.</p>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">Aucune entrée</h3>
+              <p className="mt-2 text-sm text-gray-500">Aucune entrée de Veille Sectorielle pour ce filtre.</p>
             </div>
           ) : (
             <>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {articles.map((article) => (
-                  <ArticleCard key={article.id} article={article} variant="compact" />
+                {entries.map((entry, index) => (
+                  <Link
+                    key={`${entry.articleId}-${index}`}
+                    href={entry.country?.code ? `/country/${entry.country.code.toLowerCase()}?tab=veille-sectorielle` : `/articles/${entry.articleSlug}`}
+                    className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+                  >
+                    <div className="mb-2 flex items-center gap-2 flex-wrap">
+                      {entry.sector && (
+                        <span className="rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-700">
+                          {SECTOR_LABELS[entry.sector] || entry.sector}
+                        </span>
+                      )}
+                      {entry.country && (
+                        <span className="text-xs text-gray-400">
+                          {entry.country.flag && <span className="mr-1">{entry.country.flag}</span>}
+                          {entry.country.name}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="mb-2 line-clamp-2 font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                      {entry.title}
+                    </h3>
+                    <p className="mb-3 line-clamp-3 flex-1 text-sm text-gray-600">
+                      {getTextPreview(entry.summary, 160)}
+                    </p>
+                    {entry.publishedAt && (
+                      <span className="flex items-center gap-1 text-xs text-gray-400">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {format(new Date(entry.publishedAt), 'dd MMM yyyy', { locale: fr })}
+                      </span>
+                    )}
+                  </Link>
                 ))}
               </div>
 

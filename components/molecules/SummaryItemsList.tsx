@@ -1,5 +1,6 @@
 import { SummaryItem } from '@/types';
 import { isInternalPrivateLink, sanitizeArticleContent, stripAllLinks } from '@/lib/articles/sanitize-content';
+import { SECTOR_LABELS } from '@/lib/articles/article-labels';
 
 export interface SummaryItemsListProps {
   items: SummaryItem[];
@@ -14,8 +15,15 @@ export function SummaryItemsList({ items, limit, hideLinks = false }: SummaryIte
 
   return (
     <div className="space-y-8">
-      {visibleItems.map((item, index) => (
+      {visibleItems.map((item, index) => {
+        const badgeLabel = item.categoryName || (item.sector ? SECTOR_LABELS[item.sector] : null);
+        return (
         <div key={index} className={index > 0 ? 'border-t border-gray-100 pt-8' : ''}>
+          {badgeLabel && (
+            <span className="mb-1.5 inline-block rounded-full bg-primary-50 px-2.5 py-0.5 text-xs font-medium text-primary-700">
+              {badgeLabel}
+            </span>
+          )}
           <h3 className="mb-2 text-lg font-bold text-gray-900">{item.title}</h3>
           <div
             dangerouslySetInnerHTML={{
@@ -33,7 +41,8 @@ export function SummaryItemsList({ items, limit, hideLinks = false }: SummaryIte
             </a>
           )}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
