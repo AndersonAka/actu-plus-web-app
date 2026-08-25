@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Alert } from '@/compo
 import { StatusBadge, SummaryItemsList } from '@/components/molecules';
 import { Article, ArticleStatus } from '@/types';
 import { canEditArticleContent, type ArticleEditorRole } from '@/lib/articles/edit-permissions';
+import { sanitizeArticleContent } from '@/lib/articles/sanitize-content';
 import { ArrowLeft, Calendar, MapPin, Tag, User, Edit, EyeOff } from 'lucide-react';
 
 const getArticleStatus = (article: any): ArticleStatus => {
@@ -174,7 +175,7 @@ export function ArticleView({
           ) : (
             <div
               className="prose prose-gray max-w-none"
-              dangerouslySetInnerHTML={{ __html: article.content || '' }}
+              dangerouslySetInnerHTML={{ __html: sanitizeArticleContent(article.content) }}
             />
           )}
 

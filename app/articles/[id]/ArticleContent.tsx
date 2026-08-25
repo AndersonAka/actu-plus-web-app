@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Article } from '@/types';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
+import { sanitizeArticleContent } from '@/lib/articles/sanitize-content';
 import { Button } from '@/components/atoms';
 import { SummaryItemsList } from '@/components/molecules';
 import { Lock, Crown } from 'lucide-react';
@@ -84,7 +85,7 @@ export function ArticleContent({ article }: ArticleContentProps) {
         {hasSummaryItems ? (
           <SummaryItemsList items={article.summaryItems!} />
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: article.content || '' }} />
+          <div dangerouslySetInnerHTML={{ __html: sanitizeArticleContent(article.content) }} />
         )}
       </article>
     );
@@ -99,7 +100,7 @@ export function ArticleContent({ article }: ArticleContentProps) {
           <SummaryItemsList items={article.summaryItems!} limit={1} />
         ) : (
           <div
-            dangerouslySetInnerHTML={{ __html: (article.content || '').substring(0, 500) + '...' }}
+            dangerouslySetInnerHTML={{ __html: sanitizeArticleContent(article.content).substring(0, 500) + '...' }}
             className="relative"
           />
         )}

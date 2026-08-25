@@ -21,6 +21,7 @@ import {
 import { useAuth } from '@/lib/hooks/useAuth';
 import dynamic from 'next/dynamic';
 import reportingAnimation from '@/public/reporting.json';
+import { sanitizeArticleContent } from '@/lib/articles/sanitize-content';
 
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 
@@ -342,7 +343,7 @@ export default function CountryPage() {
                 {summary.summaryItems && summary.summaryItems.length > 0 ? (
                   <SummaryItemsList items={summary.summaryItems} />
                 ) : (
-                  <div dangerouslySetInnerHTML={{ __html: summary.content || '' }} />
+                  <div dangerouslySetInnerHTML={{ __html: sanitizeArticleContent(summary.content) }} />
                 )}
               </div>
             </div>

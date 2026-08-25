@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
 import { getArticleCategoryLabel } from '@/lib/articles/article-labels';
+import { sanitizeArticleContent } from '@/lib/articles/sanitize-content';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -372,7 +373,7 @@ export default function ModerateurArticleDetailPage({ params }: PageProps) {
             {article.summaryItems && article.summaryItems.length > 0 ? (
               <SummaryItemsList items={article.summaryItems} />
             ) : (
-              <div dangerouslySetInnerHTML={{ __html: article.content || '' }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeArticleContent(article.content) }} />
             )}
           </div>
         </CardContent>
