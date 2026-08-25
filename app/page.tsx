@@ -253,120 +253,6 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Revue de presse + Actualités Internationales */}
-        <section className="pb-6">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-              {/* Revue de presse : liste des pays */}
-              <div className="flex flex-col bg-white overflow-hidden">
-                <div className="flex items-center gap-3 px-5 py-4">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100">
-                    <Newspaper className="h-5 w-5 text-blue-600 animate-bounce-slow" />
-                  </div>
-                  <h2 className="text-lg font-bold text-gray-900">Revue de presse</h2>
-                </div>
-                <div className="p-4">
-                  {countries.length > 0 ? (
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {countries.map((country) => (
-                        <Link
-                          key={country.id}
-                          href={`/country/${country.code.toLowerCase()}`}
-                          className="group flex items-center gap-3 rounded-xl border border-gray-100 px-4 py-3 transition-all duration-200 hover:border-primary-200 hover:bg-primary-50"
-                        >
-                          {country.flag && <span className="text-xl">{country.flag}</span>}
-                          <span className="flex-1 font-medium text-gray-900 group-hover:text-primary-600">{country.name}</span>
-                          <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-primary-500" />
-                        </Link>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="py-8 text-center">
-                      <p className="text-sm text-gray-500">Aucun pays disponible</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Actualités Internationales : par zone */}
-              <div className="flex flex-col bg-white overflow-hidden">
-                <div className="flex items-center justify-between gap-3 px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
-                      <Globe2 className="h-5 w-5 text-indigo-600 animate-spin-slow" />
-                    </div>
-                    <h2 className="text-lg font-bold text-gray-900">Actualités Internationales</h2>
-                  </div>
-                  <Link
-                    href="/actualites-internationales"
-                    className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
-                  >
-                    Voir plus <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-                <div className="p-4 space-y-5">
-                  {internationalArticles.length === 0 ? (
-                    <div className="py-8 text-center">
-                      <p className="text-sm text-gray-500">Aucune actualité internationale</p>
-                    </div>
-                  ) : (
-                    [
-                      { label: 'Zone UEMOA', items: internationalUemoa },
-                      { label: 'Hors UEMOA', items: internationalHorsUemoa },
-                    ].map(
-                      (group) =>
-                        group.items.length > 0 && (
-                          <div key={group.label}>
-                            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{group.label}</h3>
-                            <div className="grid gap-3 sm:grid-cols-2">
-                              {group.items.map((article) => (
-                                <Link
-                                  key={article.id}
-                                  href={getArticlePublicPath(article)}
-                                  className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-md"
-                                >
-                                  <div className="relative aspect-video w-full overflow-hidden">
-                                    {(article.coverImage || article.imageUrl) ? (
-                                      <img
-                                        src={article.coverImage || article.imageUrl}
-                                        alt={article.title}
-                                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                      />
-                                    ) : (
-                                      <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-indigo-50 to-indigo-100">
-                                        <Globe2 className="h-6 w-6 text-indigo-200" />
-                                      </div>
-                                    )}
-                                    {article.internationalCountryName && (
-                                      <div className="absolute bottom-1.5 left-1.5 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-gray-700 backdrop-blur-sm">
-                                        {article.internationalCountryFlag && <span className="mr-1">{article.internationalCountryFlag}</span>}
-                                        {article.internationalCountryName}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="flex flex-1 flex-col p-2.5">
-                                    {article.category?.name && (
-                                      <Badge variant="secondary" size="sm" className="mb-1.5 self-start">
-                                        {article.category.name}
-                                      </Badge>
-                                    )}
-                                    <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
-                                      {article.title}
-                                    </h3>
-                                  </div>
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        ),
-                    )
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Résumé de l'actualité */}
         <section className="pb-6">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -438,6 +324,81 @@ export default async function HomePage() {
                 )}
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Revue de presse */}
+        <section className="pb-6">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col bg-white overflow-hidden">
+              <div className="flex items-center gap-3 px-5 py-4">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100">
+                  <Newspaper className="h-5 w-5 text-blue-600 animate-bounce-slow" />
+                </div>
+                <h2 className="text-lg font-bold text-gray-900">Revue de presse</h2>
+              </div>
+              <div className="p-4">
+                {countries.length > 0 ? (
+                  <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                    {countries.map((country) => (
+                      <Link
+                        key={country.id}
+                        href={`/country/${country.code.toLowerCase()}`}
+                        className="group flex items-center gap-3 rounded-xl border border-gray-100 px-4 py-3 transition-all duration-200 hover:border-primary-200 hover:bg-primary-50"
+                      >
+                        {country.flag && <span className="text-xl">{country.flag}</span>}
+                        <span className="flex-1 font-medium text-gray-900 group-hover:text-primary-600">{country.name}</span>
+                        <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-primary-500" />
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-8 text-center">
+                    <p className="text-sm text-gray-500">Aucun pays disponible</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Actualités Internationales : par zone (chaque zone présentée comme la section À la une) */}
+        <section className="pb-6">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
+                  <Globe2 className="h-5 w-5 text-indigo-600 animate-spin-slow" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">Actualités Internationales</h2>
+              </div>
+              <Link
+                href="/actualites-internationales"
+                className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
+              >
+                Voir plus <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            {internationalArticles.length === 0 ? (
+              <div className="rounded-lg bg-white py-8 text-center">
+                <p className="text-sm text-gray-500">Aucune actualité internationale</p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {[
+                  { label: 'Zone UEMOA', items: internationalUemoa },
+                  { label: 'Hors UEMOA', items: internationalHorsUemoa },
+                ].map(
+                  (group) =>
+                    group.items.length > 0 && (
+                      <div key={group.label}>
+                        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">{group.label}</h3>
+                        <FeaturedCarousel articles={group.items} />
+                      </div>
+                    ),
+                )}
+              </div>
+            )}
           </div>
         </section>
 
