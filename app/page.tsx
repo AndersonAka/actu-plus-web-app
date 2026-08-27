@@ -7,6 +7,8 @@ import { Article, ArticleStatus } from '@/types';
 import { HomePageClient } from './HomePageClient';
 import { Lock, Globe2, Radar, ArrowRight, Newspaper, Flame } from 'lucide-react';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -16,6 +18,11 @@ const SECTOR_LABELS: Record<string, string> = {
   'energie': 'Énergie',
   'agro-industrielle': 'Agro Industrielle',
 };
+
+function getTextPreview(html: string, maxLength: number = 100): string {
+  const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
 
 // Mapper les données du backend vers le type Article du frontend
 function mapArticle(data: any): Article {
@@ -505,22 +512,19 @@ export default async function HomePage() {
                         href={entry.country?.code ? `/country/${entry.country.code.toLowerCase()}?tab=veille-sectorielle` : `/articles/${entry.articleSlug}`}
                         className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white p-2.5 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
                       >
-                        <div className="mb-1.5 flex items-center gap-1.5 flex-wrap">
-                          {entry.sector && (
-                            <Badge variant="secondary" size="sm">
-                              {SECTOR_LABELS[entry.sector]}
-                            </Badge>
-                          )}
-                          {entry.country && (
-                            <span className="text-xs text-gray-400">
-                              {entry.country.flag && <span className="mr-1">{entry.country.flag}</span>}
-                              {entry.country.name}
-                            </span>
-                          )}
-                        </div>
+                        {entry.sector && (
+                          <Badge variant="secondary" size="sm" className="mb-1.5 self-start">
+                            {SECTOR_LABELS[entry.sector]}
+                          </Badge>
+                        )}
                         <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
-                          {entry.title}
+                          Veille Sectorielle
+                          {entry.country && ` — ${entry.country.flag ? `${entry.country.flag} ` : ''}${entry.country.name}`}
+                          {entry.publishedAt && ` — ${format(new Date(entry.publishedAt), 'dd MMM yyyy', { locale: fr })}`}
                         </h3>
+                        <p className="mt-1 line-clamp-2 text-xs text-gray-500 leading-relaxed">
+                          {getTextPreview(entry.summary)}
+                        </p>
                       </Link>
                     ))}
                   </div>

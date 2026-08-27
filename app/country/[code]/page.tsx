@@ -23,6 +23,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import dynamic from 'next/dynamic';
 import reportingAnimation from '@/public/reporting.json';
 import { stripAllLinks } from '@/lib/articles/sanitize-content';
+import { SECTOR_LABELS } from '@/lib/articles/article-labels';
 
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 
@@ -361,7 +362,7 @@ export default function CountryPage() {
               </h3>
               <div className="article-content prose prose-gray max-w-none text-gray-600 leading-relaxed">
                 {summary.summaryItems && summary.summaryItems.length > 0 ? (
-                  <SummaryItemsList items={summary.summaryItems} hideLinks />
+                  <SummaryItemsList items={summary.summaryItems} />
                 ) : (
                   <div dangerouslySetInnerHTML={{ __html: stripAllLinks(summary.content) }} />
                 )}
@@ -372,22 +373,37 @@ export default function CountryPage() {
           <p className="text-center text-gray-500">Aucun résumé disponible pour aujourd'hui.</p>
         );
 
-      case 'veille-sectorielle':
-        return veilleSectorielleArticle?.summaryItems && veilleSectorielleArticle.summaryItems.length > 0 ? (
+      case 'veille-sectorielle': {
+        const items = veilleSectorielleArticle?.summaryItems;
+        if (!items || items.length === 0) {
+          return <p className="text-center text-gray-500">Aucune veille sectorielle disponible pour aujourd'hui.</p>;
+        }
+        const sectorOrder = ['banque-assurance', 'energie', 'agro-industrielle'];
+        const groups = [...sectorOrder, null].map((sector) => ({
+          sector,
+          items: items.filter((it) => (it.sector || null) === sector),
+        })).filter((g) => g.items.length > 0);
+        return (
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-teal-100">
               <Radar className="h-6 w-6 text-teal-600" />
             </div>
-            <div className="flex-1">
-              <h3 className="mb-3 text-xl font-bold text-gray-900">Veille Sectorielle</h3>
-              <div className="article-content prose prose-gray max-w-none text-gray-600 leading-relaxed">
-                <SummaryItemsList items={veilleSectorielleArticle.summaryItems} hideLinks />
-              </div>
+            <div className="flex-1 space-y-8">
+              <h3 className="text-xl font-bold text-gray-900">Veille Sectorielle</h3>
+              {groups.map((group) => (
+                <div key={group.sector || 'autre'}>
+                  <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-teal-700">
+                    {group.sector ? SECTOR_LABELS[group.sector] || group.sector : 'Autre'}
+                  </h4>
+                  <div className="article-content prose prose-gray max-w-none text-gray-600 leading-relaxed">
+                    <SummaryItemsList items={group.items} />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        ) : (
-          <p className="text-center text-gray-500">Aucune veille sectorielle disponible pour aujourd'hui.</p>
         );
+      }
 
       case 'essentiel':
         return (
