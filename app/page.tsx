@@ -390,7 +390,7 @@ export default async function HomePage() {
                 Voir plus <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
-            {internationalArticles.length === 0 ? (
+            {internationalUemoa.length === 0 && internationalHorsUemoa.length === 0 ? (
               <div className="rounded-lg bg-white py-8 text-center">
                 <p className="text-sm text-gray-500">Aucune actualité internationale</p>
               </div>
