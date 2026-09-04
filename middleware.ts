@@ -2,6 +2,25 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Routes qui restent accessibles (par lien direct) quand le mode maintenance est actif :
+// l'espace staff au complet + /login (indispensable pour s'y authentifier) + la page
+// de maintenance elle-même (pour éviter une boucle de rewrite).
+const MAINTENANCE_BYPASS_PATTERNS = [
+  /^\/login$/,
+  /^\/maintenance$/,
+  /^\/admin(\/.*)?$/,
+  /^\/moderateur(\/.*)?$/,
+  /^\/veilleur(\/.*)?$/,
+];
+
+function isMaintenanceModeEnabled(): boolean {
+  return process.env.MAINTENANCE_MODE === 'true';
+}
+
+function isMaintenanceBypassRoute(pathname: string): boolean {
+  return MAINTENANCE_BYPASS_PATTERNS.some((pattern) => pattern.test(pathname));
+}
+
 // Configuration des routes
 const PUBLIC_ROUTES = [
   '/',
@@ -17,6 +36,7 @@ const PUBLIC_ROUTES = [
   '/about',
   '/terms',
   '/privacy',
+  '/maintenance',
 ];
 
 // Routes dynamiques publiques (patterns)
@@ -81,7 +101,13 @@ function hasAccessToRoute(userRole: string, pathname: string): boolean {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
+
+  // Mode maintenance : tout le site public bascule sur /maintenance, l'espace
+  // staff (et /login pour s'y connecter) reste accessible par lien direct.
+  if (isMaintenanceModeEnabled() && !isMaintenanceBypassRoute(pathname)) {
+    return NextResponse.rewrite(new URL('/maintenance', request.url));
+  }
+
   // Routes publiques : accès libre
   if (isPublicRoute(pathname)) {
     return NextResponse.next();
