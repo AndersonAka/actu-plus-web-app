@@ -190,6 +190,31 @@ async function getCountryHeadlines(countries: CountryListItem[]): Promise<Countr
   );
 }
 
+interface ZoneHeadlines {
+  total: number;
+  headlines: { id: string; title: string; slug: string }[];
+}
+
+async function getInternationalZoneHeadlines(zone: 'uemoa' | 'hors-uemoa'): Promise<ZoneHeadlines> {
+  try {
+    const response = await fetch(
+      `${apiConfig.baseUrl}/api/articles?scope=international&zone=${zone}&limit=4&sortBy=date&sortOrder=DESC`,
+      { cache: 'no-store' }
+    );
+    if (!response.ok) return { total: 0, headlines: [] };
+    const result = await response.json();
+    const payload = result.data?.data !== undefined ? result.data : result;
+    const items = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload) ? payload : [];
+    return {
+      total: payload?.total ?? items.length,
+      headlines: items.slice(0, 4).map((a: any) => ({ id: a.id, title: a.title, slug: a.slug })),
+    };
+  } catch (error) {
+    console.error('Error fetching international zone headlines:', error);
+    return { total: 0, headlines: [] };
+  }
+}
+
 function relativeTime(date?: string): string | null {
   if (!date) return null;
   try {
@@ -200,12 +225,14 @@ function relativeTime(date?: string): string | null {
 }
 
 export default async function HomePage() {
-  const [featuredArticles, latestArticles, veilleSectorielleEntries, countries, categories] = await Promise.all([
+  const [featuredArticles, latestArticles, veilleSectorielleEntries, countries, categories, uemoaHeadlines, horsUemoaHeadlines] = await Promise.all([
     getFeaturedArticles(),
     getLatestArticles(),
     getVeilleSectorielleEntries(),
     getCountries(),
     getCategories(),
+    getInternationalZoneHeadlines('uemoa'),
+    getInternationalZoneHeadlines('hors-uemoa'),
   ]);
 
   const countryHeadlines = await getCountryHeadlines(countries);
@@ -427,6 +454,55 @@ export default async function HomePage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* INTERNATIONALE */}
+        <div className="border-t-2 border-[#201e1d]/40 px-5 py-11 sm:px-9 sm:py-12">
+          <div className="mb-6.5 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-[28px] font-extrabold leading-[1.05] tracking-[-0.022em] sm:text-[34px]">Internationale</h2>
+              <div className="mt-2 text-[14.5px] text-[#605d5d]">L'actualité de la zone UEMOA et au-delà.</div>
+            </div>
+            <Link
+              href="/actualites-internationales"
+              className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.1em] text-[#ae1800]"
+            >
+              Toute l'actualité internationale <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 border-t-2 border-b-2 border-[#201e1d]/40 sm:grid-cols-2">
+            {[
+              { label: 'Zone UEMOA', zone: 'uemoa' as const, data: uemoaHeadlines },
+              { label: 'Zone Hors UEMOA', zone: 'hors-uemoa' as const, data: horsUemoaHeadlines },
+            ].map((col, i) => (
+              <div key={col.zone} className={`p-6.5 ${i === 0 ? 'border-b border-[#d7d3d3] sm:border-b-0 sm:border-r sm:pr-7.5' : 'sm:pl-7.5'}`}>
+                <div className="mb-4 flex items-baseline justify-between">
+                  <span className="text-xl font-extrabold tracking-[-0.01em]">{col.label}</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#605d5d]">
+                    {col.data.total} titre{col.data.total !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                {col.data.headlines.length > 0 ? (
+                  <div className="grid gap-2.5 text-sm leading-[1.4] text-[#2d2b2b]">
+                    {col.data.headlines.map((h) => (
+                      <Link key={h.id} href={`/articles/${h.slug || h.id}`} className="grid grid-cols-[16px_1fr] hover:text-[#ec3013]">
+                        <span className="font-extrabold text-[#ec3013]">·</span>
+                        {h.title}
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-[#9b9797]">Aucun article pour le moment.</p>
+                )}
+                <Link
+                  href={`/actualites-internationales?zone=${col.zone}`}
+                  className="mt-4.5 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.1em] text-[#ae1800]"
+                >
+                  Voir la {col.label.toLowerCase()} <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+                </Link>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* BANNIÈRE PRO */}
