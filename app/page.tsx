@@ -5,6 +5,7 @@ import { apiConfig } from '@/config/api.config';
 import { Article, ArticleStatus } from '@/types';
 import { HomeCountrySwitcher } from './HomeCountrySwitcher';
 import { HomeAuthButton } from './HomeAuthButton';
+import { HomeHeroCarousel } from './HomeHeroCarousel';
 import { Search, ArrowRight } from 'lucide-react';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -237,15 +238,14 @@ export default async function HomePage() {
 
   const countryHeadlines = await getCountryHeadlines(countries);
 
-  const [lead, ...secondary] = featuredArticles;
-  const secondaryArticles = secondary.slice(0, 3);
+  const secondaryArticles = featuredArticles.slice(1, 4);
+  const heroItems = featuredArticles.map((article) => ({
+    article,
+    timeLabel: relativeTime(article.publishedAt || article.createdAt),
+  }));
 
   const economie = categories.find((c) => c.slug === 'economie');
   const politique = categories.find((c) => c.slug === 'politique');
-
-  const leadCategoryLabel = lead?.category?.name || 'Actualité';
-  const leadScopeLabel = lead?.scope === 'international' ? 'International' : 'National';
-  const leadTime = relativeTime(lead?.publishedAt || lead?.createdAt);
 
   return (
     <div className={`${archivo.className} bg-[#f3f2f2] text-[#201e1d]`} style={{ fontSize: 15, lineHeight: 1.55 }}>
@@ -314,33 +314,7 @@ export default async function HomePage() {
           <div className="lg:border-r-2 lg:border-[#201e1d]/40">
             {/* UNE */}
             <div className="border-b-2 border-[#201e1d]/40 px-5 py-8 sm:px-9 sm:py-10">
-              {lead ? (
-                <Link href={getArticlePublicPath(lead)} className="block">
-                  <div className="mb-4.5 flex flex-wrap items-center gap-3.5">
-                    <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#ec3013]">
-                      {leadCategoryLabel} · {leadScopeLabel}
-                    </span>
-                    <span className="h-px flex-1 bg-[#d7d3d3]" />
-                    {leadTime && (
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#605d5d]">{leadTime}</span>
-                    )}
-                  </div>
-                  {(lead.coverImage || lead.imageUrl) && (
-                    <div className="mb-6 h-[240px] overflow-hidden sm:h-[340px]">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={lead.coverImage || lead.imageUrl} alt={lead.title} className="h-full w-full object-cover" />
-                    </div>
-                  )}
-                  <h1 className="mb-4 max-w-[20ch] text-[32px] font-extrabold leading-[1.05] tracking-[-0.025em] sm:text-[56px]">
-                    {lead.title}
-                  </h1>
-                  {lead.excerpt && (
-                    <p className="max-w-[62ch] text-[17px] leading-[1.5] text-[#444141] sm:text-[19px]">{lead.excerpt}</p>
-                  )}
-                </Link>
-              ) : (
-                <p className="text-[#605d5d]">Aucun article à la une pour le moment.</p>
-              )}
+              <HomeHeroCarousel items={heroItems} />
             </div>
 
             {/* 3 UNES SECONDAIRES */}
