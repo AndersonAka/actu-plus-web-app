@@ -114,7 +114,6 @@ export const FocusDetailCard = ({
                   alt={article.title}
                   fill
                   className="object-cover"
-                  style={{ filter: 'grayscale(1) contrast(1.08)' }}
                   unoptimized
                 />
               </div>

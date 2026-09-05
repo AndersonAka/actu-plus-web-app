@@ -199,8 +199,6 @@ function relativeTime(date?: string): string | null {
   }
 }
 
-const grayscalePhoto = { filter: 'grayscale(1) contrast(1.08)' } as const;
-
 export default async function HomePage() {
   const [featuredArticles, latestArticles, veilleSectorielleEntries, countries, categories] = await Promise.all([
     getFeaturedArticles(),
@@ -303,7 +301,7 @@ export default async function HomePage() {
                   {(lead.coverImage || lead.imageUrl) && (
                     <div className="mb-6 h-[240px] overflow-hidden sm:h-[340px]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={lead.coverImage || lead.imageUrl} alt={lead.title} className="h-full w-full object-cover" style={grayscalePhoto} />
+                      <img src={lead.coverImage || lead.imageUrl} alt={lead.title} className="h-full w-full object-cover" />
                     </div>
                   )}
                   <h1 className="mb-4 max-w-[20ch] text-[32px] font-extrabold leading-[1.05] tracking-[-0.025em] sm:text-[56px]">
@@ -330,7 +328,7 @@ export default async function HomePage() {
                     {(article.coverImage || article.imageUrl) && (
                       <div className="mb-4.5 h-[170px] overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={article.coverImage || article.imageUrl} alt={article.title} className="h-full w-full object-cover" style={grayscalePhoto} />
+                        <img src={article.coverImage || article.imageUrl} alt={article.title} className="h-full w-full object-cover" />
                       </div>
                     )}
                     <div className="mb-2.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#ec3013]">

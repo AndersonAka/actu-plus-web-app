@@ -193,7 +193,6 @@ export default function ActualitesInternationalesPage() {
                           src={article.coverImage || article.imageUrl}
                           alt={article.title}
                           className="h-full w-full object-cover"
-                          style={{ filter: 'grayscale(1) contrast(1.08)' }}
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-[#eae9e9]">

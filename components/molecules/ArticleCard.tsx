@@ -31,7 +31,6 @@ const statusStyles: Record<ArticleStatus, { label: string; className: string }> 
 };
 
 const badgeReset = 'rounded-none px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-[0.08em]';
-const grayscalePhoto = { filter: 'grayscale(1) contrast(1.08)' } as const;
 
 const ArticleCard = ({
   article,
@@ -70,7 +69,6 @@ const ArticleCard = ({
               alt={article.title}
               fill
               className="object-cover"
-              style={grayscalePhoto}
               unoptimized={true}
             />
             {article.isPremium && (
@@ -115,7 +113,6 @@ const ArticleCard = ({
               alt={article.title}
               fill
               className="object-cover"
-              style={grayscalePhoto}
               unoptimized={true}
             />
           ) : (
@@ -212,7 +209,6 @@ const ArticleCard = ({
               alt={article.title}
               fill
               className="object-cover"
-              style={grayscalePhoto}
               unoptimized={true}
             />
           ) : (
@@ -277,7 +273,6 @@ const ArticleCard = ({
               alt={article.title}
               fill
               className="object-cover"
-              style={grayscalePhoto}
               unoptimized={true}
             />
           ) : (
