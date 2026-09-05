@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Header, Footer } from '@/components/organisms';
+import { PublicShell } from '../PublicShell';
 import { Button } from '@/components/atoms';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { paymentService } from '@/lib/services/payment.service';
@@ -122,24 +122,24 @@ function SubscriptionsContent() {
     switch (category) {
       case 'standard':
         return {
-          bg: 'bg-primary-50',
-          border: 'border-primary-300 ring-2 ring-primary-500',
-          icon: 'text-primary-600',
-          button: 'bg-primary-600 hover:bg-primary-700',
+          bg: 'bg-[#f8f4f4]',
+          border: 'border-[#201e1d]',
+          icon: 'text-[#ec3013]',
+          button: 'bg-[#ec3013] hover:bg-[#dd2b0f]',
         };
       case 'enterprise':
         return {
-          bg: 'bg-gray-900',
-          border: 'border-gray-700',
+          bg: 'bg-[#201e1d]',
+          border: 'border-[#201e1d]',
           icon: 'text-white',
-          button: 'bg-white text-gray-900 hover:bg-gray-100',
+          button: 'bg-white text-[#201e1d] hover:bg-[#eae9e9]',
         };
       default:
         return {
-          bg: 'bg-gray-50',
-          border: 'border-gray-200',
-          icon: 'text-gray-600',
-          button: 'bg-gray-900 hover:bg-gray-800',
+          bg: 'bg-[#f8f4f4]',
+          border: 'border-[#d7d3d3]',
+          icon: 'text-[#605d5d]',
+          button: 'bg-[#201e1d] hover:bg-[#2d2b2b]',
         };
     }
   };
@@ -253,450 +253,426 @@ function SubscriptionsContent() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen flex-col bg-white">
-        <Header />
-        <main className="flex-1">
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-            <div className="animate-pulse space-y-8">
-              <div className="mx-auto h-12 w-64 rounded bg-gray-200" />
-              <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
-                {[1, 2].map((i) => (
-                  <div key={i} className="h-96 rounded-xl bg-gray-200" />
-                ))}
-              </div>
+      <PublicShell>
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="animate-pulse space-y-8">
+            <div className="mx-auto h-12 w-64 bg-[#eae9e9]" />
+            <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-96 bg-[#eae9e9]" />
+              ))}
             </div>
           </div>
-        </main>
-        <Footer />
-      </div>
+        </div>
+      </PublicShell>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      <Header />
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="bg-linear-to-br from-primary-600 to-primary-800 py-16 text-white">
-          <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-            <h1 className="mb-4 text-4xl font-bold sm:text-5xl">
-              Choisissez votre formule
-            </h1>
-            <p className="mx-auto max-w-2xl text-lg text-primary-100">
-              Accédez à l'information de qualité avec nos différentes formules
-              d'abonnement adaptées à vos besoins.
-            </p>
+    <PublicShell>
+      {/* Hero Section */}
+      <section className="border-b-2 border-[#201e1d] bg-[#201e1d] py-16 text-white">
+        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+          <h1 className="mb-4 text-4xl font-extrabold sm:text-5xl">
+            Choisissez votre formule
+          </h1>
+          <p className="mx-auto max-w-2xl text-lg text-[#bab6b6]">
+            Accédez à l'information de qualité avec nos différentes formules
+            d'abonnement adaptées à vos besoins.
+          </p>
+        </div>
+      </section>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-6 border border-[#ffc4b8] bg-[#fff2ef] p-4 mt-8 text-center">
+            <p className="text-[#ae1800]">{error}</p>
+            <button
+              onClick={() => setError(null)}
+              className="mt-2 text-sm text-[#ae1800] underline hover:text-[#7c1405]"
+            >
+              Fermer
+            </button>
           </div>
-        </section>
+        </div>
+      )}
 
-        {/* Error Message */}
-        {error && (
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-center">
-              <p className="text-red-700">{error}</p>
-              <button 
-                onClick={() => setError(null)}
-                className="mt-2 text-sm text-red-600 underline hover:text-red-800"
-              >
-                Fermer
-              </button>
-            </div>
-          </div>
-        )}
+      {/* Plans Grid */}
+      <section className="mx-auto max-w-7xl mt-16 px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
+          {/* Standard Plan */}
+          {(() => {
+            const standardPlans = plans.filter(p => p.category === 'standard');
+            if (standardPlans.length === 0) return null;
 
-        {/* Plans Grid */}
-        <section className="mx-auto max-w-7xl mt-16 px-4 pb-16 sm:px-6 lg:px-8">
-          <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
-            {/* Standard Plan */}
-            {(() => {
-              const standardPlans = plans.filter(p => p.category === 'standard');
-              if (standardPlans.length === 0) return null;
-              
-              const selectedStandardPlan = standardPlans.find(p => p.duration === standardDuration) || standardPlans[0];
-              const colors = getPlanColors('standard');
-              
-              return (
-                <div className={`relative rounded-2xl border-2 p-8 ${colors.bg} ${colors.border} transition-transform hover:scale-105`}>
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary-600 px-4 py-1 text-sm font-medium text-white">
-                      <Star className="h-4 w-4 fill-current" />
-                      Populaire
-                    </span>
-                  </div>
+            const selectedStandardPlan = standardPlans.find(p => p.duration === standardDuration) || standardPlans[0];
+            const colors = getPlanColors('standard');
 
-                  <div className={`mb-6 ${colors.icon}`}>
-                    <Zap className="h-8 w-8" />
-                  </div>
+            return (
+              <div className={`relative border-2 p-8 ${colors.bg} ${colors.border}`}>
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <span className="inline-flex items-center gap-1 bg-[#ec3013] px-4 py-1 text-sm font-extrabold text-white">
+                    <Star className="h-4 w-4 fill-current" />
+                    Populaire
+                  </span>
+                </div>
 
-                  <h3 className="mb-2 text-2xl font-bold text-gray-900">
-                    Particuliers Standard
-                  </h3>
+                <div className={`mb-6 ${colors.icon}`}>
+                  <Zap className="h-8 w-8" />
+                </div>
 
-                  <div className="mb-4">
-                    <label className="mb-2 block text-sm font-medium text-gray-700">Durée</label>
-                    <select
-                      title="Durée"
-                      value={standardDuration}
-                      onChange={(e) => setStandardDuration(Number(e.target.value))}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-xl font-medium focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                    >
-                      {standardPlans.map(plan => (
-                        <option key={plan.id} value={plan.duration}>
-                          {plan.duration} mois - {formatPrice(plan.price, plan.currency)}
-                        </option>
+                <h3 className="mb-2 text-2xl font-extrabold text-[#201e1d]">
+                  Particuliers Standard
+                </h3>
+
+                <div className="mb-4">
+                  <label className="mb-2 block text-sm font-semibold text-[#201e1d]">Durée</label>
+                  <select
+                    title="Durée"
+                    value={standardDuration}
+                    onChange={(e) => setStandardDuration(Number(e.target.value))}
+                    className="w-full border border-[#d7d3d3] bg-white px-3 py-2 text-xl font-medium focus:border-[#ec3013] focus:outline-none focus:ring-1 focus:ring-[#ec3013]/20"
+                  >
+                    {standardPlans.map(plan => (
+                      <option key={plan.id} value={plan.duration}>
+                        {plan.duration} mois - {formatPrice(plan.price, plan.currency)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <ul className="mb-8 space-y-3">
+                  {selectedStandardPlan.features.map((feature, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <Check className="mt-0.5 h-5 w-5 shrink-0 text-[#166534]" />
+                      <span className="text-sm text-[#605d5d]">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  title="Souscrire"
+                  onClick={() => handleSubscribe(selectedStandardPlan.id, 'standard')}
+                  disabled={processingPayment}
+                  className={`flex w-full items-center justify-center gap-2 px-6 py-3 font-semibold transition-colors ${colors.button} text-white disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {processingPayment && selectedPlan === selectedStandardPlan.id ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Traitement...
+                    </>
+                  ) : (
+                    <>
+                      Souscrire
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+              </div>
+            );
+          })()}
+
+          {/* Enterprise Plan */}
+          {(() => {
+            const enterprisePlans = plans.filter(p => p.category === 'enterprise');
+            const colors = getPlanColors('enterprise');
+            const samplePlan = enterprisePlans[0];
+            // Build dynamic pricing summary from saved plans
+            const headcountSet = [...new Set(enterprisePlans.map(p => (p as any).headcount as number).filter(Boolean))].sort((a, b) => a - b);
+            const durationSet = [...new Set(enterprisePlans.map(p => p.duration))].sort((a, b) => a - b);
+            // Show cheapest per duration
+            const cheapestByDuration = durationSet.map(d => {
+              const dPlans = enterprisePlans.filter(p => p.duration === d).sort((a, b) => a.price - b.price);
+              return dPlans[0];
+            }).filter(Boolean);
+
+            return (
+              <div className={`relative border-2 p-8 ${colors.bg} ${colors.border}`}>
+                <div className={`mb-4 ${colors.icon}`}>
+                  <Building2 className="h-8 w-8" />
+                </div>
+
+                <h3 className="mb-2 text-2xl font-extrabold text-white">Entreprises</h3>
+                <p className="mb-4 text-sm text-[#9b9797]">Tarification selon le nombre de collaborateurs</p>
+
+                {/* Pricing grid summary — dynamic from saved plans */}
+                {cheapestByDuration.length > 0 ? (
+                  <div className="mb-5 border border-white/20 bg-white/10 p-4">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-[#bab6b6] uppercase tracking-wide">
+                      <Users className="h-3.5 w-3.5" /> Tarifs à partir de
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {cheapestByDuration.map(plan => (
+                        <div key={plan!.id} className="contents">
+                          <div className="text-[#bab6b6]">{(plan as any).headcount} pers. / {plan!.duration} mois</div>
+                          <div className="text-right font-semibold text-white">{Number(plan!.price).toLocaleString('fr-FR')} FCFA</div>
+                        </div>
                       ))}
-                    </select>
+                    </div>
+                    {headcountSet.length > 0 && (
+                      <p className="mt-2 text-xs text-[#9b9797]">
+                        De {headcountSet[0]} à {headcountSet[headcountSet.length - 1]} collaborateurs
+                      </p>
+                    )}
                   </div>
+                ) : (
+                  <div className="mb-5 border border-white/20 bg-white/10 p-4 text-center">
+                    <p className="text-sm text-[#9b9797]">Formules bientôt disponibles</p>
+                  </div>
+                )}
 
-                  <ul className="mb-8 space-y-3">
-                    {selectedStandardPlan.features.map((feature, index) => (
+                {samplePlan && (
+                  <ul className="mb-6 space-y-2">
+                    {samplePlan.features.map((feature, index) => (
                       <li key={index} className="flex items-start gap-2">
-                        <Check className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />
-                        <span className="text-sm text-gray-600">{feature}</span>
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#4ade80]" />
+                        <span className="text-sm text-[#bab6b6]">{feature}</span>
                       </li>
                     ))}
                   </ul>
+                )}
 
+                <button
+                  title="Demander un devis"
+                  onClick={() => handleSubscribe(samplePlan?.id || 'enterprise', 'enterprise')}
+                  className={`flex w-full items-center justify-center gap-2 px-6 py-3 font-semibold transition-colors ${colors.button}`}
+                >
+                  Demander un devis <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            );
+          })()}
+        </div>
+      </section>
+
+      {/* Enterprise Quote Modal */}
+      {showEnterpriseForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto border border-[#201e1d]/40 bg-white p-8">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-extrabold text-[#201e1d]">Demande de devis Entreprise</h2>
+                <p className="text-sm text-[#605d5d]">Décrivez votre besoin, notre équipe vous recontacte rapidement</p>
+              </div>
+              <button onClick={() => setShowEnterpriseForm(false)} aria-label="Fermer" className="text-[#9b9797] hover:text-[#201e1d]">
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {quoteSubmitted ? (
+              <div className="py-6 text-center">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center bg-[#f0fdf4]">
+                  <Check className="h-7 w-7 text-[#166534]" />
+                </div>
+                <h3 className="mb-2 text-lg font-bold text-[#201e1d]">Demande envoyée</h3>
+                <p className="mb-6 text-sm text-[#605d5d]">
+                  Votre demande de cotation a bien été reçue. Notre équipe commerciale
+                  vous recontactera dans les plus brefs délais avec une proposition adaptée.
+                </p>
+                <Button variant="modernist" onClick={() => setShowEnterpriseForm(false)}>
+                  Fermer
+                </Button>
+              </div>
+            ) : (
+              <>
+                {enterpriseFormError && (
+                  <div className="mb-4 border border-[#ffc4b8] bg-[#fff2ef] p-3 text-sm text-[#ae1800]">{enterpriseFormError}</div>
+                )}
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-[#201e1d]">Nom de l'entreprise <span className="text-[#ec3013]">*</span></label>
+                    <input
+                      type="text"
+                      value={enterpriseForm.companyName}
+                      onChange={e => setEnterpriseForm(f => ({ ...f, companyName: e.target.value }))}
+                      className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                      placeholder="Nom de votre entreprise"
+                    />
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-[#201e1d]">Prénom <span className="text-[#ec3013]">*</span></label>
+                      <input
+                        type="text"
+                        value={enterpriseForm.firstName}
+                        onChange={e => setEnterpriseForm(f => ({ ...f, firstName: e.target.value }))}
+                        className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                        placeholder="Prénom du responsable"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-[#201e1d]">Nom <span className="text-[#ec3013]">*</span></label>
+                      <input
+                        type="text"
+                        value={enterpriseForm.lastName}
+                        onChange={e => setEnterpriseForm(f => ({ ...f, lastName: e.target.value }))}
+                        className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                        placeholder="Nom du responsable"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-[#201e1d]">Email <span className="text-[#ec3013]">*</span></label>
+                      <input
+                        type="email"
+                        value={enterpriseForm.email}
+                        onChange={e => setEnterpriseForm(f => ({ ...f, email: e.target.value }))}
+                        className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                        placeholder="email@entreprise.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-[#201e1d]">Téléphone <span className="text-[#ec3013]">*</span></label>
+                      <input
+                        type="tel"
+                        value={enterpriseForm.phone}
+                        onChange={e => setEnterpriseForm(f => ({ ...f, phone: e.target.value }))}
+                        className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                        placeholder="+225 07 00 00 00"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-[#201e1d]">Pays</label>
+                      <input
+                        type="text"
+                        value={enterpriseForm.country}
+                        onChange={e => setEnterpriseForm(f => ({ ...f, country: e.target.value }))}
+                        className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                        placeholder="Côte d'Ivoire"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-[#201e1d]">Nombre d'accès souhaités</label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={enterpriseForm.numberOfAccess}
+                        onChange={e => setEnterpriseForm(f => ({ ...f, numberOfAccess: e.target.value }))}
+                        className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                        placeholder="Ex: 25"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-[#201e1d]">Message (optionnel)</label>
+                    <textarea
+                      rows={3}
+                      value={enterpriseForm.message}
+                      onChange={e => setEnterpriseForm(f => ({ ...f, message: e.target.value }))}
+                      className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                      placeholder="Précisez votre besoin..."
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-6 flex gap-3">
                   <button
-                    title="Souscrire"
-                    onClick={() => handleSubscribe(selectedStandardPlan.id, 'standard')}
-                    disabled={processingPayment}
-                    className={`flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3 font-medium transition-colors ${colors.button} text-white disabled:opacity-50 disabled:cursor-not-allowed`}
+                    title="Annuler"
+                    onClick={() => setShowEnterpriseForm(false)}
+                    className="flex-1 border border-[#d7d3d3] px-4 py-3 text-sm font-semibold text-[#201e1d] hover:bg-[#f8f4f4]"
                   >
-                    {processingPayment && selectedPlan === selectedStandardPlan.id ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Traitement...
-                      </>
+                    Annuler
+                  </button>
+                  <button
+                    title="Envoyer ma demande"
+                    onClick={handleEnterpriseSubmit}
+                    disabled={processingPayment}
+                    className="flex flex-1 items-center justify-center gap-2 bg-[#ec3013] px-4 py-3 text-sm font-semibold text-white hover:bg-[#dd2b0f] disabled:opacity-50"
+                  >
+                    {processingPayment ? (
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Envoi...</>
                     ) : (
-                      <>
-                        Souscrire
-                        <ArrowRight className="h-4 w-4" />
-                      </>
+                      <>Envoyer ma demande <ArrowRight className="h-4 w-4" /></>
                     )}
                   </button>
                 </div>
-              );
-            })()}
-
-            {/* Enterprise Plan */}
-            {(() => {
-              const enterprisePlans = plans.filter(p => p.category === 'enterprise');
-              const colors = getPlanColors('enterprise');
-              const samplePlan = enterprisePlans[0];
-              // Build dynamic pricing summary from saved plans
-              const headcountSet = [...new Set(enterprisePlans.map(p => (p as any).headcount as number).filter(Boolean))].sort((a, b) => a - b);
-              const durationSet = [...new Set(enterprisePlans.map(p => p.duration))].sort((a, b) => a - b);
-              // Show cheapest per duration
-              const cheapestByDuration = durationSet.map(d => {
-                const dPlans = enterprisePlans.filter(p => p.duration === d).sort((a, b) => a.price - b.price);
-                return dPlans[0];
-              }).filter(Boolean);
-              
-              return (
-                <div className={`relative rounded-2xl border-2 p-8 ${colors.bg} ${colors.border}`}>
-                  <div className={`mb-4 ${colors.icon}`}>
-                    <Building2 className="h-8 w-8" />
-                  </div>
-
-                  <h3 className="mb-2 text-2xl font-bold text-white">Entreprises</h3>
-                  <p className="mb-4 text-sm text-gray-400">Tarification selon le nombre de collaborateurs</p>
-
-                  {/* Pricing grid summary — dynamic from saved plans */}
-                  {cheapestByDuration.length > 0 ? (
-                    <div className="mb-5 rounded-xl bg-white/10 p-4">
-                      <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-gray-300 uppercase tracking-wide">
-                        <Users className="h-3.5 w-3.5" /> Tarifs à partir de
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        {cheapestByDuration.map(plan => (
-                          <div key={plan!.id} className="contents">
-                            <div className="text-gray-300">{(plan as any).headcount} pers. / {plan!.duration} mois</div>
-                            <div className="text-right font-semibold text-white">{Number(plan!.price).toLocaleString('fr-FR')} FCFA</div>
-                          </div>
-                        ))}
-                      </div>
-                      {headcountSet.length > 0 && (
-                        <p className="mt-2 text-xs text-gray-400">
-                          De {headcountSet[0]} à {headcountSet[headcountSet.length - 1]} collaborateurs
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="mb-5 rounded-xl bg-white/10 p-4 text-center">
-                      <p className="text-sm text-gray-400">Formules bientôt disponibles</p>
-                    </div>
-                  )}
-
-                  {samplePlan && (
-                    <ul className="mb-6 space-y-2">
-                      {samplePlan.features.map((feature, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-400" />
-                          <span className="text-sm text-gray-300">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  <button
-                    title="Demander un devis"
-                    onClick={() => handleSubscribe(samplePlan?.id || 'enterprise', 'enterprise')}
-                    className={`flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3 font-medium transition-colors ${colors.button} text-gray-900`}
-                  >
-                    Demander un devis <ArrowRight className="h-4 w-4" />
-                  </button>
-                </div>
-              );
-            })()}
+              </>
+            )}
           </div>
-        </section>
+        </div>
+      )}
 
-        {/* Enterprise Quote Modal */}
-        {showEnterpriseForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-            <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-8 shadow-2xl">
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">Demande de devis Entreprise</h2>
-                  <p className="text-sm text-gray-500">Décrivez votre besoin, notre équipe vous recontacte rapidement</p>
-                </div>
-                <button onClick={() => setShowEnterpriseForm(false)} aria-label="Fermer" className="text-gray-400 hover:text-gray-600">
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
+      {/* FAQ Section */}
+      <section className="border-t-2 border-[#201e1d]/40 bg-[#f8f4f4] py-16">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <h2 className="mb-8 text-center text-2xl font-extrabold text-[#201e1d]">
+            Questions fréquentes
+          </h2>
 
-              {quoteSubmitted ? (
-                <div className="py-6 text-center">
-                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-100">
-                    <Check className="h-7 w-7 text-green-600" />
-                  </div>
-                  <h3 className="mb-2 text-lg font-semibold text-gray-900">Demande envoyée</h3>
-                  <p className="mb-6 text-sm text-gray-600">
-                    Votre demande de cotation a bien été reçue. Notre équipe commerciale
-                    vous recontactera dans les plus brefs délais avec une proposition adaptée.
-                  </p>
-                  <button
-                    onClick={() => setShowEnterpriseForm(false)}
-                    className="rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-700"
-                  >
-                    Fermer
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {enterpriseFormError && (
-                    <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">{enterpriseFormError}</div>
-                  )}
+          <div className="space-y-4">
+            <details className="group border border-[#d7d3d3] bg-white p-4">
+              <summary className="flex cursor-pointer items-center justify-between font-semibold text-[#201e1d]">
+                Quels moyens de paiement acceptez-vous ?
+                <span className="ml-2 transition-transform group-open:rotate-180">▼</span>
+              </summary>
+              <p className="mt-3 text-[#605d5d]">
+                Nous acceptons Wave, Orange Money, MTN Money, Moov Money,
+                ainsi que les cartes bancaires Visa et Mastercard.
+              </p>
+            </details>
 
-                  <div className="space-y-4">
-                    <div>
-                      <label className="mb-1 block text-sm font-medium text-gray-700">Nom de l'entreprise <span className="text-red-500">*</span></label>
-                      <input
-                        type="text"
-                        value={enterpriseForm.companyName}
-                        onChange={e => setEnterpriseForm(f => ({ ...f, companyName: e.target.value }))}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                        placeholder="Nom de votre entreprise"
-                      />
-                    </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">Prénom <span className="text-red-500">*</span></label>
-                        <input
-                          type="text"
-                          value={enterpriseForm.firstName}
-                          onChange={e => setEnterpriseForm(f => ({ ...f, firstName: e.target.value }))}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                          placeholder="Prénom du responsable"
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">Nom <span className="text-red-500">*</span></label>
-                        <input
-                          type="text"
-                          value={enterpriseForm.lastName}
-                          onChange={e => setEnterpriseForm(f => ({ ...f, lastName: e.target.value }))}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                          placeholder="Nom du responsable"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
-                        <input
-                          type="email"
-                          value={enterpriseForm.email}
-                          onChange={e => setEnterpriseForm(f => ({ ...f, email: e.target.value }))}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                          placeholder="email@entreprise.com"
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">Téléphone <span className="text-red-500">*</span></label>
-                        <input
-                          type="tel"
-                          value={enterpriseForm.phone}
-                          onChange={e => setEnterpriseForm(f => ({ ...f, phone: e.target.value }))}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                          placeholder="+225 07 00 00 00"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">Pays</label>
-                        <input
-                          type="text"
-                          value={enterpriseForm.country}
-                          onChange={e => setEnterpriseForm(f => ({ ...f, country: e.target.value }))}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                          placeholder="Côte d'Ivoire"
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">Nombre d'accès souhaités</label>
-                        <input
-                          type="number"
-                          min={1}
-                          value={enterpriseForm.numberOfAccess}
-                          onChange={e => setEnterpriseForm(f => ({ ...f, numberOfAccess: e.target.value }))}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                          placeholder="Ex: 25"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-sm font-medium text-gray-700">Message (optionnel)</label>
-                      <textarea
-                        rows={3}
-                        value={enterpriseForm.message}
-                        onChange={e => setEnterpriseForm(f => ({ ...f, message: e.target.value }))}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
-                        placeholder="Précisez votre besoin..."
-                      />
-                    </div>
-                  </div>
+            <details className="group border border-[#d7d3d3] bg-white p-4">
+              <summary className="flex cursor-pointer items-center justify-between font-semibold text-[#201e1d]">
+                Puis-je changer de formule à tout moment ?
+                <span className="ml-2 transition-transform group-open:rotate-180">▼</span>
+              </summary>
+              <p className="mt-3 text-[#605d5d]">
+                Oui, vous pouvez passer à une formule supérieure à tout moment.
+                Le montant sera calculé au prorata de votre période restante.
+              </p>
+            </details>
 
-                  <div className="mt-6 flex gap-3">
-                    <button
-                      title="Annuler"
-                      onClick={() => setShowEnterpriseForm(false)}
-                      className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                      Annuler
-                    </button>
-                    <button
-                      title="Envoyer ma demande"
-                      onClick={handleEnterpriseSubmit}
-                      disabled={processingPayment}
-                      className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-3 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-                    >
-                      {processingPayment ? (
-                        <><Loader2 className="h-4 w-4 animate-spin" /> Envoi...</>
-                      ) : (
-                        <>Envoyer ma demande <ArrowRight className="h-4 w-4" /></>
-                      )}
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+            <details className="group border border-[#d7d3d3] bg-white p-4">
+              <summary className="flex cursor-pointer items-center justify-between font-semibold text-[#201e1d]">
+                Comment fonctionne la formule Enterprise ?
+                <span className="ml-2 transition-transform group-open:rotate-180">▼</span>
+              </summary>
+              <p className="mt-3 text-[#605d5d]">
+                La formule Enterprise est personnalisée selon vos besoins.
+                Contactez-nous pour un devis adapté à votre organisation.
+                Les comptes Enterprise bénéficient d'une gestion centralisée des utilisateurs.
+              </p>
+            </details>
           </div>
-        )}
+        </div>
+      </section>
 
-        {/* FAQ Section */}
-        <section className="border-t border-gray-200 bg-gray-50 py-16">
-          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-            <h2 className="mb-8 text-center text-2xl font-bold text-gray-900">
-              Questions fréquentes
-            </h2>
-            
-            <div className="space-y-4">
-              {/* <details className="group rounded-lg bg-white p-4 shadow-sm">
-                <summary className="flex cursor-pointer items-center justify-between font-medium text-gray-900">
-                  Comment fonctionne la période d'essai ?
-                  <span className="ml-2 transition-transform group-open:rotate-180">▼</span>
-                </summary>
-                <p className="mt-3 text-gray-600">
-                  Nous offrons 7 jours d'essai gratuit pour la formule Standard. 
-                  Vous pouvez annuler à tout moment pendant cette période sans être facturé.
-                </p>
-              </details> */}
-
-              <details className="group rounded-lg bg-white p-4 shadow-sm">
-                <summary className="flex cursor-pointer items-center justify-between font-medium text-gray-900">
-                  Quels moyens de paiement acceptez-vous ?
-                  <span className="ml-2 transition-transform group-open:rotate-180">▼</span>
-                </summary>
-                <p className="mt-3 text-gray-600">
-                  Nous acceptons Wave, Orange Money, MTN Money, Moov Money, 
-                  ainsi que les cartes bancaires Visa et Mastercard.
-                </p>
-              </details>
-
-              <details className="group rounded-lg bg-white p-4 shadow-sm">
-                <summary className="flex cursor-pointer items-center justify-between font-medium text-gray-900">
-                  Puis-je changer de formule à tout moment ?
-                  <span className="ml-2 transition-transform group-open:rotate-180">▼</span>
-                </summary>
-                <p className="mt-3 text-gray-600">
-                  Oui, vous pouvez passer à une formule supérieure à tout moment. 
-                  Le montant sera calculé au prorata de votre période restante.
-                </p>
-              </details>
-
-              <details className="group rounded-lg bg-white p-4 shadow-sm">
-                <summary className="flex cursor-pointer items-center justify-between font-medium text-gray-900">
-                  Comment fonctionne la formule Enterprise ?
-                  <span className="ml-2 transition-transform group-open:rotate-180">▼</span>
-                </summary>
-                <p className="mt-3 text-gray-600">
-                  La formule Enterprise est personnalisée selon vos besoins. 
-                  Contactez-nous pour un devis adapté à votre organisation.
-                  Les comptes Enterprise bénéficient d'une gestion centralisée des utilisateurs.
-                </p>
-              </details>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="bg-primary-600 py-12">
-          <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-            <h2 className="mb-4 text-2xl font-bold text-white">
-              Besoin d'aide pour choisir ?
-            </h2>
-            <p className="mb-6 text-primary-100">
-              Notre équipe est disponible pour vous accompagner dans votre choix.
-            </p>
-            <Link href="/contact">
-              <Button variant="secondary" size="lg">
-                Nous contacter
-              </Button>
-            </Link>
-          </div>
-        </section>
-      </main>
-      <Footer />
-    </div>
+      {/* CTA Section */}
+      <section className="bg-[#201e1d] py-12">
+        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+          <h2 className="mb-4 text-2xl font-extrabold text-white">
+            Besoin d'aide pour choisir ?
+          </h2>
+          <p className="mb-6 text-[#bab6b6]">
+            Notre équipe est disponible pour vous accompagner dans votre choix.
+          </p>
+          <Link href="/contact">
+            <Button variant="modernist-outline" size="lg" className="border-white text-white hover:bg-white hover:text-[#201e1d]">
+              Nous contacter
+            </Button>
+          </Link>
+        </div>
+      </section>
+    </PublicShell>
   );
 }
 
 export default function SubscriptionsPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen flex-col bg-white">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
+      <PublicShell>
+        <div className="flex flex-1 items-center justify-center py-24">
           <div className="text-center">
-            <Loader2 className="mx-auto h-10 w-10 animate-spin text-primary-600" />
-            <p className="mt-4 text-gray-600">Chargement...</p>
+            <Loader2 className="mx-auto h-10 w-10 animate-spin text-[#ec3013]" />
+            <p className="mt-4 text-[#605d5d]">Chargement...</p>
           </div>
-        </main>
-        <Footer />
-      </div>
+        </div>
+      </PublicShell>
     }>
       <SubscriptionsContent />
     </Suspense>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import { Archivo } from 'next/font/google';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -19,6 +20,8 @@ import {
   ShieldCheck,
   AlertTriangle,
 } from 'lucide-react';
+
+const archivo = Archivo({ subsets: ['latin'], weight: ['400', '500', '600', '800'] });
 
 const resetPasswordSchema = z.object({
   code: z.string().optional(),
@@ -132,18 +135,18 @@ function ResetPasswordContent() {
   if (!token && !email) {
     return (
       <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
-          <AlertTriangle className="h-10 w-10 text-red-600" />
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center bg-[#fff2ef]">
+          <AlertTriangle className="h-10 w-10 text-[#ec3013]" />
         </div>
-        <h1 className="mb-2 text-2xl font-bold text-gray-900">
+        <h1 className="mb-2 text-2xl font-extrabold text-[#201e1d]">
           Lien invalide
         </h1>
-        <p className="mb-6 text-gray-600">
+        <p className="mb-6 text-[#605d5d]">
           Le lien de réinitialisation est invalide ou a expiré.
           Veuillez faire une nouvelle demande.
         </p>
         <Link href="/forgot-password">
-          <Button variant="primary">
+          <Button variant="modernist">
             Nouvelle demande
           </Button>
         </Link>
@@ -156,18 +159,18 @@ function ResetPasswordContent() {
       {isSubmitted ? (
         /* Success State */
         <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-            <CheckCircle2 className="h-10 w-10 text-green-600" />
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center bg-[#f0fdf4]">
+            <CheckCircle2 className="h-10 w-10 text-[#166534]" />
           </div>
-          <h1 className="mb-2 text-2xl font-bold text-gray-900">
+          <h1 className="mb-2 text-2xl font-extrabold text-[#201e1d]">
             Mot de passe modifié !
           </h1>
-          <p className="mb-6 text-gray-600">
+          <p className="mb-6 text-[#605d5d]">
             Votre mot de passe a été réinitialisé avec succès.
             Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.
           </p>
           <Link href="/login">
-            <Button variant="primary" className="w-full">
+            <Button variant="modernist" className="w-full justify-center">
               Se connecter
             </Button>
           </Link>
@@ -176,19 +179,19 @@ function ResetPasswordContent() {
         /* Form State */
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100">
-              <KeyRound className="h-8 w-8 text-primary-600" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center bg-[#ffe0d9]">
+              <KeyRound className="h-8 w-8 text-[#ec3013]" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-extrabold text-[#201e1d]">
               Nouveau mot de passe
             </h1>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-[#605d5d]">
               Créez un nouveau mot de passe sécurisé pour votre compte
             </p>
           </div>
 
           {error && (
-            <Alert variant="error" className="mb-6" onClose={() => setError(null)}>
+            <Alert variant="error" className="mb-6 rounded-none" onClose={() => setError(null)}>
               {error}
             </Alert>
           )}
@@ -197,12 +200,12 @@ function ResetPasswordContent() {
             {/* Code OTP (mode email) */}
             {isOtpMode && (
               <div>
-                <label htmlFor="code" className="mb-1.5 block text-sm font-medium text-gray-700">
+                <label htmlFor="code" className="mb-1.5 block text-sm font-medium text-[#201e1d]">
                   Code de vérification
                 </label>
-                <p className="mb-2 text-xs text-gray-500">
+                <p className="mb-2 text-xs text-[#9b9797]">
                   Saisissez le code à 6 chiffres envoyé à{' '}
-                  <span className="font-medium text-gray-700">{email}</span>
+                  <span className="font-semibold text-[#605d5d]">{email}</span>
                 </p>
                 <input
                   type="text"
@@ -210,14 +213,14 @@ function ResetPasswordContent() {
                   inputMode="numeric"
                   maxLength={6}
                   {...register('code')}
-                  className="w-full rounded-lg border border-gray-300 py-3 px-4 text-center text-lg tracking-[0.5em] font-semibold transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  className="w-full border border-[#d7d3d3] py-3 px-4 text-center text-lg tracking-[0.5em] font-semibold transition-colors focus:border-[#ec3013] focus:outline-none focus:ring-2 focus:ring-[#ec3013]/20"
                   placeholder="••••••"
                   autoFocus
                 />
                 <button
                   type="button"
                   onClick={handleResendCode}
-                  className="mt-2 text-sm text-primary-600 hover:text-primary-700"
+                  className="mt-2 text-sm text-[#ec3013] hover:text-[#ae1800]"
                 >
                   Renvoyer le code
                 </button>
@@ -226,32 +229,32 @@ function ResetPasswordContent() {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-[#201e1d]">
                 Nouveau mot de passe
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#9b9797]" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
                   {...register('password')}
-                  className={`w-full rounded-lg border py-3 pl-10 pr-12 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${
+                  className={`w-full border py-3 pl-10 pr-12 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[#ec3013]/20 ${
                     errors.password
-                      ? 'border-red-300 focus:border-red-500'
-                      : 'border-gray-300 focus:border-primary-500'
+                      ? 'border-[#ffc4b8] focus:border-[#ec3013]'
+                      : 'border-[#d7d3d3] focus:border-[#ec3013]'
                   }`}
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9b9797] hover:text-[#605d5d]"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1.5 text-sm text-red-500">{errors.password.message}</p>
+                <p className="mt-1.5 text-sm text-[#ec3013]">{errors.password.message}</p>
               )}
 
               {/* Password Strength Indicator */}
@@ -261,29 +264,29 @@ function ResetPasswordContent() {
                     {[1, 2, 3, 4].map((level) => (
                       <div
                         key={level}
-                        className={`h-1.5 flex-1 rounded-full transition-colors ${
+                        className={`h-1.5 flex-1 transition-colors ${
                           level <= strengthScore
                             ? strengthScore <= 2
-                              ? 'bg-red-500'
+                              ? 'bg-[#ec3013]'
                               : strengthScore === 3
-                              ? 'bg-yellow-500'
-                              : 'bg-green-500'
-                            : 'bg-gray-200'
+                              ? 'bg-[#f2b705]'
+                              : 'bg-[#166534]'
+                            : 'bg-[#eae9e9]'
                         }`}
                       />
                     ))}
                   </div>
                   <div className="grid grid-cols-2 gap-1 text-xs">
-                    <span className={passwordStrength.hasMinLength ? 'text-green-600' : 'text-gray-400'}>
+                    <span className={passwordStrength.hasMinLength ? 'text-[#166534]' : 'text-[#9b9797]'}>
                       ✓ 8 caractères min
                     </span>
-                    <span className={passwordStrength.hasUppercase ? 'text-green-600' : 'text-gray-400'}>
+                    <span className={passwordStrength.hasUppercase ? 'text-[#166534]' : 'text-[#9b9797]'}>
                       ✓ Une majuscule
                     </span>
-                    <span className={passwordStrength.hasLowercase ? 'text-green-600' : 'text-gray-400'}>
+                    <span className={passwordStrength.hasLowercase ? 'text-[#166534]' : 'text-[#9b9797]'}>
                       ✓ Une minuscule
                     </span>
-                    <span className={passwordStrength.hasNumber ? 'text-green-600' : 'text-gray-400'}>
+                    <span className={passwordStrength.hasNumber ? 'text-[#166534]' : 'text-[#9b9797]'}>
                       ✓ Un chiffre
                     </span>
                   </div>
@@ -293,39 +296,39 @@ function ResetPasswordContent() {
 
             {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label htmlFor="confirmPassword" className="mb-1.5 block text-sm font-medium text-[#201e1d]">
                 Confirmer le mot de passe
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#9b9797]" />
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   id="confirmPassword"
                   {...register('confirmPassword')}
-                  className={`w-full rounded-lg border py-3 pl-10 pr-12 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${
+                  className={`w-full border py-3 pl-10 pr-12 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[#ec3013]/20 ${
                     errors.confirmPassword
-                      ? 'border-red-300 focus:border-red-500'
-                      : 'border-gray-300 focus:border-primary-500'
+                      ? 'border-[#ffc4b8] focus:border-[#ec3013]'
+                      : 'border-[#d7d3d3] focus:border-[#ec3013]'
                   }`}
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9b9797] hover:text-[#605d5d]"
                 >
                   {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="mt-1.5 text-sm text-red-500">{errors.confirmPassword.message}</p>
+                <p className="mt-1.5 text-sm text-[#ec3013]">{errors.confirmPassword.message}</p>
               )}
             </div>
 
             <Button
               type="submit"
-              variant="primary"
-              className="w-full"
+              variant="modernist"
+              className="w-full justify-center"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -345,7 +348,7 @@ function ResetPasswordContent() {
           <div className="mt-6 text-center">
             <Link
               href="/login"
-              className="inline-flex items-center text-sm text-primary-600 hover:text-primary-700"
+              className="inline-flex items-center text-sm text-[#ec3013] hover:text-[#ae1800]"
             >
               <ArrowLeft className="mr-1 h-4 w-4" />
               Retour à la connexion
@@ -359,7 +362,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="flex min-h-screen">
+    <div className={`${archivo.className} flex min-h-screen bg-[#f3f2f2] text-[#201e1d]`}>
       {/* Left Section - Form */}
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
@@ -381,7 +384,7 @@ export default function ResetPasswordPage() {
           <Suspense
             fallback={
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-[#ec3013]" />
               </div>
             }
           >
@@ -391,25 +394,26 @@ export default function ResetPasswordPage() {
       </div>
 
       {/* Right Section - Visual */}
-      <div className="relative hidden w-0 flex-1 lg:block">
+      <div className="relative hidden w-0 flex-1 border-l-2 border-[#201e1d] lg:block">
         <Image
           src="https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1920&auto=format&fit=crop"
           alt="Background"
           fill
           className="object-cover"
+          style={{ filter: 'grayscale(1) contrast(1.08)' }}
           priority
           unoptimized={true}
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-600/90 to-primary-900/95">
+        <div className="absolute inset-0 bg-[#201e1d]/80">
           <div className="flex h-full flex-col items-center justify-center p-12 text-white">
             <div className="max-w-md text-center">
-              <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm">
+              <div className="mb-6 inline-flex h-20 w-20 items-center justify-center bg-white/10">
                 <ShieldCheck className="h-10 w-10" />
               </div>
-              <h2 className="mb-4 text-3xl font-bold">
+              <h2 className="mb-4 text-3xl font-extrabold">
                 Créez un mot de passe fort
               </h2>
-              <p className="text-lg text-primary-100">
+              <p className="text-lg text-[#bab6b6]">
                 Un bon mot de passe contient des lettres majuscules et minuscules, des chiffres et des caractères spéciaux.
               </p>
             </div>

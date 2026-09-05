@@ -85,9 +85,9 @@ export function ShareButton({ title, excerpt, articlePath }: ShareButtonProps) {
 
   return (
     <div className="relative">
-      <Button 
-        variant="outline" 
-        size="sm" 
+      <Button
+        variant="modernist-outline"
+        size="sm"
         leftIcon={<Share2 className="h-4 w-4" />}
         onClick={handleNativeShare}
       >
@@ -96,19 +96,19 @@ export function ShareButton({ title, excerpt, articlePath }: ShareButtonProps) {
 
       {showMenu && (
         <>
-          <div 
-            className="fixed inset-0 z-40" 
+          <div
+            className="fixed inset-0 z-40"
             onClick={() => setShowMenu(false)}
           />
-          <div className="absolute right-0 bottom-full mb-2 z-50 w-64 rounded-lg border border-gray-200 bg-white p-4 shadow-xl">
+          <div className="absolute right-0 bottom-full mb-2 z-50 w-64 border border-[#201e1d]/40 bg-white p-4">
             <div className="flex items-center justify-between mb-3">
-              <span className="font-semibold text-gray-900">Partager</span>
+              <span className="font-bold text-[#201e1d]">Partager</span>
               <button
                 title="Fermer le menu"
                 onClick={() => setShowMenu(false)}
-                className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                className="p-1 hover:bg-[#eae9e9] transition-colors"
               >
-                <X className="h-4 w-4 text-gray-500" />
+                <X className="h-4 w-4 text-[#605d5d]" />
               </button>
             </div>
 
@@ -119,7 +119,7 @@ export function ShareButton({ title, excerpt, articlePath }: ShareButtonProps) {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex flex-col items-center gap-1 p-2 rounded-lg border border-gray-200 transition-all ${link.color}`}
+                  className={`flex flex-col items-center gap-1 p-2 border border-[#d7d3d3] transition-all ${link.color}`}
                   onClick={() => setShowMenu(false)}
                 >
                   <link.icon className="h-5 w-5" />
@@ -128,23 +128,23 @@ export function ShareButton({ title, excerpt, articlePath }: ShareButtonProps) {
               ))}
             </div>
 
-            <div className="border-t border-gray-200 pt-3">
-              <p className="text-xs text-gray-500 mb-2">Ou copier le lien</p>
+            <div className="border-t border-[#d7d3d3] pt-3">
+              <p className="text-xs text-[#605d5d] mb-2">Ou copier le lien</p>
               <div className="flex gap-2">
                 <input
                   title="Lien à copier"
                   type="text"
                   value={shareUrl}
                   readOnly
-                  className="flex-1 px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg truncate"
+                  className="flex-1 px-3 py-2 text-xs bg-[#f8f4f4] border border-[#d7d3d3] truncate"
                 />
                 <button
                   title="Copier le lien"
                   onClick={handleCopyLink}
-                  className={`px-3 py-2 rounded-lg transition-colors ${
-                    copied 
-                      ? 'bg-green-500 text-white' 
-                      : 'bg-primary-500 text-white hover:bg-primary-600'
+                  className={`px-3 py-2 transition-colors ${
+                    copied
+                      ? 'bg-[#166534] text-white'
+                      : 'bg-[#ec3013] text-white hover:bg-[#dd2b0f]'
                   }`}
                 >
                   {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}

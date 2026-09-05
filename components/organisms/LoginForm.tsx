@@ -130,14 +130,14 @@ const LoginForm = () => {
   return (
     <div className="w-full max-w-md">
       <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Connexion</h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="text-2xl font-extrabold text-[#201e1d]">Connexion</h1>
+        <p className="mt-2 text-[#605d5d]">
           Connectez-vous à votre compte Actu Plus
         </p>
       </div>
 
       {error && (
-        <Alert variant="error" className="mb-6" onClose={() => setError(null)}>
+        <Alert variant="error" className="mb-6 rounded-none" onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
@@ -149,6 +149,7 @@ const LoginForm = () => {
           placeholder="votre@email.com"
           leftIcon={<Mail className="h-5 w-5" />}
           error={errors.identifier?.message}
+          className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
           {...register('identifier')}
         />
 
@@ -158,6 +159,7 @@ const LoginForm = () => {
           placeholder="••••••••"
           leftIcon={<Lock className="h-5 w-5" />}
           error={errors.password?.message}
+          className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
           {...register('password')}
         />
 
@@ -165,13 +167,13 @@ const LoginForm = () => {
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
-              className="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+              className="h-4 w-4 rounded-none border-[#d7d3d3] text-[#ec3013] focus:ring-[#ec3013]/20"
             />
-            <span className="text-sm text-gray-600">Se souvenir de moi</span>
+            <span className="text-sm text-[#605d5d]">Se souvenir de moi</span>
           </label>
           <Link
             href="/forgot-password"
-            className="text-sm text-primary-600 hover:text-primary-700"
+            className="text-sm text-[#ec3013] hover:text-[#ae1800]"
           >
             Mot de passe oublié ?
           </Link>
@@ -179,8 +181,8 @@ const LoginForm = () => {
 
         <Button
           type="submit"
-          variant="primary"
-          className="w-full"
+          variant="modernist"
+          className="w-full justify-center"
           isLoading={isLoading}
         >
           Se connecter
@@ -191,11 +193,11 @@ const LoginForm = () => {
 
       <SocialLoginButtons mode="login" />
 
-      <p className="mt-6 text-center text-sm text-gray-600">
+      <p className="mt-6 text-center text-sm text-[#605d5d]">
         Pas encore de compte ?{' '}
         <Link
           href="/register"
-          className="font-medium text-primary-600 hover:text-primary-700"
+          className="font-semibold text-[#ec3013] hover:text-[#ae1800]"
         >
           Créer un compte
         </Link>

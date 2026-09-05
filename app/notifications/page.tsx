@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { Header, Footer } from '@/components/organisms';
+import { PublicShell } from '../PublicShell';
 import { Button, Alert } from '@/components/atoms';
 import {
   Bell,
@@ -103,16 +103,14 @@ export default function NotificationsPage() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex flex-1 items-center justify-center">
+      <PublicShell>
+        <div className="flex flex-1 items-center justify-center py-24">
           <div className="text-center">
-            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600"></div>
-            <p className="mt-4 text-gray-600">Chargement...</p>
+            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#ffe0d9] border-t-[#ec3013]"></div>
+            <p className="mt-4 text-[#605d5d]">Chargement...</p>
           </div>
-        </main>
-        <Footer />
-      </div>
+        </div>
+      </PublicShell>
     );
   }
 
@@ -121,14 +119,13 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
-      <Header />
-      <main className="flex-1 py-8">
+    <PublicShell>
+      <div className="py-8">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           {/* Back link */}
           <Link
             href="/profile"
-            className="mb-6 inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+            className="mb-6 inline-flex items-center gap-1 text-sm text-[#605d5d] hover:text-[#201e1d]"
           >
             <ArrowLeft className="h-4 w-4" />
             Retour au profil
@@ -137,12 +134,12 @@ export default function NotificationsPage() {
           {/* Header */}
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-100">
-                <Bell className="h-6 w-6 text-yellow-600" />
+              <div className="flex h-12 w-12 items-center justify-center bg-[#ffe0d9]">
+                <Bell className="h-6 w-6 text-[#ae1800]" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-                <p className="text-sm text-gray-600">
+                <h1 className="text-2xl font-extrabold text-[#201e1d]">Notifications</h1>
+                <p className="text-sm text-[#605d5d]">
                   {unreadCount > 0
                     ? `${unreadCount} non lue${unreadCount > 1 ? 's' : ''}`
                     : 'Toutes lues'}
@@ -151,7 +148,7 @@ export default function NotificationsPage() {
             </div>
 
             {unreadCount > 0 && (
-              <Button variant="outline" size="sm" onClick={markAllAsRead}>
+              <Button variant="modernist-outline" size="sm" onClick={markAllAsRead}>
                 <CheckCheck className="mr-1 h-4 w-4" />
                 Tout marquer comme lu
               </Button>
@@ -165,23 +162,23 @@ export default function NotificationsPage() {
           )}
 
           {/* Filter Tabs */}
-          <div className="mb-4 flex gap-2">
+          <div className="mb-4 flex gap-0 border border-[#201e1d]">
             <button
               onClick={() => setFilter('all')}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              className={`px-4 py-2 text-sm font-semibold transition-colors ${
                 filter === 'all'
-                  ? 'bg-primary-100 text-primary-700'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-[#201e1d] text-white'
+                  : 'text-[#201e1d] hover:bg-[#eae9e9]'
               }`}
             >
               Toutes ({notifications.length})
             </button>
             <button
               onClick={() => setFilter('unread')}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              className={`border-l border-[#201e1d] px-4 py-2 text-sm font-semibold transition-colors ${
                 filter === 'unread'
-                  ? 'bg-primary-100 text-primary-700'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-[#201e1d] text-white'
+                  : 'text-[#201e1d] hover:bg-[#eae9e9]'
               }`}
             >
               Non lues ({unreadCount})
@@ -191,15 +188,15 @@ export default function NotificationsPage() {
           {/* Notifications List */}
           {loading ? (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+              <Loader2 className="h-8 w-8 animate-spin text-[#ec3013]" />
             </div>
           ) : filteredNotifications.length === 0 ? (
-            <div className="rounded-lg bg-white p-12 text-center shadow-sm">
-              <BellOff className="mx-auto h-12 w-12 text-gray-300" />
-              <h3 className="mt-4 text-lg font-medium text-gray-900">
+            <div className="border border-[#d7d3d3] bg-white p-12 text-center">
+              <BellOff className="mx-auto h-12 w-12 text-[#d7d3d3]" />
+              <h3 className="mt-4 text-lg font-bold text-[#201e1d]">
                 {filter === 'unread' ? 'Aucune notification non lue' : 'Aucune notification'}
               </h3>
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-[#605d5d]">
                 {filter === 'unread'
                   ? 'Vous avez lu toutes vos notifications.'
                   : "Vous n'avez pas encore reçu de notifications."}
@@ -213,29 +210,29 @@ export default function NotificationsPage() {
                 <div
                   key={notification.id}
                   onClick={() => !notification.isRead && markAsRead(notification.id)}
-                  className={`flex items-start gap-4 rounded-lg border p-4 transition-colors cursor-pointer ${
+                  className={`flex items-start gap-4 border p-4 transition-colors cursor-pointer ${
                     notification.isRead
-                      ? 'border-gray-100 bg-white'
-                      : 'border-primary-200 bg-primary-50 hover:bg-primary-100'
+                      ? 'border-[#d7d3d3] bg-white'
+                      : 'border-[#ec3013] bg-[#fff2ef] hover:bg-[#ffe0d9]'
                   }`}
                 >
-                  <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${bgClass}`}>
+                  <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center ${bgClass}`}>
                     <Icon className={`h-5 w-5 ${iconColorClass}`} />
                   </div>
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
-                      <p className={`text-sm font-medium ${notification.isRead ? 'text-gray-700' : 'text-gray-900'}`}>
+                      <p className={`text-sm font-semibold ${notification.isRead ? 'text-[#605d5d]' : 'text-[#201e1d]'}`}>
                         {notification.title}
                       </p>
                       {!notification.isRead && (
-                        <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-primary-500"></span>
+                        <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-[#ec3013]"></span>
                       )}
                     </div>
-                    <p className={`mt-0.5 text-sm ${notification.isRead ? 'text-gray-500' : 'text-gray-600'}`}>
+                    <p className={`mt-0.5 text-sm ${notification.isRead ? 'text-[#9b9797]' : 'text-[#605d5d]'}`}>
                       {notification.message}
                     </p>
-                    <p className="mt-1 text-xs text-gray-400">
+                    <p className="mt-1 text-xs text-[#9b9797]">
                       {formatDistanceToNow(new Date(notification.createdAt), {
                         addSuffix: true,
                         locale: fr,
@@ -248,8 +245,7 @@ export default function NotificationsPage() {
             </div>
           )}
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </PublicShell>
   );
 }

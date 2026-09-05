@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Header, Footer } from '@/components/organisms';
+import { PublicShell } from '../PublicShell';
 import { ArticleCard } from '@/components/molecules';
 import { Button } from '@/components/atoms';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -58,20 +58,20 @@ export default function FavoritesPage() {
       setLoading(true);
       setError(null);
       const result = await favoritesService.findAll();
-      
+
       // Le backend retourne des objets Favorite avec une relation article
       const favorites = result.data?.data || result.data || [];
       let fetchedArticles = favorites
         .filter((fav: any) => fav.article) // S'assurer que l'article existe
         .map((fav: any) => mapArticle(fav.article));
-      
+
       // Filtrer par type de contenu si nécessaire
       if (contentFilter === 'summary') {
         fetchedArticles = fetchedArticles.filter((a) => (a.content?.length ?? 0) < 500);
       } else if (contentFilter === 'article') {
         fetchedArticles = fetchedArticles.filter((a) => (a.content?.length ?? 0) >= 500);
       }
-      
+
       setArticles(fetchedArticles);
     } catch (err) {
       console.error('Erreur lors du chargement des favoris:', err);
@@ -105,13 +105,11 @@ export default function FavoritesPage() {
   // Afficher un loader pendant le chargement de l'auth
   if (authLoading) {
     return (
-      <div className="flex min-h-screen flex-col bg-white">
-        <Header />
-        <main className="flex flex-1 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
-        </main>
-        <Footer />
-      </div>
+      <PublicShell>
+        <div className="flex flex-1 items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-[#ec3013]" />
+        </div>
+      </PublicShell>
     );
   }
 
@@ -121,26 +119,25 @@ export default function FavoritesPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      <Header />
-      <main className="flex-1 py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <PublicShell>
+      <div className="py-8">
+        <div className="mx-auto max-w-360 px-5 sm:px-9">
           {/* Header */}
           <div className="mb-8">
             <Link
               href="/"
-              className="mb-4 inline-flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600"
+              className="mb-4 inline-flex items-center gap-2 text-sm text-[#605d5d] hover:text-[#201e1d]"
             >
               <ArrowLeft className="h-4 w-4" />
               Retour à l'accueil
             </Link>
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100">
-                <Heart className="h-6 w-6 text-primary-600" />
+              <div className="flex h-12 w-12 items-center justify-center bg-[#ffe0d9]">
+                <Heart className="h-6 w-6 text-[#ae1800]" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Mes favoris</h1>
-                <p className="text-sm text-gray-500">
+                <h1 className="text-2xl font-extrabold text-[#201e1d]">Mes favoris</h1>
+                <p className="text-sm text-[#605d5d]">
                   {articles.length} article{articles.length !== 1 ? 's' : ''} sauvegardé{articles.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -148,15 +145,15 @@ export default function FavoritesPage() {
           </div>
 
           {/* Filtres */}
-          <div className="mb-6 flex gap-2">
-            {filters.map((filter) => (
+          <div className="mb-6 flex gap-0 border border-[#201e1d]">
+            {filters.map((filter, i) => (
               <button
                 key={filter.value}
                 onClick={() => setContentFilter(filter.value as ContentFilter)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                className={`px-4 py-2 text-sm font-semibold transition-colors ${i > 0 ? 'border-l border-[#201e1d]' : ''} ${
                   contentFilter === filter.value
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-[#201e1d] text-white'
+                    : 'text-[#201e1d] hover:bg-[#eae9e9]'
                 }`}
               >
                 {filter.label}
@@ -167,13 +164,13 @@ export default function FavoritesPage() {
           {/* Contenu */}
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-[#ec3013]" />
             </div>
           ) : error ? (
-            <div className="rounded-lg bg-red-50 p-8 text-center">
-              <p className="text-red-600">{error}</p>
+            <div className="border border-[#ffc4b8] bg-[#fff2ef] p-8 text-center">
+              <p className="text-[#ae1800]">{error}</p>
               <Button
-                variant="outline"
+                variant="modernist-outline"
                 size="sm"
                 className="mt-4"
                 onClick={loadFavorites}
@@ -182,16 +179,16 @@ export default function FavoritesPage() {
               </Button>
             </div>
           ) : articles.length === 0 ? (
-            <div className="rounded-lg bg-gray-50 p-12 text-center">
-              <Heart className="mx-auto h-12 w-12 text-gray-300" />
-              <h3 className="mt-4 text-lg font-medium text-gray-900">
+            <div className="border border-[#d7d3d3] bg-[#f8f4f4] p-12 text-center">
+              <Heart className="mx-auto h-12 w-12 text-[#d7d3d3]" />
+              <h3 className="mt-4 text-lg font-bold text-[#201e1d]">
                 Aucun favori
               </h3>
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-[#605d5d]">
                 Vous n'avez pas encore ajouté d'articles à vos favoris.
               </p>
               <Link href="/articles">
-                <Button variant="primary" className="mt-6">
+                <Button variant="modernist" className="mt-6">
                   Découvrir les articles
                 </Button>
               </Link>
@@ -203,18 +200,17 @@ export default function FavoritesPage() {
                   <ArticleCard article={article} variant="compact" />
                   <button
                     onClick={() => handleRemoveFavorite(article.id)}
-                    className="absolute right-3 top-3 rounded-full bg-white p-2 shadow-md transition-colors hover:bg-red-50"
+                    className="absolute right-3 top-3 border border-[#d7d3d3] bg-white p-2 transition-colors hover:border-[#ec3013] hover:bg-[#fff2ef]"
                     title="Retirer des favoris"
                   >
-                    <Heart className="h-4 w-4 fill-primary-500 text-primary-500" />
+                    <Heart className="h-4 w-4 fill-[#ec3013] text-[#ec3013]" />
                   </button>
                 </div>
               ))}
             </div>
           )}
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </PublicShell>
   );
 }

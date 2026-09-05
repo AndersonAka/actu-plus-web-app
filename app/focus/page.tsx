@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Header, Footer } from '@/components/organisms';
+import { PublicShell } from '../PublicShell';
 import { ArticleCard, Pagination } from '@/components/molecules';
 import { Button } from '@/components/atoms';
 import { parseArticlesPaginatedResponse } from '@/lib/utils/system-archives';
@@ -105,25 +105,24 @@ export default function FocusPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      <Header />
-      <main className="flex-1 py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <PublicShell>
+      <div className="py-8">
+        <div className="mx-auto max-w-360 px-5 sm:px-9">
           <div className="mb-8">
             <Link
               href="/"
-              className="mb-4 inline-flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600"
+              className="mb-4 inline-flex items-center gap-2 text-sm text-[#605d5d] hover:text-[#201e1d]"
             >
               <ArrowLeft className="h-4 w-4" />
               Retour à l&apos;accueil
             </Link>
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-                <Target className="h-6 w-6 text-red-600" />
+              <div className="flex h-12 w-12 items-center justify-center bg-[#ffe0d9]">
+                <Target className="h-6 w-6 text-[#ae1800]" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Focus</h1>
-                <p className="text-sm text-gray-500">
+                <h1 className="text-2xl font-extrabold text-[#201e1d]">Focus</h1>
+                <p className="text-sm text-[#605d5d]">
                   {totalCount > 0 ? `${totalCount} article${totalCount !== 1 ? 's' : ''}` : 'Nos analyses approfondies'}
                 </p>
               </div>
@@ -132,20 +131,20 @@ export default function FocusPage() {
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-red-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-[#ec3013]" />
             </div>
           ) : error ? (
-            <div className="rounded-lg bg-red-50 p-8 text-center">
-              <p className="text-red-600">{error}</p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={() => loadArticles(currentPage)}>
+            <div className="border border-[#ffc4b8] bg-[#fff2ef] p-8 text-center">
+              <p className="text-[#ae1800]">{error}</p>
+              <Button variant="modernist-outline" size="sm" className="mt-4" onClick={() => loadArticles(currentPage)}>
                 Réessayer
               </Button>
             </div>
           ) : articles.length === 0 ? (
-            <div className="rounded-lg bg-gray-50 p-12 text-center">
-              <Target className="mx-auto h-12 w-12 text-gray-300" />
-              <h3 className="mt-4 text-lg font-medium text-gray-900">Aucun article Focus</h3>
-              <p className="mt-2 text-sm text-gray-500">Revenez bientôt pour découvrir nos analyses approfondies.</p>
+            <div className="border border-[#d7d3d3] bg-[#f8f4f4] p-12 text-center">
+              <Target className="mx-auto h-12 w-12 text-[#d7d3d3]" />
+              <h3 className="mt-4 text-lg font-bold text-[#201e1d]">Aucun article Focus</h3>
+              <p className="mt-2 text-sm text-[#605d5d]">Revenez bientôt pour découvrir nos analyses approfondies.</p>
             </div>
           ) : (
             <>
@@ -163,8 +162,7 @@ export default function FocusPage() {
             </>
           )}
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </PublicShell>
   );
 }

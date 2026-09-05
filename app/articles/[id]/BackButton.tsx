@@ -55,17 +55,17 @@ export function BackButton({ countryCode, countryName }: BackButtonProps) {
     <div className="mb-6 flex items-center gap-4">
       <button
         onClick={handleBack}
-        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-[#605d5d] hover:text-[#ec3013] transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         {fromCountry ? backInfo.label : 'Retour'}
       </button>
-      
+
       {/* Secondary link to country if not coming from there */}
       {!fromCountry && countryCode && (
         <Link
           href={`/country/${countryCode}`}
-          className="inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 transition-colors"
+          className="inline-flex items-center gap-1 text-sm text-[#ec3013] hover:text-[#ae1800] transition-colors"
         >
           <span className="text-base">{countryName ? '→' : ''}</span>
           {countryName || countryCode.toUpperCase()}

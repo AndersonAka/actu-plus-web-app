@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Header, Footer } from '@/components/organisms';
+import { PublicShell } from '../PublicShell';
 import { Pagination } from '@/components/molecules';
 import { Button } from '@/components/atoms';
 import { parseArticlesPaginatedResponse } from '@/lib/utils/system-archives';
@@ -118,25 +118,24 @@ export default function ActualitesInternationalesPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      <Header />
-      <main className="flex-1 py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <PublicShell>
+      <div className="py-8">
+        <div className="mx-auto max-w-360 px-5 sm:px-9">
           <div className="mb-8">
             <Link
               href="/"
-              className="mb-4 inline-flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600"
+              className="mb-4 inline-flex items-center gap-2 text-sm text-[#605d5d] hover:text-[#201e1d]"
             >
               <ArrowLeft className="h-4 w-4" />
               Retour à l&apos;accueil
             </Link>
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100">
-                <Globe2 className="h-6 w-6 text-indigo-600" />
+              <div className="flex h-12 w-12 items-center justify-center bg-[#ffe0d9]">
+                <Globe2 className="h-6 w-6 text-[#ae1800]" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Actualités Internationales</h1>
-                <p className="text-sm text-gray-500">
+                <h1 className="text-2xl font-extrabold text-[#201e1d]">Actualités Internationales</h1>
+                <p className="text-sm text-[#605d5d]">
                   {totalCount > 0
                     ? `${totalCount} article${totalCount !== 1 ? 's' : ''}`
                     : 'Actualités hors zone nationale'}
@@ -145,16 +144,16 @@ export default function ActualitesInternationalesPage() {
             </div>
           </div>
 
-          <div className="mb-6 flex flex-wrap gap-2">
-            {zoneFilters.map((filter) => (
+          <div className="mb-6 flex flex-wrap border border-[#201e1d]">
+            {zoneFilters.map((filter, i) => (
               <button
                 key={filter.value}
                 type="button"
                 onClick={() => setZoneFilter(filter.value)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                className={`px-4 py-2 text-sm font-semibold transition-colors ${i > 0 ? 'border-l border-[#201e1d]' : ''} ${
                   zoneFilter === filter.value
-                    ? 'bg-indigo-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-[#201e1d] text-white'
+                    : 'text-[#201e1d] hover:bg-[#eae9e9]'
                 }`}
               >
                 {filter.label}
@@ -164,20 +163,20 @@ export default function ActualitesInternationalesPage() {
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-[#ec3013]" />
             </div>
           ) : error ? (
-            <div className="rounded-lg bg-red-50 p-8 text-center">
-              <p className="text-red-600">{error}</p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={() => loadArticles(currentPage, zoneFilter)}>
+            <div className="border border-[#ffc4b8] bg-[#fff2ef] p-8 text-center">
+              <p className="text-[#ae1800]">{error}</p>
+              <Button variant="modernist-outline" size="sm" className="mt-4" onClick={() => loadArticles(currentPage, zoneFilter)}>
                 Réessayer
               </Button>
             </div>
           ) : articles.length === 0 ? (
-            <div className="rounded-lg bg-gray-50 p-12 text-center">
-              <Globe2 className="mx-auto h-12 w-12 text-gray-300" />
-              <h3 className="mt-4 text-lg font-medium text-gray-900">Aucune actualité internationale</h3>
-              <p className="mt-2 text-sm text-gray-500">Revenez bientôt pour découvrir nos actualités internationales.</p>
+            <div className="border border-[#d7d3d3] bg-[#f8f4f4] p-12 text-center">
+              <Globe2 className="mx-auto h-12 w-12 text-[#d7d3d3]" />
+              <h3 className="mt-4 text-lg font-bold text-[#201e1d]">Aucune actualité internationale</h3>
+              <p className="mt-2 text-sm text-[#605d5d]">Revenez bientôt pour découvrir nos actualités internationales.</p>
             </div>
           ) : (
             <>
@@ -186,43 +185,44 @@ export default function ActualitesInternationalesPage() {
                   <Link
                     key={article.id}
                     href={getArticlePublicPath(article)}
-                    className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+                    className="group flex flex-col overflow-hidden border border-[#d7d3d3] bg-white transition-colors hover:border-[#201e1d]/40"
                   >
                     <div className="relative aspect-video w-full overflow-hidden">
                       {(article.coverImage || article.imageUrl) ? (
                         <img
                           src={article.coverImage || article.imageUrl}
                           alt={article.title}
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          className="h-full w-full object-cover"
+                          style={{ filter: 'grayscale(1) contrast(1.08)' }}
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-indigo-50 to-indigo-100">
-                          <Globe2 className="h-8 w-8 text-indigo-200" />
+                        <div className="flex h-full w-full items-center justify-center bg-[#eae9e9]">
+                          <Globe2 className="h-8 w-8 text-[#d7d3d3]" />
                         </div>
                       )}
                       {article.internationalCountryName && (
-                        <div className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm backdrop-blur-sm">
+                        <div className="absolute bottom-2 left-2 bg-white/90 px-2.5 py-1 text-xs font-semibold text-[#201e1d]">
                           {article.internationalCountryFlag && <span className="mr-1">{article.internationalCountryFlag}</span>}
                           {article.internationalCountryName}
                         </div>
                       )}
                       {article.zone && (
-                        <div className="absolute top-2 right-2 rounded-full bg-indigo-600/90 px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm backdrop-blur-sm">
+                        <div className="absolute top-2 right-2 bg-[#ec3013] px-2.5 py-1 text-[10px] font-semibold text-white">
                           {article.zone === 'uemoa' ? 'UEMOA' : 'Hors UEMOA'}
                         </div>
                       )}
                     </div>
                     <div className="flex flex-1 flex-col p-4">
                       {article.category?.name && (
-                        <span className="mb-1.5 self-start rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                        <span className="mb-1.5 self-start bg-[#eae9e9] px-2 py-0.5 text-xs font-semibold text-[#201e1d]">
                           {article.category.name}
                         </span>
                       )}
-                      <h3 className="mb-1.5 line-clamp-2 text-sm font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
+                      <h3 className="mb-1.5 line-clamp-2 text-sm font-bold leading-snug text-[#201e1d] group-hover:text-[#ec3013] transition-colors">
                         {article.title}
                       </h3>
                       {article.excerpt && (
-                        <p className="line-clamp-2 text-sm text-gray-500 leading-relaxed">{article.excerpt}</p>
+                        <p className="line-clamp-2 text-sm text-[#605d5d] leading-relaxed">{article.excerpt}</p>
                       )}
                     </div>
                   </Link>
@@ -237,8 +237,7 @@ export default function ActualitesInternationalesPage() {
             </>
           )}
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </PublicShell>
   );
 }

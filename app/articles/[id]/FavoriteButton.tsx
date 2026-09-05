@@ -55,18 +55,18 @@ export function FavoriteButton({ articleId }: FavoriteButtonProps) {
 
   return (
     <Button
-      variant="outline"
+      variant="modernist-outline"
       size="sm"
       onClick={toggleFavorite}
       disabled={isLoading}
       leftIcon={
         <Heart
           className={`h-4 w-4 transition-colors ${
-            isFavorited ? 'fill-red-500 text-red-500' : ''
+            isFavorited ? 'fill-[#ec3013] text-[#ec3013]' : ''
           }`}
         />
       }
-      className={isFavorited ? 'border-red-200 text-red-600 hover:bg-red-50' : ''}
+      className={isFavorited ? 'border-[#ffc4b8] text-[#ec3013] hover:bg-[#fff2ef]' : ''}
     >
       {isFavorited ? 'Favori' : 'Ajouter aux favoris'}
     </Button>

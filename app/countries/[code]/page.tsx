@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { Header, Footer } from '@/components/organisms';
+import { PublicShell } from '../../PublicShell';
 import { ArticleCard } from '@/components/molecules';
 import { Badge } from '@/components/atoms';
 import { apiConfig } from '@/config/api.config';
@@ -75,65 +75,61 @@ export default async function CountryPage({ params }: PageProps) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 bg-gray-50">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-primary-500 to-primary-700 py-12 text-white">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-                <Globe className="h-8 w-8" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold sm:text-4xl">
-                  {countryInfo.name}
-                </h1>
-                <p className="mt-2 text-primary-100">
-                  Toutes les actualités de {countryInfo.name}
-                </p>
-              </div>
+    <PublicShell>
+      {/* Hero Section */}
+      <section className="border-b-2 border-[#201e1d] bg-[#201e1d] py-12 text-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center bg-white/10">
+              <Globe className="h-8 w-8" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold sm:text-4xl">
+                {countryInfo.name}
+              </h1>
+              <p className="mt-2 text-[#bab6b6]">
+                Toutes les actualités de {countryInfo.name}
+              </p>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Articles Section */}
-        <section className="py-8">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">
-                Articles récents
-              </h2>
-              <Badge variant="primary">
-                {articles.length} article{articles.length > 1 ? 's' : ''}
-              </Badge>
-            </div>
-
-            {articles.length > 0 ? (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {articles.map((article) => (
-                  <ArticleCard 
-                    key={article.id} 
-                    article={article}
-                    fromCountry={code}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-lg bg-white p-12 text-center shadow-sm">
-                <Globe className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-4 text-lg font-medium text-gray-900">
-                  Aucun article disponible
-                </h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  Il n'y a pas encore d'articles publiés pour {countryInfo.name}.
-                </p>
-              </div>
-            )}
+      {/* Articles Section */}
+      <section className="py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-xl font-extrabold text-[#201e1d]">
+              Articles récents
+            </h2>
+            <Badge className="rounded-none bg-[#ec3013] text-white">
+              {articles.length} article{articles.length > 1 ? 's' : ''}
+            </Badge>
           </div>
-        </section>
-      </main>
-      <Footer />
-    </div>
+
+          {articles.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {articles.map((article) => (
+                <ArticleCard
+                  key={article.id}
+                  article={article}
+                  fromCountry={code}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="border border-[#d7d3d3] bg-white p-12 text-center">
+              <Globe className="mx-auto h-12 w-12 text-[#9b9797]" />
+              <h3 className="mt-4 text-lg font-bold text-[#201e1d]">
+                Aucun article disponible
+              </h3>
+              <p className="mt-2 text-sm text-[#605d5d]">
+                Il n'y a pas encore d'articles publiés pour {countryInfo.name}.
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+    </PublicShell>
   );
 }

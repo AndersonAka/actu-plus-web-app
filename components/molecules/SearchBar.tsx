@@ -66,7 +66,7 @@ const SearchBar = ({
     <form onSubmit={handleSubmit} className={cn('relative', className)}>
       <Search
         className={cn(
-          'absolute top-1/2 -translate-y-1/2 text-gray-400',
+          'absolute top-1/2 -translate-y-1/2 text-[#605d5d]',
           iconSizes[size],
           iconPositions[size]
         )}
@@ -78,9 +78,9 @@ const SearchBar = ({
         placeholder={placeholder}
         autoFocus={autoFocus}
         className={cn(
-          'w-full rounded-lg border border-gray-300 bg-white transition-colors',
-          'placeholder:text-gray-400',
-          'focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20',
+          'w-full rounded-none border border-[#d7d3d3] bg-[#f8f4f4] text-[#201e1d] transition-colors',
+          'placeholder:text-[#605d5d]',
+          'focus:border-[#ec3013] focus:outline-none focus:ring-2 focus:ring-[#ec3013]/20',
           sizes[size]
         )}
       />
@@ -89,7 +89,7 @@ const SearchBar = ({
           type="button"
           onClick={handleClear}
           className={cn(
-            'absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600',
+            'absolute top-1/2 right-3 -translate-y-1/2 text-[#605d5d] hover:text-[#201e1d]',
             iconSizes[size]
           )}
         >

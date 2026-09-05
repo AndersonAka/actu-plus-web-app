@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Badge } from '@/components/atoms';
 import { ArticleCard } from '@/components/molecules';
-import { Header, Footer } from '@/components/organisms';
+import { PublicShell } from '../../PublicShell';
 import { apiConfig } from '@/config/api.config';
 import { Article, ArticleStatus } from '@/types';
 import { format } from 'date-fns';
@@ -85,35 +85,34 @@ export default async function ArticleDetailPage({ params }: PageProps) {
     : format(new Date(article.createdAt), 'dd MMMM yyyy', { locale: fr });
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 py-8">
+    <PublicShell>
+      <div className="py-8">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <BackButton 
-            countryCode={article.country?.code} 
-            countryName={article.country?.name} 
+          <BackButton
+            countryCode={article.country?.code}
+            countryName={article.country?.name}
           />
 
           <header className="mb-8">
             <div className="mb-4 flex items-center gap-2">
-              <Badge variant="primary">{article.category?.name || 'Actualité'}</Badge>
+              <Badge className="rounded-none bg-[#ec3013] text-white">{article.category?.name || 'Actualité'}</Badge>
               {article.country && (
-                <Badge variant="secondary">{article.country.name}</Badge>
+                <Badge className="rounded-none bg-[#eae9e9] text-[#201e1d]">{article.country.name}</Badge>
               )}
               {article.isPremium && (
-                <Badge variant="warning" className="flex items-center gap-1">
+                <Badge className="rounded-none bg-[#ffe0d9] text-[#ae1800] flex items-center gap-1">
                   <Crown className="h-3 w-3" />
                   Contenu abonné
                 </Badge>
               )}
             </div>
-            <h1 className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl">
+            <h1 className="mb-4 text-3xl font-extrabold text-[#201e1d] sm:text-4xl">
               {article.title}
             </h1>
             {article.excerpt && (
-              <p className="mb-4 text-lg text-gray-600">{article.excerpt}</p>
+              <p className="mb-4 text-lg text-[#605d5d]">{article.excerpt}</p>
             )}
-            <div className="flex items-center gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-4 text-sm text-[#9b9797]">
               <span className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
                 {formattedDate}
@@ -126,12 +125,13 @@ export default async function ArticleDetailPage({ params }: PageProps) {
           </header>
 
           {article.coverImage && (
-            <div className="relative mb-8 aspect-[16/9] w-full overflow-hidden rounded-xl">
+            <div className="relative mb-8 aspect-[16/9] w-full overflow-hidden">
               <Image
                 src={article.coverImage}
                 alt={article.title}
                 fill
                 className="object-cover"
+                style={{ filter: 'grayscale(1) contrast(1.08)' }}
                 unoptimized={true}
                 priority
               />
@@ -142,15 +142,15 @@ export default async function ArticleDetailPage({ params }: PageProps) {
 
           {/* Sources Section */}
           {article.sources && article.sources.length > 0 && (
-            <div className="mt-8 rounded-lg border border-gray-200 bg-gray-50 p-6">
-              <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900">
-                <ExternalLink className="h-5 w-5 text-primary-600" />
+            <div className="mt-8 border border-[#d7d3d3] bg-[#f8f4f4] p-6">
+              <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-[#201e1d]">
+                <ExternalLink className="h-5 w-5 text-[#ec3013]" />
                 Sources
               </h3>
               <ul className="space-y-3">
                 {article.sources.map((source, index) => (
                   <li key={index} className="flex items-start gap-2">
-                    <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-medium text-primary-700">
+                    <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center bg-[#ffe0d9] text-xs font-semibold text-[#ae1800]">
                       {index + 1}
                     </span>
                     <div className="flex-1">
@@ -158,12 +158,12 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                         href={source.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700"
+                        className="group inline-flex items-center gap-1 text-sm font-semibold text-[#ec3013] hover:text-[#ae1800]"
                       >
                         {source.name}
                         <ExternalLink className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
                       </a>
-                      <p className="mt-1 text-xs text-gray-500 break-all">{source.url}</p>
+                      <p className="mt-1 text-xs text-[#9b9797] break-all">{source.url}</p>
                     </div>
                   </li>
                 ))}
@@ -171,7 +171,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
             </div>
           )}
 
-          <div className="mt-8 border-t border-gray-200 pt-8">
+          <div className="mt-8 border-t border-[#d7d3d3] pt-8">
             <div className="flex items-center justify-end gap-3">
               <FavoriteButton articleId={article.id} />
               <ShareButton
@@ -183,8 +183,8 @@ export default async function ArticleDetailPage({ params }: PageProps) {
           </div>
 
           {relatedArticles.length > 0 && (
-            <section className="mt-12 border-t border-gray-200 pt-12">
-              <h2 className="mb-6 text-2xl font-bold text-gray-900">
+            <section className="mt-12 border-t border-[#d7d3d3] pt-12">
+              <h2 className="mb-6 text-2xl font-extrabold text-[#201e1d]">
                 Articles similaires
               </h2>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -195,8 +195,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
             </section>
           )}
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </PublicShell>
   );
 }

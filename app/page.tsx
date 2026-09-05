@@ -1,25 +1,28 @@
 import Link from 'next/link';
-import { Button, Badge } from '@/components/atoms';
-import { ArticleCard, FeaturedCarousel, FloatingCTA } from '@/components/molecules';
-import { Header, Footer } from '@/components/organisms';
+import Image from 'next/image';
+import { Archivo } from 'next/font/google';
 import { apiConfig } from '@/config/api.config';
 import { Article, ArticleStatus } from '@/types';
-import { HomePageClient } from './HomePageClient';
-import { Lock, Globe2, Radar, ArrowRight, Newspaper, Flame } from 'lucide-react';
+import { HomeCountrySwitcher } from './HomeCountrySwitcher';
+import { HomeAuthButton } from './HomeAuthButton';
+import { Search, ArrowRight } from 'lucide-react';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { CONTACT_INFO } from '@/lib/constants/contact';
+
+const archivo = Archivo({ subsets: ['latin'], weight: ['400', '500', '600', '800'] });
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
 const SECTOR_LABELS: Record<string, string> = {
-  'banque-assurance': 'Banque & Assurance',
-  'energie': 'Énergie',
-  'agro-industrielle': 'Agro Industrielle',
+  'banque-assurance': 'Banque & assurance',
+  energie: 'Énergie',
+  'agro-industrielle': 'Agro-industrie',
 };
 
-function getTextPreview(html: string, maxLength: number = 100): string {
+function getTextPreview(html: string, maxLength: number = 160): string {
   const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 }
@@ -32,7 +35,7 @@ function mapArticle(data: any): Article {
     slug: data.slug,
     content: data.content,
     excerpt: data.excerpt,
-    coverImage: data.imageUrl, // Backend utilise imageUrl
+    coverImage: data.imageUrl,
     imageUrl: data.imageUrl,
     category: data.category,
     country: data.country,
@@ -56,6 +59,14 @@ function mapArticle(data: any): Article {
   };
 }
 
+function extractArticles(result: any): any[] {
+  if (Array.isArray(result)) return result;
+  if (Array.isArray(result?.data)) return result.data;
+  if (Array.isArray(result?.data?.data)) return result.data.data;
+  if (Array.isArray(result?.data?.items)) return result.data.items;
+  return [];
+}
+
 async function getFeaturedArticles(): Promise<Article[]> {
   try {
     const response = await fetch(
@@ -63,76 +74,23 @@ async function getFeaturedArticles(): Promise<Article[]> {
       { cache: 'no-store' }
     );
     if (!response.ok) return [];
-    const result = await response.json();
-    let articles: any[] = [];
-    if (Array.isArray(result)) {
-      articles = result;
-    } else if (Array.isArray(result.data)) {
-      articles = result.data;
-    } else if (Array.isArray(result.data?.data)) {
-      articles = result.data.data;
-    }
-    return articles.map(mapArticle);
+    return extractArticles(await response.json()).map(mapArticle);
   } catch (error) {
     console.error('Error fetching featured articles:', error);
     return [];
   }
 }
 
-async function getFocusArticles(): Promise<Article[]> {
-  try {
-    // Try with articleSection parameter (backend may use this or 'section')
-    const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles?articleSection=focus&limit=6&publishedToday=true`,
-      { cache: 'no-store' }
-    );
-    
-    console.log('[Home] Focus articles response status:', response.status);
-    
-    if (!response.ok) return [];
-    
-    const result = await response.json();
-    console.log('[Home] Focus articles raw result:', result);
-    
-    // Handle multiple response structures
-    let articles: any[] = [];
-    if (Array.isArray(result)) {
-      articles = result;
-    } else if (Array.isArray(result.data)) {
-      articles = result.data;
-    } else if (result.data?.data && Array.isArray(result.data.data)) {
-      articles = result.data.data;
-    } else if (result.data?.items && Array.isArray(result.data.items)) {
-      articles = result.data.items;
-    }
-    
-    console.log('[Home] Focus articles parsed count:', articles.length);
-    return articles.map(mapArticle);
-  } catch (error) {
-    console.error('Error fetching focus articles:', error);
-    return [];
-  }
-}
-
-async function getSummaryArticles(): Promise<Article[]> {
+async function getLatestArticles(): Promise<Article[]> {
   try {
     const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles?contentType=summary&limit=8&publishedToday=true`,
+      `${apiConfig.baseUrl}/api/articles?limit=6&sortBy=date&sortOrder=DESC`,
       { cache: 'no-store' }
     );
     if (!response.ok) return [];
-    const result = await response.json();
-    let articles: any[] = [];
-    if (Array.isArray(result)) {
-      articles = result;
-    } else if (Array.isArray(result.data)) {
-      articles = result.data;
-    } else if (result.data?.data && Array.isArray(result.data.data)) {
-      articles = result.data.data;
-    }
-    return articles.map(mapArticle);
+    return extractArticles(await response.json()).map(mapArticle);
   } catch (error) {
-    console.error('Error fetching summary articles:', error);
+    console.error('Error fetching latest articles:', error);
     return [];
   }
 }
@@ -151,7 +109,7 @@ interface VeilleSectorielleEntry {
 async function getVeilleSectorielleEntries(): Promise<VeilleSectorielleEntry[]> {
   try {
     const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles/veille-sectorielle/entries?limit=6`,
+      `${apiConfig.baseUrl}/api/articles/veille-sectorielle/entries?limit=4`,
       { cache: 'no-store' }
     );
     if (!response.ok) return [];
@@ -160,29 +118,6 @@ async function getVeilleSectorielleEntries(): Promise<VeilleSectorielleEntry[]> 
     return Array.isArray(entries) ? entries : [];
   } catch (error) {
     console.error('Error fetching veille sectorielle entries:', error);
-    return [];
-  }
-}
-
-async function getInternationalArticles(): Promise<Article[]> {
-  try {
-    const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles?scope=international&limit=6&publishedToday=true`,
-      { cache: 'no-store' }
-    );
-    if (!response.ok) return [];
-    const result = await response.json();
-    let articles: any[] = [];
-    if (Array.isArray(result)) {
-      articles = result;
-    } else if (Array.isArray(result.data)) {
-      articles = result.data;
-    } else if (result.data?.data && Array.isArray(result.data.data)) {
-      articles = result.data.data;
-    }
-    return articles.map(mapArticle);
-  } catch (error) {
-    console.error('Error fetching international articles:', error);
     return [];
   }
 }
@@ -207,341 +142,428 @@ async function getCountries(): Promise<CountryListItem[]> {
   }
 }
 
+interface CategoryItem {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+async function getCategories(): Promise<CategoryItem[]> {
+  try {
+    const response = await fetch(`${apiConfig.baseUrl}/api/categories`, { cache: 'no-store' });
+    if (!response.ok) return [];
+    const result = await response.json();
+    const list = result.data || result;
+    return Array.isArray(list) ? list : [];
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
+}
+
+interface CountryHeadlines extends CountryListItem {
+  total: number;
+  headlines: { id: string; title: string; slug: string }[];
+}
+
+async function getCountryHeadlines(countries: CountryListItem[]): Promise<CountryHeadlines[]> {
+  return Promise.all(
+    countries.map(async (country) => {
+      try {
+        const response = await fetch(
+          `${apiConfig.baseUrl}/api/articles/country/${country.code.toLowerCase()}/all?limit=3`,
+          { cache: 'no-store' }
+        );
+        if (!response.ok) return { ...country, total: 0, headlines: [] };
+        const result = await response.json();
+        const payload = result.data?.data !== undefined ? result.data : result;
+        const items = Array.isArray(payload?.data) ? payload.data : [];
+        return {
+          ...country,
+          total: payload?.total ?? items.length,
+          headlines: items.slice(0, 3).map((a: any) => ({ id: a.id, title: a.title, slug: a.slug })),
+        };
+      } catch {
+        return { ...country, total: 0, headlines: [] };
+      }
+    }),
+  );
+}
+
+function relativeTime(date?: string): string | null {
+  if (!date) return null;
+  try {
+    return formatDistanceToNow(new Date(date), { locale: fr, addSuffix: true });
+  } catch {
+    return null;
+  }
+}
+
+const grayscalePhoto = { filter: 'grayscale(1) contrast(1.08)' } as const;
+
 export default async function HomePage() {
-  const [featuredArticles, focusArticles, summaryArticles, veilleSectorielleEntries, internationalArticles, countries] = await Promise.all([
+  const [featuredArticles, latestArticles, veilleSectorielleEntries, countries, categories] = await Promise.all([
     getFeaturedArticles(),
-    getFocusArticles(),
-    getSummaryArticles(),
+    getLatestArticles(),
     getVeilleSectorielleEntries(),
-    getInternationalArticles(),
     getCountries(),
+    getCategories(),
   ]);
 
-  const internationalUemoa = internationalArticles.filter((a) => a.zone === 'uemoa');
-  const internationalHorsUemoa = internationalArticles.filter((a) => a.zone === 'hors-uemoa');
+  const countryHeadlines = await getCountryHeadlines(countries);
+
+  const [lead, ...secondary] = featuredArticles;
+  const secondaryArticles = secondary.slice(0, 3);
+
+  const economie = categories.find((c) => c.slug === 'economie');
+  const politique = categories.find((c) => c.slug === 'politique');
+
+  const leadCategoryLabel = lead?.category?.name || 'Actualité';
+  const leadScopeLabel = lead?.scope === 'international' ? 'International' : 'National';
+  const leadTime = relativeTime(lead?.publishedAt || lead?.createdAt);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      <Header />
-      <main className="flex-1">
-        {/* Hero Section */}
-        {/* <section className="bg-gradient-to-br from-primary-500 to-primary-700 py-2 text-white">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h1 className="mb-3 text-3xl font-bold sm:text-4xl">
-                Bienvenue sur Actu Plus
-              </h1>
-              <p className="mx-auto max-w-2xl text-base text-primary-100">
-                Votre source d'actualités fiable et complète. Restez informé avec
-                les dernières nouvelles d'Afrique de l'Ouest.
-              </p>
-            </div>
+    <div className={`${archivo.className} bg-[#f3f2f2] text-[#201e1d]`} style={{ fontSize: 15, lineHeight: 1.55 }}>
+      <div className="mx-auto max-w-[1440px]">
+        {/* MASTHEAD */}
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-[#201e1d]/40 px-5 py-5 sm:px-10">
+          <Link href="/" className="shrink-0">
+            <Image src="/images/logo-actu-plus.webp" alt="Actu Plus" width={180} height={57} priority unoptimized className="h-12 w-auto sm:h-14" />
+          </Link>
+          <div className="flex flex-1 flex-wrap items-center justify-end gap-3">
+            <form action="/articles" method="GET" className="flex h-[42px] w-full max-w-[260px] items-center gap-2.5 border border-[#d7d3d3] bg-[#f8f4f4] px-4 text-sm text-[#605d5d]">
+              <Search className="h-4 w-4 shrink-0" strokeWidth={2} />
+              <input
+                type="text"
+                name="search"
+                placeholder="Rechercher un sujet, un pays…"
+                className="w-full bg-transparent text-sm text-[#201e1d] placeholder:text-[#605d5d] focus:outline-none"
+              />
+            </form>
+            <Link href="/favorites" className="flex h-[42px] items-center border border-[#201e1d] px-4 text-sm font-semibold text-[#201e1d] transition-colors hover:bg-[#eae9e9]">
+              Favoris
+            </Link>
+            <Link href="/subscriptions" className="flex h-[42px] items-center bg-[#ec3013] px-5 text-sm font-extrabold text-white transition-colors hover:bg-[#dd2b0f]">
+              S'abonner
+            </Link>
+            <HomeAuthButton />
           </div>
-        </section> */}
+        </div>
 
-        {/* Country Tabs */}
-        <HomePageClient />
+        {/* NAV */}
+        <div className="flex flex-wrap items-stretch justify-between gap-y-2 border-b-2 border-[#201e1d]/40 px-5 sm:px-10">
+          <div className="flex flex-wrap items-stretch">
+            <Link href="/" className="flex items-center py-3 pr-4.5 mr-4.5 text-sm font-extrabold shadow-[inset_0_-4px_0_#ec3013]">
+              À la une
+            </Link>
+            {economie && (
+              <Link href={`/articles?category=${economie.id}`} className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
+                Économie
+              </Link>
+            )}
+            {politique && (
+              <Link href={`/articles?category=${politique.id}`} className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
+                Politique
+              </Link>
+            )}
+            <Link href="#revue-de-presse" className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
+              Revue de presse
+            </Link>
+            <Link href="/veille-sectorielle" className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
+              Veille sectorielle
+            </Link>
+            <Link href="/focus" className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
+              Focus
+            </Link>
+            <Link href="/archives" className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
+              Archives
+            </Link>
+          </div>
+          <div className="flex items-center py-2">
+            <HomeCountrySwitcher />
+          </div>
+        </div>
 
-        {/* À la une */}
-        <section className="py-6">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-100">
-                <Flame className="h-5 w-5 text-primary-600 animate-pulse-slow" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-900">À la une</h2>
+        {/* UNE + LE FIL */}
+        <div className="grid grid-cols-1 border-b-2 border-[#201e1d]/40 lg:grid-cols-[1fr_360px]">
+          <div className="lg:border-r-2 lg:border-[#201e1d]/40">
+            {/* UNE */}
+            <div className="border-b-2 border-[#201e1d]/40 px-5 py-8 sm:px-9 sm:py-10">
+              {lead ? (
+                <Link href={getArticlePublicPath(lead)} className="block">
+                  <div className="mb-4.5 flex flex-wrap items-center gap-3.5">
+                    <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#ec3013]">
+                      {leadCategoryLabel} · {leadScopeLabel}
+                    </span>
+                    <span className="h-px flex-1 bg-[#d7d3d3]" />
+                    {leadTime && (
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#605d5d]">{leadTime}</span>
+                    )}
+                  </div>
+                  {(lead.coverImage || lead.imageUrl) && (
+                    <div className="mb-6 h-[240px] overflow-hidden sm:h-[340px]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={lead.coverImage || lead.imageUrl} alt={lead.title} className="h-full w-full object-cover" style={grayscalePhoto} />
+                    </div>
+                  )}
+                  <h1 className="mb-4 max-w-[20ch] text-[32px] font-extrabold leading-[1.05] tracking-[-0.025em] sm:text-[56px]">
+                    {lead.title}
+                  </h1>
+                  {lead.excerpt && (
+                    <p className="max-w-[62ch] text-[17px] leading-[1.5] text-[#444141] sm:text-[19px]">{lead.excerpt}</p>
+                  )}
+                </Link>
+              ) : (
+                <p className="text-[#605d5d]">Aucun article à la une pour le moment.</p>
+              )}
             </div>
-            {featuredArticles.length > 0 ? (
-              <FeaturedCarousel articles={featuredArticles} />
-            ) : (
-              <div className="aspect-video rounded-xl bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <span className="text-6xl font-bold opacity-20">A+</span>
-                  <p className="mt-4 text-lg">Aucun article à la une</p>
-                </div>
+
+            {/* 3 UNES SECONDAIRES */}
+            {secondaryArticles.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2">
+                {secondaryArticles.map((article, i) => (
+                  <Link
+                    key={article.id}
+                    href={getArticlePublicPath(article)}
+                    className={`p-7 ${i < secondaryArticles.length - 1 ? 'border-b border-[#d7d3d3] sm:border-b-0 sm:border-r' : ''} ${i >= 2 ? 'border-t sm:border-t-0' : ''}`}
+                  >
+                    {(article.coverImage || article.imageUrl) && (
+                      <div className="mb-4.5 h-[170px] overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={article.coverImage || article.imageUrl} alt={article.title} className="h-full w-full object-cover" style={grayscalePhoto} />
+                      </div>
+                    )}
+                    <div className="mb-2.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#ec3013]">
+                      {article.category?.name || 'Actualité'}
+                      {article.country?.name ? ` · ${article.country.name}` : ''}
+                    </div>
+                    <div className="mb-2.5 text-[22px] font-extrabold leading-[1.1] tracking-[-0.02em] sm:text-[26px]">
+                      {article.title}
+                    </div>
+                    {article.excerpt && <div className="text-sm leading-[1.5] text-[#444141]">{article.excerpt}</div>}
+                  </Link>
+                ))}
               </div>
             )}
           </div>
-        </section>
 
-        {/* Résumé de l'actualité */}
-        <section className="pb-6">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col bg-white overflow-hidden">
-              <div className="flex items-center gap-3 px-5 py-4">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100">
-                  <svg className="h-5 w-5 text-amber-600 animate-pulse-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900">Résumé de l'actualité</h2>
-                  <p className="text-xs text-gray-500">Contenu réservé aux abonnés</p>
-                </div>
-              </div>
-              <div className="p-4">
-                {summaryArticles.length > 0 ? (
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {summaryArticles.map((article) => (
-                      <Link
-                        key={article.id}
-                        href={article.country?.code ? `/country/${article.country.code.toLowerCase()}` : getArticlePublicPath(article)}
-                        className="group flex gap-3 rounded-xl border border-gray-100 p-2.5 transition-all duration-200 hover:border-gray-200 hover:shadow-md"
-                      >
-                        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg">
-                          {(article.coverImage || article.imageUrl) ? (
-                            <img
-                              src={article.coverImage || article.imageUrl}
-                              alt={article.title}
-                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-amber-50 to-amber-100">
-                              <span className="text-lg font-bold text-amber-200">R</span>
-                            </div>
-                          )}
+          {/* LE FIL — TEMPS RÉEL */}
+          <div className="px-5 py-7 sm:px-7">
+            <div className="mb-4 flex items-baseline justify-between border-b-2 border-[#201e1d]/40 pb-3">
+              <span className="text-sm font-extrabold uppercase tracking-[0.12em]">Le Fil</span>
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#ec3013]">Temps réel</span>
+            </div>
+            {latestArticles.length === 0 ? (
+              <p className="text-sm text-[#605d5d]">Aucun article publié pour le moment.</p>
+            ) : (
+              <div className="divide-y divide-[#d7d3d3]">
+                {latestArticles.map((article) => {
+                  const publishedDate = article.publishedAt || article.createdAt;
+                  const time = publishedDate ? format(new Date(publishedDate), "HH'h'mm") : null;
+                  const tags = [article.country?.name, article.category?.name].filter(Boolean).join(' · ');
+                  return (
+                    <Link key={article.id} href={getArticlePublicPath(article)} className="group block py-4 first:pt-0">
+                      {time && (
+                        <div className="mb-1.5 text-[11px] font-extrabold text-[#ec3013]">{time}</div>
+                      )}
+                      <div className="mb-1.5 line-clamp-2 text-[15px] font-extrabold leading-tight text-[#201e1d] transition-colors group-hover:text-[#ec3013]">
+                        {article.title}
+                      </div>
+                      {tags && (
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#9b9797]">
+                          {tags}
                         </div>
-                        <div className="min-w-0 flex-1 py-0.5">
-                          <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors leading-snug">
-                            {article.title}
-                          </h3>
-                          {article.excerpt && (
-                            <p className="mt-1 line-clamp-1 text-xs text-gray-500 leading-relaxed">
-                              {article.excerpt}
-                            </p>
-                          )}
-                          <div className="mt-1.5 flex items-center gap-2">
-                            {article.country && (
-                              <span className="text-xs text-gray-400">
-                                {article.country.flag && <span className="mr-1">{article.country.flag}</span>}
-                                {article.country.name}
-                              </span>
-                            )}
-                            {article.isPremium && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-                                <Lock className="h-2.5 w-2.5" />
-                                Abonné
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="py-8 text-center">
-                    <p className="text-sm text-gray-500">Aucun résumé disponible</p>
-                  </div>
-                )}
+                      )}
+                    </Link>
+                  );
+                })}
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* REVUE DE PRESSE */}
+        <div id="revue-de-presse" className="scroll-mt-4 px-5 py-11 sm:px-9 sm:py-12">
+          <div className="mb-6.5 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-[28px] font-extrabold leading-[1.05] tracking-[-0.022em] sm:text-[34px]">Revue de presse</h2>
+              <div className="mt-2 text-[14.5px] text-[#605d5d]">Ce que disent les journaux du jour, pays par pays.</div>
             </div>
           </div>
-        </section>
-
-        {/* Revue de presse */}
-        <section className="pb-6">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col bg-white overflow-hidden">
-              <div className="flex items-center gap-3 px-5 py-4">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100">
-                  <Newspaper className="h-5 w-5 text-blue-600 animate-bounce-slow" />
+          {countryHeadlines.length === 0 ? (
+            <p className="border-t-2 border-[#201e1d]/40 py-8 text-center text-sm text-[#605d5d]">Aucun pays disponible.</p>
+          ) : (
+            <div className="grid grid-cols-1 border-t-2 border-b-2 border-[#201e1d]/40 sm:grid-cols-2 lg:grid-cols-3">
+              {countryHeadlines.map((country, i) => (
+                <div
+                  key={country.id}
+                  className={`p-6.5 ${i < countryHeadlines.length - 1 ? 'border-b border-[#d7d3d3] sm:border-b-0 sm:border-r' : ''}`}
+                >
+                  <div className="mb-4 flex items-baseline justify-between">
+                    <span className="text-xl font-extrabold tracking-[-0.01em]">
+                      {country.flag ? `${country.flag} ` : ''}{country.name}
+                    </span>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#605d5d]">
+                      {country.total} titre{country.total !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  {country.headlines.length > 0 ? (
+                    <div className="grid gap-2.5 text-sm leading-[1.4] text-[#2d2b2b]">
+                      {country.headlines.map((h) => (
+                        <Link key={h.id} href={`/articles/${h.slug || h.id}`} className="grid grid-cols-[16px_1fr] hover:text-[#ec3013]">
+                          <span className="font-extrabold text-[#ec3013]">·</span>
+                          {h.title}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-[#9b9797]">Aucun article pour le moment.</p>
+                  )}
+                  <Link
+                    href={`/country/${country.code.toLowerCase()}`}
+                    className="mt-4.5 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.1em] text-[#ae1800]"
+                  >
+                    Lire la synthèse <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  </Link>
                 </div>
-                <h2 className="text-lg font-bold text-gray-900">Revue de presse</h2>
-              </div>
-              <div className="p-4">
-                {countries.length > 0 ? (
-                  <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                    {countries.map((country) => (
-                      <Link
-                        key={country.id}
-                        href={`/country/${country.code.toLowerCase()}`}
-                        className="group flex items-center gap-3 rounded-xl border border-gray-100 px-4 py-3 transition-all duration-200 hover:border-primary-200 hover:bg-primary-50"
-                      >
-                        {country.flag && <span className="text-xl">{country.flag}</span>}
-                        <span className="flex-1 font-medium text-gray-900 group-hover:text-primary-600">{country.name}</span>
-                        <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-primary-500" />
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="py-8 text-center">
-                    <p className="text-sm text-gray-500">Aucun pays disponible</p>
-                  </div>
-                )}
-              </div>
+              ))}
             </div>
-          </div>
-        </section>
+          )}
+        </div>
 
-        {/* Actualités Internationales : par zone (chaque zone présentée comme la section À la une) */}
-        <section className="pb-6">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
-                  <Globe2 className="h-5 w-5 text-indigo-600 animate-spin-slow" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">Actualités Internationales</h2>
-              </div>
-              <Link
-                href="/actualites-internationales"
-                className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
-              >
-                Voir plus <ArrowRight className="h-3 w-3" />
+        {/* BANNIÈRE PRO */}
+        <div className="bg-[#ec3013] px-5 py-12 text-white sm:px-9 sm:py-14">
+          <div className="grid grid-cols-1 items-end gap-10 lg:grid-cols-[1fr_420px]">
+            <div>
+              <div className="mb-4.5 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ffe0d9]">Actu Plus Pro</div>
+              <h2 className="mb-4.5 max-w-[24ch] text-[34px] font-extrabold leading-[1.0] tracking-[-0.03em] sm:text-[52px]">
+                La veille que vos équipes lisent avant la réunion de 9 h.
+              </h2>
+              <p className="mb-7 max-w-[54ch] text-base leading-[1.55] text-[#ffe0d9]">
+                Résumés quotidiens par pays, veille sur plusieurs filières, notes Focus et archives.
+              </p>
+              <Link href="/subscriptions" className="inline-flex h-[50px] items-center bg-[#201e1d] px-6 text-[15px] font-extrabold text-white transition-colors hover:bg-black">
+                Découvrir Actu Plus Pro
               </Link>
             </div>
-            {internationalUemoa.length === 0 && internationalHorsUemoa.length === 0 ? (
-              <div className="rounded-lg bg-white py-8 text-center">
-                <p className="text-sm text-gray-500">Aucune actualité internationale</p>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                {[
-                  { label: 'Zone UEMOA', items: internationalUemoa },
-                  { label: 'Hors UEMOA', items: internationalHorsUemoa },
-                ].map(
-                  (group) =>
-                    group.items.length > 0 && (
-                      <div key={group.label}>
-                        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">{group.label}</h3>
-                        <FeaturedCarousel articles={group.items} />
-                      </div>
-                    ),
-                )}
-              </div>
-            )}
+            <div className="grid gap-0 border-t-2 border-white/50">
+              {[
+                { n: '01', t: "Résumé de l'actualité", d: 'Une synthèse par pays, chaque matin.' },
+                { n: '02', t: 'Veille sectorielle', d: 'Banque, énergie, agro-industrie…' },
+                { n: '03', t: 'Notes Focus', d: 'Analyses longues sur les dossiers structurants.' },
+                { n: '04', t: 'Archives', d: 'Recherche plein texte dans nos archives.' },
+              ].map((item, i, arr) => (
+                <div key={item.n} className={`grid grid-cols-[34px_1fr] gap-3.5 py-4 ${i < arr.length - 1 ? 'border-b border-white/35' : ''}`}>
+                  <span className="text-[13px] font-extrabold text-[#ffc4b8]">{item.n}</span>
+                  <div>
+                    <div className="text-[15px] font-extrabold">{item.t}</div>
+                    <div className="text-[13px] leading-[1.4] text-[#ffe0d9]">{item.d}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </section>
+        </div>
 
-        {/* Focus + Veille Sectorielle */}
-        <section className="pb-10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-8 lg:grid-cols-2">
-              {/* Focus */}
-              <div>
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-100">
-                      <svg className="h-5 w-5 text-red-600 animate-bounce-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                      </svg>
-                    </div>
-                    <h2 className="text-xl font-bold text-gray-900">Focus</h2>
+        {/* VEILLE SECTORIELLE */}
+        <div className="px-5 py-11 sm:px-9 sm:py-13">
+          <div className="mb-5.5 flex flex-wrap items-end justify-between gap-4">
+            <h2 className="text-[28px] font-extrabold leading-[1.05] tracking-[-0.022em] sm:text-[34px]">Veille sectorielle</h2>
+            <div className="flex flex-wrap border border-[#201e1d]">
+              <Link href="/veille-sectorielle" className="px-4 py-2 text-[13px] font-extrabold text-[#201e1d] transition-colors hover:bg-[#eae9e9]">
+                Toutes
+              </Link>
+              {Object.entries(SECTOR_LABELS).map(([value, label]) => (
+                <Link
+                  key={value}
+                  href={`/veille-sectorielle?sector=${value}`}
+                  className="border-l border-[#201e1d] px-4 py-2 text-[13px] text-[#201e1d] transition-colors hover:bg-[#eae9e9]"
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </div>
+          {veilleSectorielleEntries.length === 0 ? (
+            <p className="border-t-2 border-[#201e1d]/40 py-8 text-center text-sm text-[#605d5d]">
+              Aucune veille sectorielle disponible pour le moment.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 border-t-2 border-[#201e1d]/40 sm:grid-cols-2">
+              {veilleSectorielleEntries.map((entry, i) => (
+                <div
+                  key={`${entry.articleId}-${i}`}
+                  className={`py-6.5 ${i % 2 === 0 ? 'sm:border-r sm:pr-7.5' : 'sm:pl-7.5'} ${i > 0 ? 'border-t border-[#d7d3d3] sm:border-t-0' : ''} ${i >= 2 ? 'sm:border-t sm:border-[#d7d3d3]' : ''}`}
+                >
+                  <div className="mb-3.5 flex items-center justify-between">
+                    <span className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#605d5d]">
+                      {entry.sector ? SECTOR_LABELS[entry.sector] : 'Veille sectorielle'}
+                      {entry.country?.name ? ` · ${entry.country.name}` : ''}
+                    </span>
                   </div>
-                  <Link
-                    href="/focus"
-                    className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
-                  >
-                    Voir plus <ArrowRight className="h-3 w-3" />
-                  </Link>
+                  <div className="mb-3 text-2xl font-extrabold leading-[1.1] tracking-[-0.018em]">{entry.title}</div>
+                  <p className="text-sm leading-[1.55] text-[#444141]">{getTextPreview(entry.summary)}</p>
+                  <div className="mt-4 flex items-center gap-4">
+                    <Link
+                      href={entry.country?.code ? `/country/${entry.country.code.toLowerCase()}?tab=veille-sectorielle` : `/articles/${entry.articleSlug}`}
+                      className="flex h-11 items-center bg-[#ec3013] px-5 text-sm font-extrabold text-white transition-colors hover:bg-[#dd2b0f]"
+                    >
+                      Voir plus
+                    </Link>
+                    {entry.publishedAt && (
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#605d5d]">
+                        {new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(new Date(entry.publishedAt))}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                {focusArticles.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    {focusArticles.map((article) => (
-                      <Link
-                        key={article.id}
-                        href={
-                          // Un article Focus archivé n'apparaît plus dans l'onglet
-                          // Focus de sa page pays (celle-ci exclut les articles
-                          // archivés) alors qu'il reste visible un moment sur
-                          // l'accueil (comportement voulu). On pointe donc
-                          // directement vers sa page de détail — qui gère déjà
-                          // le paywall — plutôt que vers un onglet pays qui
-                          // afficherait "Aucun article Focus disponible".
-                          !article.isArchive && article.country?.code
-                            ? `/country/${article.country.code.toLowerCase()}?tab=focus`
-                            : getArticlePublicPath(article)
-                        }
-                        className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
-                      >
-                        <div className="relative aspect-video w-full overflow-hidden">
-                          {(article.coverImage || article.imageUrl) ? (
-                            <img
-                              src={article.coverImage || article.imageUrl}
-                              alt={article.title}
-                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-red-50 to-red-100">
-                              <span className="text-2xl font-bold text-red-200">F</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex flex-1 flex-col p-2.5">
-                          <Badge variant="error" size="sm" className="mb-1.5 self-start">
-                            Focus
-                          </Badge>
-                          <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
-                            {article.title}
-                          </h3>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-lg bg-white p-8 text-center">
-                    <p className="text-gray-500">Aucun article Focus disponible pour le moment.</p>
-                    <p className="mt-2 text-sm text-gray-400">
-                      Revenez bientôt pour découvrir nos analyses approfondies.
-                    </p>
-                  </div>
-                )}
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* FOOTER */}
+        <div className="bg-[#201e1d] px-5 py-12 text-[#bab6b6] sm:px-9">
+          <div className="grid grid-cols-1 gap-10 border-b-2 border-[#f3f2f2]/35 pb-9 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr] lg:gap-12">
+            <div>
+              <div className="mb-4 w-max bg-[#f3f2f2] px-3 py-2.5">
+                <Image src="/images/logo-actu-plus.webp" alt="Actu Plus" width={130} height={41} unoptimized className="h-9 w-auto" />
               </div>
-
-              {/* Veille Sectorielle */}
-              <div>
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-100">
-                      <Radar className="h-5 w-5 text-teal-600 animate-spin-slow" />
-                    </div>
-                    <h2 className="text-xl font-bold text-gray-900">Veille Sectorielle</h2>
-                  </div>
-                  <Link
-                    href="/veille-sectorielle"
-                    className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
-                  >
-                    Voir plus <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-                {veilleSectorielleEntries.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    {veilleSectorielleEntries.map((entry, index) => (
-                      <Link
-                        key={`${entry.articleId}-${index}`}
-                        href={entry.country?.code ? `/country/${entry.country.code.toLowerCase()}?tab=veille-sectorielle` : `/articles/${entry.articleSlug}`}
-                        className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white p-2.5 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
-                      >
-                        {entry.sector && (
-                          <Badge variant="secondary" size="sm" className="mb-1.5 self-start">
-                            {SECTOR_LABELS[entry.sector]}
-                          </Badge>
-                        )}
-                        <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
-                          Veille Sectorielle
-                          {entry.country && ` — ${entry.country.flag ? `${entry.country.flag} ` : ''}${entry.country.name}`}
-                          {entry.publishedAt && ` — ${format(new Date(entry.publishedAt), 'dd MMM yyyy', { locale: fr })}`}
-                        </h3>
-                        <p className="mt-1 line-clamp-2 text-xs text-gray-500 leading-relaxed">
-                          {getTextPreview(entry.summary)}
-                        </p>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-lg bg-white p-8 text-center">
-                    <p className="text-gray-500">Aucune veille sectorielle disponible pour le moment.</p>
-                  </div>
-                )}
+              <div className="max-w-[40ch] text-sm leading-[1.6]">
+                Plateforme d'actualité et de veille dédiée à l'Afrique de l'Ouest. Sur le web et sur l'application mobile.
+              </div>
+            </div>
+            <div>
+              <div className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#f3f2f2]">Naviguer</div>
+              <div className="grid gap-2.5 text-sm">
+                <Link href="/" className="hover:text-white">À la une</Link>
+                <Link href="/veille-sectorielle" className="hover:text-white">Veille sectorielle</Link>
+                <Link href="/focus" className="hover:text-white">Focus</Link>
+                <Link href="/archives" className="hover:text-white">Archives</Link>
+              </div>
+            </div>
+            <div>
+              <div className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#f3f2f2]">Offres</div>
+              <div className="grid gap-2.5 text-sm">
+                <Link href="/subscriptions" className="hover:text-white">Abonnement Pro</Link>
+                <Link href="/about" className="hover:text-white">À propos</Link>
+              </div>
+            </div>
+            <div>
+              <div className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#f3f2f2]">Contact</div>
+              <div className="grid gap-2.5 text-sm">
+                <span>{CONTACT_INFO.email}</span>
+                <span>{CONTACT_INFO.phoneDisplay}</span>
+                <Link href="/terms" className="hover:text-white">Conditions d'utilisation</Link>
+                <Link href="/privacy" className="hover:text-white">Confidentialité</Link>
               </div>
             </div>
           </div>
-        </section>
-      </main>
-      <Footer />
-      
-      {/* Floating CTA */}
-      <FloatingCTA />
+          <div className="flex flex-col gap-2 pt-5.5 text-[12.5px] text-[#7d7979] sm:flex-row sm:items-center sm:justify-between">
+            <span>© {new Date().getFullYear()} Actu Plus. Tous droits réservés.</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { Header, Footer } from '@/components/organisms';
+import { PublicShell } from '../PublicShell';
 import { Button, Input, Alert } from '@/components/atoms';
 import { User, Mail, Phone, Calendar, Crown, Heart, Bell, Shield, LogOut, Trash2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
@@ -187,16 +187,14 @@ export default function ProfilePage() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex flex-1 items-center justify-center">
+      <PublicShell>
+        <div className="flex flex-1 items-center justify-center py-24">
           <div className="text-center">
-            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600"></div>
-            <p className="mt-4 text-gray-600">Chargement...</p>
+            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#ffe0d9] border-t-[#ec3013]"></div>
+            <p className="mt-4 text-[#605d5d]">Chargement...</p>
           </div>
-        </main>
-        <Footer />
-      </div>
+        </div>
+      </PublicShell>
     );
   }
 
@@ -206,14 +204,13 @@ export default function ProfilePage() {
 
   return (
     <>
-    <div className="flex min-h-screen flex-col bg-gray-50">
-      <Header />
-      <main className="flex-1 py-8">
+    <PublicShell>
+      <div className="py-8">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           {/* Header Section */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Mon Profil</h1>
-            <p className="mt-2 text-gray-600">Gérez vos informations personnelles et préférences</p>
+            <h1 className="text-3xl font-extrabold text-[#201e1d]">Mon Profil</h1>
+            <p className="mt-2 text-[#605d5d]">Gérez vos informations personnelles et préférences</p>
           </div>
 
           {error && (
@@ -232,12 +229,12 @@ export default function ProfilePage() {
             {/* Left Column - Profile Info */}
             <div className="lg:col-span-2 space-y-6">
               {/* Personal Information Card */}
-              <div className="rounded-lg bg-white p-6 shadow-sm">
+              <div className="border border-[#d7d3d3] bg-white p-6">
                 <div className="mb-6 flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-900">Informations personnelles</h2>
+                  <h2 className="text-xl font-bold text-[#201e1d]">Informations personnelles</h2>
                   {!isEditing ? (
                     <Button
-                      variant="outline"
+                      variant="modernist-outline"
                       size="sm"
                       onClick={() => setIsEditing(true)}
                     >
@@ -246,7 +243,7 @@ export default function ProfilePage() {
                   ) : (
                     <div className="flex gap-2">
                       <Button
-                        variant="outline"
+                        variant="modernist-outline"
                         size="sm"
                         onClick={() => {
                           setUserData(savedUserData);
@@ -257,7 +254,7 @@ export default function ProfilePage() {
                         Annuler
                       </Button>
                       <Button
-                        variant="primary"
+                        variant="modernist"
                         size="sm"
                         onClick={handleSave}
                         isLoading={isLoading}
@@ -269,8 +266,8 @@ export default function ProfilePage() {
                 </div>
 
                 {loadingProfile ? (
-                  <div className="flex items-center gap-2 py-4 text-gray-600">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600" />
+                  <div className="flex items-center gap-2 py-4 text-[#605d5d]">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#ffe0d9] border-t-[#ec3013]" />
                     <span className="text-sm">Chargement des informations…</span>
                   </div>
                 ) : (
@@ -282,6 +279,7 @@ export default function ProfilePage() {
                       value={userData.firstName}
                       onChange={(e) => setUserData({ ...userData, firstName: e.target.value })}
                       disabled={!isEditing}
+                      className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
                     />
                     <Input
                       label="Nom"
@@ -289,6 +287,7 @@ export default function ProfilePage() {
                       value={userData.lastName}
                       onChange={(e) => setUserData({ ...userData, lastName: e.target.value })}
                       disabled={!isEditing}
+                      className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
                     />
                   </div>
 
@@ -298,6 +297,7 @@ export default function ProfilePage() {
                     leftIcon={<Mail className="h-5 w-5" />}
                     value={userData.email}
                     disabled
+                    className="rounded-none border-[#d7d3d3]"
                   />
 
                   <Input
@@ -308,6 +308,7 @@ export default function ProfilePage() {
                     onChange={(e) => setUserData({ ...userData, phone: e.target.value })}
                     disabled={!isEditing}
                     placeholder="Optionnel"
+                    className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
                   />
 
                 </div>
@@ -315,45 +316,45 @@ export default function ProfilePage() {
               </div>
 
               {/* Quick Actions */}
-              <div className="rounded-lg bg-white p-6 shadow-sm">
-                <h2 className="mb-4 text-xl font-semibold text-gray-900">Accès rapide</h2>
+              <div className="border border-[#d7d3d3] bg-white p-6">
+                <h2 className="mb-4 text-xl font-bold text-[#201e1d]">Accès rapide</h2>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <button
                     onClick={() => router.push('/favorites')}
-                    className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
+                    className="flex items-center gap-3 border border-[#d7d3d3] p-4 transition-colors hover:border-[#201e1d]/40 hover:bg-[#f8f4f4]"
                   >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
-                      <Heart className="h-5 w-5 text-red-600" />
+                    <div className="flex h-10 w-10 items-center justify-center bg-[#ffe0d9]">
+                      <Heart className="h-5 w-5 text-[#ae1800]" />
                     </div>
                     <div className="text-left">
-                      <p className="font-medium text-gray-900">Mes Favoris</p>
-                      <p className="text-sm text-gray-500">Articles sauvegardés</p>
+                      <p className="font-semibold text-[#201e1d]">Mes Favoris</p>
+                      <p className="text-sm text-[#605d5d]">Articles sauvegardés</p>
                     </div>
                   </button>
 
                   <button
                     onClick={() => router.push('/notifications')}
-                    className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
+                    className="flex items-center gap-3 border border-[#d7d3d3] p-4 transition-colors hover:border-[#201e1d]/40 hover:bg-[#f8f4f4]"
                   >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-100">
-                      <Bell className="h-5 w-5 text-yellow-600" />
+                    <div className="flex h-10 w-10 items-center justify-center bg-[#ffe0d9]">
+                      <Bell className="h-5 w-5 text-[#ae1800]" />
                     </div>
                     <div className="text-left">
-                      <p className="font-medium text-gray-900">Notifications</p>
-                      <p className="text-sm text-gray-500">Gérer les alertes</p>
+                      <p className="font-semibold text-[#201e1d]">Notifications</p>
+                      <p className="text-sm text-[#605d5d]">Gérer les alertes</p>
                     </div>
                   </button>
 
                   <button
                     onClick={() => router.push('/security')}
-                    className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
+                    className="flex items-center gap-3 border border-[#d7d3d3] p-4 transition-colors hover:border-[#201e1d]/40 hover:bg-[#f8f4f4]"
                   >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
-                      <Shield className="h-5 w-5 text-green-600" />
+                    <div className="flex h-10 w-10 items-center justify-center bg-[#ffe0d9]">
+                      <Shield className="h-5 w-5 text-[#ae1800]" />
                     </div>
                     <div className="text-left">
-                      <p className="font-medium text-gray-900">Sécurité</p>
-                      <p className="text-sm text-gray-500">Mot de passe</p>
+                      <p className="font-semibold text-[#201e1d]">Sécurité</p>
+                      <p className="text-sm text-[#605d5d]">Mot de passe</p>
                     </div>
                   </button>
                 </div>
@@ -363,27 +364,27 @@ export default function ProfilePage() {
             {/* Right Column - Subscription & Stats */}
             <div className="space-y-6">
               {/* Subscription Card */}
-              <div className="rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 p-6 text-white shadow-lg">
+              <div className="bg-[#201e1d] p-6 text-white">
                 <div className="mb-4 flex items-center gap-2">
                   <Crown className="h-6 w-6" />
-                  <h3 className="text-lg font-semibold">Abonnement</h3>
+                  <h3 className="text-lg font-bold">Abonnement</h3>
                 </div>
-                
+
                 {loadingSubscription ? (
                   <div className="flex items-center gap-2">
                     <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"></div>
-                    <p className="text-sm text-primary-100">Chargement...</p>
+                    <p className="text-sm text-[#bab6b6]">Chargement...</p>
                   </div>
                 ) : subscription?.status === 'active' ? (
                   <>
-                    <p className="mb-2 text-2xl font-bold">{subscription.plan?.name || 'Premium'}</p>
-                    <p className="mb-4 text-sm text-primary-100">
+                    <p className="mb-2 text-2xl font-extrabold">{subscription.plan?.name || 'Premium'}</p>
+                    <p className="mb-4 text-sm text-[#bab6b6]">
                       Expire le {format(new Date(subscription.endDate), 'dd MMMM yyyy', { locale: fr })}
                     </p>
                     <Button
-                      variant="outline"
+                      variant="modernist-outline"
                       size="sm"
-                      className="w-full border-white text-white hover:bg-white hover:text-primary-600"
+                      className="w-full border-white text-white hover:bg-white hover:text-[#201e1d]"
                       onClick={() => router.push('/subscriptions')}
                     >
                       Gérer l'abonnement
@@ -391,14 +392,14 @@ export default function ProfilePage() {
                   </>
                 ) : (
                   <>
-                    <p className="mb-2 text-xl font-semibold">Gratuit</p>
-                    <p className="mb-4 text-sm text-primary-100">
+                    <p className="mb-2 text-xl font-bold">Gratuit</p>
+                    <p className="mb-4 text-sm text-[#bab6b6]">
                       Passez à Premium pour un accès illimité
                     </p>
                     <Button
-                      variant="outline"
+                      variant="modernist-outline"
                       size="sm"
-                      className="w-full border-white text-white hover:bg-white hover:text-primary-600"
+                      className="w-full border-white text-white hover:bg-white hover:text-[#201e1d]"
                       onClick={() => router.push('/subscriptions')}
                     >
                       Découvrir Premium
@@ -408,22 +409,22 @@ export default function ProfilePage() {
               </div>
 
               {/* Account Info */}
-              <div className="rounded-lg bg-white p-6 shadow-sm">
-                <h3 className="mb-4 text-lg font-semibold text-gray-900">Informations du compte</h3>
+              <div className="border border-[#d7d3d3] bg-white p-6">
+                <h3 className="mb-4 text-lg font-bold text-[#201e1d]">Informations du compte</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Rôle</span>
-                    <span className="font-medium text-gray-900 capitalize">{user?.role || 'Utilisateur'}</span>
+                    <span className="text-[#605d5d]">Rôle</span>
+                    <span className="font-semibold text-[#201e1d] capitalize">{user?.role || 'Utilisateur'}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Membre depuis</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="text-[#605d5d]">Membre depuis</span>
+                    <span className="font-semibold text-[#201e1d]">
                       {format(new Date((profileUser ?? user)?.createdAt || Date.now()), 'MMM yyyy', { locale: fr })}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Statut</span>
-                    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                    <span className="text-[#605d5d]">Statut</span>
+                    <span className="bg-[#dcfce7] px-2.5 py-0.5 text-xs font-semibold text-[#166534]">
                       Actif
                     </span>
                   </div>
@@ -436,24 +437,24 @@ export default function ProfilePage() {
                   await fetch('/api/proxy/auth/logout', { method: 'POST' });
                   router.push('/login');
                 }}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-white p-3 text-red-600 transition-colors hover:bg-red-50"
+                className="flex w-full items-center justify-center gap-2 border border-[#ffc4b8] bg-white p-3 text-[#ae1800] transition-colors hover:bg-[#fff2ef]"
               >
                 <LogOut className="h-5 w-5" />
-                <span className="font-medium">Se déconnecter</span>
+                <span className="font-semibold">Se déconnecter</span>
               </button>
 
               {/* Delete Account */}
-              <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+              <div className="border border-[#ffc4b8] bg-[#fff2ef] p-4">
                 <div className="mb-3 flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                  <h3 className="font-semibold text-red-900">Zone de danger</h3>
+                  <AlertTriangle className="h-5 w-5 text-[#ae1800]" />
+                  <h3 className="font-bold text-[#ae1800]">Zone de danger</h3>
                 </div>
-                <p className="mb-3 text-sm text-red-700">
+                <p className="mb-3 text-sm text-[#7c1405]">
                   La suppression de votre compte est irréversible. Toutes vos données seront définitivement effacées.
                 </p>
                 <button
                   onClick={() => { setShowDeleteModal(true); setDeleteError(null); setDeletePassword(''); }}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-400 bg-white p-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-600 hover:text-white"
+                  className="flex w-full items-center justify-center gap-2 border border-[#ae1800] bg-white p-2.5 text-sm font-semibold text-[#ae1800] transition-colors hover:bg-[#ae1800] hover:text-white"
                 >
                   <Trash2 className="h-4 w-4" />
                   Supprimer mon compte
@@ -462,37 +463,36 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </PublicShell>
 
     {/* Modal de confirmation de suppression */}
     {showDeleteModal && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-        <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+        <div className="w-full max-w-md border border-[#201e1d]/40 bg-white p-6">
           <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-              <AlertTriangle className="h-6 w-6 text-red-600" />
+            <div className="flex h-12 w-12 items-center justify-center bg-[#ffe0d9]">
+              <AlertTriangle className="h-6 w-6 text-[#ae1800]" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Supprimer mon compte</h3>
-              <p className="text-sm text-gray-500">Cette action est irréversible</p>
+              <h3 className="text-lg font-extrabold text-[#201e1d]">Supprimer mon compte</h3>
+              <p className="text-sm text-[#605d5d]">Cette action est irréversible</p>
             </div>
           </div>
 
-          <p className="mb-4 text-sm text-gray-600">
+          <p className="mb-4 text-sm text-[#605d5d]">
             Vous êtes sur le point de supprimer définitivement votre compte et toutes vos données.
             Pour confirmer, entrez votre mot de passe.
           </p>
 
           {deleteError && (
-            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="mb-4 border border-[#ffc4b8] bg-[#fff2ef] px-4 py-3 text-sm text-[#ae1800]">
               {deleteError}
             </div>
           )}
 
           <div className="mb-6">
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            <label className="mb-1.5 block text-sm font-semibold text-[#201e1d]">
               Mot de passe
             </label>
             <input
@@ -501,7 +501,7 @@ export default function ProfilePage() {
               onChange={(e) => setDeletePassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleDeleteAccount()}
               placeholder="Votre mot de passe actuel"
-              className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+              className="w-full rounded-none border border-[#d7d3d3] px-4 py-2.5 text-[#201e1d] focus:border-[#ae1800] focus:outline-none focus:ring-2 focus:ring-[#ae1800]/20"
               autoFocus
             />
           </div>
@@ -510,14 +510,14 @@ export default function ProfilePage() {
             <button
               onClick={() => { setShowDeleteModal(false); setDeletePassword(''); setDeleteError(null); }}
               disabled={isDeletingAccount}
-              className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
+              className="flex-1 border border-[#d7d3d3] bg-white px-4 py-2.5 text-sm font-semibold text-[#201e1d] transition-colors hover:bg-[#eae9e9] disabled:opacity-50"
             >
               Annuler
             </button>
             <button
               onClick={handleDeleteAccount}
               disabled={isDeletingAccount || !deletePassword.trim()}
-              className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex-1 bg-[#ae1800] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#7c1405] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isDeletingAccount ? 'Suppression...' : 'Supprimer définitivement'}
             </button>

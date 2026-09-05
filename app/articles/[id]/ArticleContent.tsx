@@ -68,10 +68,10 @@ export function ArticleContent({ article }: ArticleContentProps) {
   if (isLoading || checkingAccess) {
     return (
       <div className="animate-pulse">
-        <div className="h-4 bg-gray-200 rounded mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded mb-4 w-3/4"></div>
-        <div className="h-4 bg-gray-200 rounded mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        <div className="h-4 bg-[#eae9e9] mb-4"></div>
+        <div className="h-4 bg-[#eae9e9] mb-4 w-3/4"></div>
+        <div className="h-4 bg-[#eae9e9] mb-4"></div>
+        <div className="h-4 bg-[#eae9e9] w-1/2"></div>
       </div>
     );
   }
@@ -105,18 +105,18 @@ export function ArticleContent({ article }: ArticleContentProps) {
           />
         )}
         {/* Gradient de fondu */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#f3f2f2] to-transparent" />
       </article>
 
       {/* Message d'accès premium */}
-      <div className="mt-8 rounded-xl border-2 border-primary-200 bg-gradient-to-br from-primary-50 to-primary-100 p-8 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-500">
+      <div className="mt-8 border border-[#ffc4b8] bg-[#fff2ef] p-8 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center bg-[#ec3013]">
           <Crown className="h-8 w-8 text-white" />
         </div>
-        <h3 className="mb-2 text-xl font-bold text-gray-900">
+        <h3 className="mb-2 text-xl font-extrabold text-[#201e1d]">
           Contenu Abonné
         </h3>
-        <p className="mb-6 text-gray-600">
+        <p className="mb-6 text-[#605d5d]">
           {!isAuthenticated
             ? 'Connectez-vous et abonnez-vous pour accéder à ce contenu réservé aux abonnés.'
             : 'Abonnez-vous pour accéder à cet article et à tout le contenu réservé aux abonnés.'}
@@ -125,19 +125,19 @@ export function ArticleContent({ article }: ArticleContentProps) {
           {!isAuthenticated ? (
             <>
               <Link href={`/login?returnUrl=${encodeURIComponent(getArticlePublicPath(article))}`}>
-                <Button variant="primary" leftIcon={<Lock className="h-4 w-4" />}>
+                <Button variant="modernist" leftIcon={<Lock className="h-4 w-4" />}>
                   Se connecter
                 </Button>
               </Link>
               <Link href="/register">
-                <Button variant="outline">
+                <Button variant="modernist-outline">
                   Créer un compte
                 </Button>
               </Link>
             </>
           ) : (
             <Link href="/subscriptions">
-              <Button variant="primary" leftIcon={<Crown className="h-4 w-4" />}>
+              <Button variant="modernist" leftIcon={<Crown className="h-4 w-4" />}>
                 Voir les abonnements
               </Button>
             </Link>

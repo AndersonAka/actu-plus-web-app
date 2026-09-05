@@ -2,7 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Header, Footer, ArticleList } from '@/components/organisms';
+import { PublicShell } from '../PublicShell';
+import { ArticleList } from '@/components/organisms';
 import { SearchBar } from '@/components/molecules';
 import { Select } from '@/components/atoms';
 import { Article, Category, ArticleListResponse } from '@/types';
@@ -99,11 +100,11 @@ function ArticlesContent() {
   };
 
   return (
-    <main className="flex-1 py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="py-8">
+        <div className="mx-auto max-w-360 px-5 sm:px-9">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Articles</h1>
-            <p className="mt-2 text-gray-600">Découvrez toutes nos actualités</p>
+            <h1 className="text-3xl font-extrabold text-[#201e1d]">Articles</h1>
+            <p className="mt-2 text-[#605d5d]">Découvrez toutes nos actualités</p>
           </div>
 
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -123,7 +124,7 @@ function ArticlesContent() {
               ]}
               value={categoryFilter}
               onChange={(e) => handleCategoryChange(e.target.value)}
-              className="w-full sm:w-48"
+              className="w-full rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20 sm:w-48"
             />
           </div>
 
@@ -140,27 +141,25 @@ function ArticlesContent() {
             }
           />
         </div>
-      </main>
+      </div>
   );
 }
 
 export default function ArticlesPage() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
+    <PublicShell>
       <Suspense fallback={
-        <main className="flex-1 py-8">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="py-8">
+          <div className="mx-auto max-w-360 px-5 sm:px-9">
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900">Articles</h1>
-              <p className="mt-2 text-gray-600">Chargement...</p>
+              <h1 className="text-3xl font-extrabold text-[#201e1d]">Articles</h1>
+              <p className="mt-2 text-[#605d5d]">Chargement...</p>
             </div>
           </div>
-        </main>
+        </div>
       }>
         <ArticlesContent />
       </Suspense>
-      <Footer />
-    </div>
+    </PublicShell>
   );
 }

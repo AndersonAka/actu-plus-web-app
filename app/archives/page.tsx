@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Header, Footer } from '@/components/organisms';
+import { PublicShell } from '../PublicShell';
 import { ArticleCard } from '@/components/molecules';
 import { Pagination } from '@/components/molecules';
 import { Button } from '@/components/atoms';
@@ -146,13 +146,11 @@ export default function ArchivesPage() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen flex-col bg-white">
-        <Header />
-        <main className="flex flex-1 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
-        </main>
-        <Footer />
-      </div>
+      <PublicShell>
+        <div className="flex flex-1 items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-[#ec3013]" />
+        </div>
+      </PublicShell>
     );
   }
 
@@ -161,25 +159,24 @@ export default function ArchivesPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      <Header />
-      <main className="flex-1 py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <PublicShell>
+      <div className="py-8">
+        <div className="mx-auto max-w-360 px-5 sm:px-9">
           <div className="mb-8">
             <Link
               href="/"
-              className="mb-4 inline-flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600"
+              className="mb-4 inline-flex items-center gap-2 text-sm text-[#605d5d] hover:text-[#201e1d]"
             >
               <ArrowLeft className="h-4 w-4" />
               Retour à l&apos;accueil
             </Link>
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-                <Archive className="h-6 w-6 text-blue-600" />
+              <div className="flex h-12 w-12 items-center justify-center bg-[#ffe0d9]">
+                <Archive className="h-6 w-6 text-[#ae1800]" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Archives</h1>
-                <p className="text-sm text-gray-500">
+                <h1 className="text-2xl font-extrabold text-[#201e1d]">Archives</h1>
+                <p className="text-sm text-[#605d5d]">
                   {totalCount > 0
                     ? `${totalCount} article${totalCount !== 1 ? 's' : ''} archivé${totalCount !== 1 ? 's' : ''}`
                     : 'Articles archivés'}
@@ -188,16 +185,16 @@ export default function ArchivesPage() {
             </div>
           </div>
 
-          <div className="mb-6 flex flex-wrap gap-2">
-            {filters.map((filter) => (
+          <div className="mb-6 flex flex-wrap gap-0 border border-[#201e1d]">
+            {filters.map((filter, i) => (
               <button
                 key={filter.value}
                 type="button"
                 onClick={() => handleFilterChange(filter.value)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                className={`px-4 py-2 text-sm font-semibold transition-colors ${i > 0 ? 'border-l border-[#201e1d]' : ''} ${
                   contentFilter === filter.value
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-[#201e1d] text-white'
+                    : 'text-[#201e1d] hover:bg-[#eae9e9]'
                 }`}
               >
                 {filter.label}
@@ -207,13 +204,13 @@ export default function ArchivesPage() {
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-[#ec3013]" />
             </div>
           ) : error ? (
-            <div className="rounded-lg bg-red-50 p-8 text-center">
-              <p className="text-red-600">{error}</p>
+            <div className="border border-[#ffc4b8] bg-[#fff2ef] p-8 text-center">
+              <p className="text-[#ae1800]">{error}</p>
               <Button
-                variant="outline"
+                variant="modernist-outline"
                 size="sm"
                 className="mt-4"
                 onClick={() => loadArchives(currentPage, contentFilter)}
@@ -222,16 +219,16 @@ export default function ArchivesPage() {
               </Button>
             </div>
           ) : articles.length === 0 ? (
-            <div className="rounded-lg bg-gray-50 p-12 text-center">
-              <Archive className="mx-auto h-12 w-12 text-gray-300" />
-              <h3 className="mt-4 text-lg font-medium text-gray-900">
+            <div className="border border-[#d7d3d3] bg-[#f8f4f4] p-12 text-center">
+              <Archive className="mx-auto h-12 w-12 text-[#d7d3d3]" />
+              <h3 className="mt-4 text-lg font-bold text-[#201e1d]">
                 Aucune archive
               </h3>
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-[#605d5d]">
                 Aucun article archivé pour ce filtre.
               </p>
               <Link href="/articles">
-                <Button variant="primary" className="mt-6">
+                <Button variant="modernist" className="mt-6">
                   Découvrir les articles
                 </Button>
               </Link>
@@ -256,8 +253,7 @@ export default function ArchivesPage() {
             </>
           )}
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </PublicShell>
   );
 }

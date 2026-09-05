@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { Archivo } from 'next/font/google';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Button, Input, Alert } from '@/components/atoms';
+import { Button, Alert } from '@/components/atoms';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -18,6 +19,8 @@ import {
   Shield,
   Smartphone,
 } from 'lucide-react';
+
+const archivo = Archivo({ subsets: ['latin'], weight: ['400', '500', '600', '800'] });
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Veuillez entrer une adresse email valide'),
@@ -89,7 +92,7 @@ export default function ForgotPasswordPage() {
   ];
 
   return (
-    <div className="flex min-h-screen">
+    <div className={`${archivo.className} flex min-h-screen bg-[#f3f2f2] text-[#201e1d]`}>
       {/* Left Section - Form */}
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
@@ -111,15 +114,15 @@ export default function ForgotPasswordPage() {
           {isSubmitted ? (
             /* Success State */
             <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-                <CheckCircle2 className="h-10 w-10 text-green-600" />
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center bg-[#f0fdf4]">
+                <CheckCircle2 className="h-10 w-10 text-[#166534]" />
               </div>
-              <h1 className="mb-2 text-2xl font-bold text-gray-900">
+              <h1 className="mb-2 text-2xl font-extrabold text-[#201e1d]">
                 Code envoyé !
               </h1>
-              <p className="mb-6 text-gray-600">
+              <p className="mb-6 text-[#605d5d]">
                 Si un compte existe avec l'adresse{' '}
-                <span className="font-medium text-gray-900">{submittedEmail}</span>,
+                <span className="font-semibold text-[#201e1d]">{submittedEmail}</span>,
                 vous recevrez un code de réinitialisation. Redirection en cours…
               </p>
 
@@ -128,14 +131,14 @@ export default function ForgotPasswordPage() {
                 {securityTips.map((tip, index) => (
                   <div
                     key={index}
-                    className="flex items-start gap-3 rounded-lg bg-gray-50 p-3 text-left"
+                    className="flex items-start gap-3 border border-[#d7d3d3] bg-[#f8f4f4] p-3 text-left"
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-100">
-                      <tip.icon className="h-4 w-4 text-primary-600" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-[#ffe0d9]">
+                      <tip.icon className="h-4 w-4 text-[#ec3013]" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{tip.title}</p>
-                      <p className="text-xs text-gray-500">{tip.description}</p>
+                      <p className="text-sm font-semibold text-[#201e1d]">{tip.title}</p>
+                      <p className="text-xs text-[#9b9797]">{tip.description}</p>
                     </div>
                   </div>
                 ))}
@@ -143,8 +146,8 @@ export default function ForgotPasswordPage() {
 
               <div className="space-y-3">
                 <Button
-                  variant="outline"
-                  className="w-full"
+                  variant="modernist-outline"
+                  className="w-full justify-center"
                   onClick={() => {
                     setIsSubmitted(false);
                     setSubmittedEmail('');
@@ -153,7 +156,7 @@ export default function ForgotPasswordPage() {
                   Réessayer avec une autre adresse
                 </Button>
                 <Link href="/login">
-                  <Button variant="ghost" className="w-full">
+                  <Button variant="ghost" className="w-full justify-center rounded-none">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Retour à la connexion
                   </Button>
@@ -164,52 +167,52 @@ export default function ForgotPasswordPage() {
             /* Form State */
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="mb-8 text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100">
-                  <KeyRound className="h-8 w-8 text-primary-600" />
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center bg-[#ffe0d9]">
+                  <KeyRound className="h-8 w-8 text-[#ec3013]" />
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-2xl font-extrabold text-[#201e1d]">
                   Mot de passe oublié ?
                 </h1>
-                <p className="mt-2 text-gray-600">
+                <p className="mt-2 text-[#605d5d]">
                   Pas de panique ! Entrez votre email et nous vous enverrons un code de réinitialisation.
                 </p>
               </div>
 
               {error && (
-                <Alert variant="error" className="mb-6" onClose={() => setError(null)}>
+                <Alert variant="error" className="mb-6 rounded-none" onClose={() => setError(null)}>
                   {error}
                 </Alert>
               )}
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <div>
-                  <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
+                  <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-[#201e1d]">
                     Adresse email
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#9b9797]" />
                     <input
                       type="email"
                       id="email"
                       {...register('email')}
-                      className={`w-full rounded-lg border py-3 pl-10 pr-4 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${
+                      className={`w-full border py-3 pl-10 pr-4 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[#ec3013]/20 ${
                         errors.email
-                          ? 'border-red-300 focus:border-red-500'
-                          : 'border-gray-300 focus:border-primary-500'
+                          ? 'border-[#ffc4b8] focus:border-[#ec3013]'
+                          : 'border-[#d7d3d3] focus:border-[#ec3013]'
                       }`}
                       placeholder="votre@email.com"
                       autoFocus
                     />
                   </div>
                   {errors.email && (
-                    <p className="mt-1.5 text-sm text-red-500">{errors.email.message}</p>
+                    <p className="mt-1.5 text-sm text-[#ec3013]">{errors.email.message}</p>
                   )}
                 </div>
 
                 <Button
                   type="submit"
-                  variant="primary"
-                  className="w-full"
+                  variant="modernist"
+                  className="w-full justify-center"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -229,7 +232,7 @@ export default function ForgotPasswordPage() {
               <div className="mt-6 text-center">
                 <Link
                   href="/login"
-                  className="inline-flex items-center text-sm text-primary-600 hover:text-primary-700"
+                  className="inline-flex items-center text-sm text-[#ec3013] hover:text-[#ae1800]"
                 >
                   <ArrowLeft className="mr-1 h-4 w-4" />
                   Retour à la connexion
@@ -241,25 +244,26 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* Right Section - Visual */}
-      <div className="relative hidden w-0 flex-1 lg:block">
+      <div className="relative hidden w-0 flex-1 border-l-2 border-[#201e1d] lg:block">
         <Image
           src="https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1920&auto=format&fit=crop"
           alt="Background"
           fill
           className="object-cover"
+          style={{ filter: 'grayscale(1) contrast(1.08)' }}
           priority
           unoptimized={true}
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-600/90 to-primary-900/95">
+        <div className="absolute inset-0 bg-[#201e1d]/80">
           <div className="flex h-full flex-col items-center justify-center p-12 text-white">
             <div className="max-w-md text-center">
-              <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm">
+              <div className="mb-6 inline-flex h-20 w-20 items-center justify-center bg-white/10">
                 <Shield className="h-10 w-10" />
               </div>
-              <h2 className="mb-4 text-3xl font-bold">
+              <h2 className="mb-4 text-3xl font-extrabold">
                 Sécurité renforcée
               </h2>
-              <p className="text-lg text-primary-100">
+              <p className="text-lg text-[#bab6b6]">
                 Votre sécurité est notre priorité. Le code de réinitialisation expire après 15 minutes pour protéger votre compte.
               </p>
             </div>

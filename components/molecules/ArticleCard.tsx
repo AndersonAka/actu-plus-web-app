@@ -21,14 +21,17 @@ export interface ArticleCardProps {
   fromCountry?: string;
 }
 
-const statusLabels: Record<ArticleStatus, { label: string; variant: 'default' | 'primary' | 'success' | 'warning' | 'error' }> = {
-  [ArticleStatus.DRAFT]: { label: 'Brouillon', variant: 'default' },
-  [ArticleStatus.PENDING]: { label: 'En attente', variant: 'warning' },
-  [ArticleStatus.APPROVED]: { label: 'Validé', variant: 'primary' },
-  [ArticleStatus.REJECTED]: { label: 'Rejeté', variant: 'error' },
-  [ArticleStatus.PUBLISHED]: { label: 'Publié', variant: 'success' },
-  [ArticleStatus.ARCHIVED]: { label: 'Archivé', variant: 'default' },
+const statusStyles: Record<ArticleStatus, { label: string; className: string }> = {
+  [ArticleStatus.DRAFT]: { label: 'Brouillon', className: 'bg-[#eae9e9] text-[#605d5d]' },
+  [ArticleStatus.PENDING]: { label: 'En attente', className: 'bg-[#ffe0d9] text-[#ae1800]' },
+  [ArticleStatus.APPROVED]: { label: 'Validé', className: 'bg-[#ffe0d9] text-[#ae1800]' },
+  [ArticleStatus.REJECTED]: { label: 'Rejeté', className: 'bg-[#eae9e9] text-[#201e1d]' },
+  [ArticleStatus.PUBLISHED]: { label: 'Publié', className: 'bg-[#201e1d] text-white' },
+  [ArticleStatus.ARCHIVED]: { label: 'Archivé', className: 'bg-[#eae9e9] text-[#605d5d]' },
 };
+
+const badgeReset = 'rounded-none px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-[0.08em]';
+const grayscalePhoto = { filter: 'grayscale(1) contrast(1.08)' } as const;
 
 const ArticleCard = ({
   article,
@@ -56,36 +59,37 @@ const ArticleCard = ({
       <Link
         href={articleUrl}
         className={cn(
-          'flex gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50',
+          'flex gap-3 p-2 transition-colors hover:bg-[#eae9e9]',
           className
         )}
       >
         {imageUrl && (
-          <div className="relative h-16 w-24 flex-shrink-0 overflow-hidden rounded-md">
+          <div className="relative h-16 w-24 flex-shrink-0 overflow-hidden">
             <Image
               src={imageUrl}
               alt={article.title}
               fill
               className="object-cover"
+              style={grayscalePhoto}
               unoptimized={true}
             />
             {article.isPremium && (
               <div className="absolute right-1 top-1">
-                <Badge variant="warning" size="sm" className="bg-amber-500 text-white text-xs px-1 py-0">
-                  Contenu abonné
+                <Badge size="sm" className={cn(badgeReset, 'bg-[#ec3013] text-white')}>
+                  Abonné
                 </Badge>
               </div>
             )}
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h4 className="line-clamp-2 text-sm font-medium text-gray-900">
+          <h4 className="line-clamp-2 text-sm font-semibold text-[#201e1d]">
             {article.title}
           </h4>
           <div className="mt-1 flex items-center gap-2">
-            <p className="text-xs text-gray-500">{formattedDate}</p>
+            <p className="text-xs text-[#605d5d]">{formattedDate}</p>
             {scopeLabel && (
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-50 px-1.5 py-0 text-[10px] font-medium text-blue-700">
+              <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#605d5d]">
                 <Globe className="h-2.5 w-2.5" />
                 {scopeLabel}
               </span>
@@ -100,28 +104,29 @@ const ArticleCard = ({
     return (
       <article
         className={cn(
-          'group flex gap-4 overflow-hidden rounded-xl border border-gray-200 bg-white p-3 transition-all duration-200 hover:shadow-md hover:border-gray-300',
+          'group flex gap-4 border border-[#d7d3d3] bg-[#f3f2f2] p-3 transition-colors hover:border-[#201e1d]/40',
           className
         )}
       >
-        <Link href={articleUrl} className="relative h-28 w-40 flex-shrink-0 overflow-hidden rounded-lg sm:h-32 sm:w-48">
+        <Link href={articleUrl} className="relative h-28 w-40 flex-shrink-0 overflow-hidden sm:h-32 sm:w-48">
           {imageUrl ? (
             <Image
               src={imageUrl}
               alt={article.title}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              className="object-cover"
+              style={grayscalePhoto}
               unoptimized={true}
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gray-100">
-              <span className="text-xs text-gray-400">Pas d'image</span>
+            <div className="flex h-full w-full items-center justify-center bg-[#eae9e9]">
+              <span className="text-xs text-[#9b9797]">Pas d'image</span>
             </div>
           )}
           {article.isPremium && (
             <div className="absolute left-1.5 top-1.5">
-              <Badge variant="warning" size="sm" className="bg-amber-500 text-white text-[10px] px-1.5 py-0">
-                Contenu abonné
+              <Badge size="sm" className={cn(badgeReset, 'bg-[#ec3013] text-white')}>
+                Abonné
               </Badge>
             </div>
           )}
@@ -130,35 +135,35 @@ const ArticleCard = ({
           <div>
             <div className="mb-1.5 flex items-center gap-2 flex-wrap">
               {categoryLabel && (
-                <Badge variant="secondary" size="sm">
+                <Badge size="sm" className={cn(badgeReset, 'bg-[#eae9e9] text-[#201e1d]')}>
                   {categoryLabel}
                 </Badge>
               )}
               {scopeLabel && (
-                <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700">
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#605d5d]">
                   <Globe className="h-2.5 w-2.5" />
                   {scopeLabel}
                 </span>
               )}
               {showStatus && (
-                <Badge variant={statusLabels[article.status].variant} size="sm">
-                  {statusLabels[article.status].label}
+                <Badge size="sm" className={cn(badgeReset, statusStyles[article.status].className)}>
+                  {statusStyles[article.status].label}
                 </Badge>
               )}
             </div>
             <Link href={articleUrl}>
-              <h3 className="mb-1 line-clamp-2 text-[0.95rem] font-semibold leading-snug text-gray-900 group-hover:text-primary-600 transition-colors">
+              <h3 className="mb-1 line-clamp-2 text-[0.95rem] font-bold leading-snug text-[#201e1d] group-hover:text-[#ec3013] transition-colors">
                 {article.title}
               </h3>
             </Link>
             {article.excerpt && (
-              <p className="line-clamp-2 text-sm text-gray-500 leading-relaxed hidden sm:block">
+              <p className="line-clamp-2 text-sm text-[#605d5d] leading-relaxed hidden sm:block">
                 {article.excerpt}
               </p>
             )}
           </div>
           <div className="mt-2 flex items-center justify-between">
-            <div className="flex items-center gap-3 text-xs text-gray-400">
+            <div className="flex items-center gap-3 text-xs text-[#9b9797]">
               <span className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
                 {formattedDate}
@@ -176,10 +181,10 @@ const ArticleCard = ({
                   onFavorite(article.id);
                 }}
                 className={cn(
-                  'rounded-full p-1 transition-colors',
+                  'p-1 transition-colors',
                   isFavorite
-                    ? 'text-error-500 hover:bg-error-50'
-                    : 'text-gray-400 hover:bg-gray-100 hover:text-error-500'
+                    ? 'text-[#ec3013]'
+                    : 'text-[#9b9797] hover:text-[#ec3013]'
                 )}
               >
                 <Heart className={cn('h-4 w-4', isFavorite && 'fill-current')} />
@@ -196,7 +201,7 @@ const ArticleCard = ({
       <Link
         href={articleUrl}
         className={cn(
-          'group relative block overflow-hidden rounded-xl',
+          'group relative block overflow-hidden',
           className
         )}
       >
@@ -206,34 +211,35 @@ const ArticleCard = ({
               src={imageUrl}
               alt={article.title}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              className="object-cover"
+              style={grayscalePhoto}
               unoptimized={true}
             />
           ) : (
-            <div className="h-full w-full bg-gray-200" />
+            <div className="h-full w-full bg-[#eae9e9]" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <div className="mb-2 flex gap-2 flex-wrap">
             {categoryLabel && (
-              <Badge variant="primary">
+              <Badge className={cn(badgeReset, 'bg-[#ec3013] text-white')}>
                 {categoryLabel}
               </Badge>
             )}
             {scopeLabel && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
+              <span className="inline-flex items-center gap-1 bg-white/20 px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.06em] text-white backdrop-blur-sm">
                 <Globe className="h-3 w-3" />
                 {scopeLabel}
               </span>
             )}
             {article.isPremium && (
-              <Badge variant="warning" className="bg-amber-500 text-white">
-                Contenu abonné
+              <Badge className={cn(badgeReset, 'bg-white text-[#201e1d]')}>
+                Abonné
               </Badge>
             )}
           </div>
-          <h2 className="mb-2 line-clamp-2 text-2xl font-bold text-white">
+          <h2 className="mb-2 line-clamp-2 text-2xl font-extrabold text-white">
             {article.title}
           </h2>
           {article.excerpt && (
@@ -259,7 +265,7 @@ const ArticleCard = ({
   return (
     <article
       className={cn(
-        'group overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-300 hover:shadow-lg hover:-translate-y-1',
+        'group overflow-hidden border border-[#d7d3d3] bg-[#f3f2f2] transition-colors hover:border-[#201e1d]/40',
         className
       )}
     >
@@ -270,32 +276,33 @@ const ArticleCard = ({
               src={imageUrl}
               alt={article.title}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              className="object-cover"
+              style={grayscalePhoto}
               unoptimized={true}
             />
           ) : (
-            <div className="h-full w-full bg-gray-200 flex items-center justify-center">
-              <span className="text-gray-400">Pas d'image</span>
+            <div className="h-full w-full bg-[#eae9e9] flex items-center justify-center">
+              <span className="text-[#9b9797]">Pas d'image</span>
             </div>
           )}
           <div className="absolute left-2 top-2 flex gap-2 flex-wrap">
             {showStatus && (
-              <Badge variant={statusLabels[article.status].variant}>
-                {statusLabels[article.status].label}
+              <Badge className={cn(badgeReset, statusStyles[article.status].className)}>
+                {statusStyles[article.status].label}
               </Badge>
             )}
             {(article.isFeaturedHome || article.isFeatured) && !showStatus && (
-              <Badge variant="primary">À la une</Badge>
+              <Badge className={cn(badgeReset, 'bg-[#ec3013] text-white')}>À la une</Badge>
             )}
             {scopeLabel && (
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+              <span className="inline-flex items-center gap-0.5 bg-white/90 px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.06em] text-[#201e1d]">
                 <Globe className="h-3 w-3" />
                 {scopeLabel}
               </span>
             )}
             {article.isPremium && (
-              <Badge variant="warning" className="bg-amber-500 text-white">
-                Contenu abonné
+              <Badge className={cn(badgeReset, 'bg-white text-[#201e1d]')}>
+                Abonné
               </Badge>
             )}
           </div>
@@ -304,25 +311,25 @@ const ArticleCard = ({
       <div className="p-4">
         <div className="mb-2 flex items-center gap-2">
           {categoryLabel && (
-            <Badge variant="secondary" size="sm">
+            <Badge size="sm" className={cn(badgeReset, 'bg-[#eae9e9] text-[#201e1d]')}>
               {categoryLabel}
             </Badge>
           )}
           {article.country && (
-            <span className="text-xs text-gray-500">{article.country.name}</span>
+            <span className="text-xs text-[#605d5d]">{article.country.name}</span>
           )}
         </div>
         <Link href={articleUrl}>
-          <h3 className="mb-2 line-clamp-2 font-semibold text-gray-900 group-hover:text-primary-600">
+          <h3 className="mb-2 line-clamp-2 font-bold text-[#201e1d] group-hover:text-[#ec3013] transition-colors">
             {article.title}
           </h3>
         </Link>
         {article.excerpt && (
-          <p className="mb-3 line-clamp-2 text-sm text-gray-600">
+          <p className="mb-3 line-clamp-2 text-sm text-[#605d5d]">
             {article.excerpt}
           </p>
         )}
-        <div className="flex items-center justify-between text-sm text-gray-500">
+        <div className="flex items-center justify-between text-sm text-[#9b9797]">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
@@ -341,10 +348,10 @@ const ArticleCard = ({
                 onFavorite(article.id);
               }}
               className={cn(
-                'rounded-full p-1.5 transition-colors',
+                'p-1.5 transition-colors',
                 isFavorite
-                  ? 'text-error-500 hover:bg-error-50'
-                  : 'text-gray-400 hover:bg-gray-100 hover:text-error-500'
+                  ? 'text-[#ec3013]'
+                  : 'text-[#9b9797] hover:text-[#ec3013]'
               )}
             >
               <Heart

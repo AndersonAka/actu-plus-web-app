@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
+import { Archivo } from 'next/font/google';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, RefreshCw, CheckCircle, ArrowLeft } from 'lucide-react';
+
+const archivo = Archivo({ subsets: ['latin'], weight: ['400', '500', '600', '800'] });
 
 function VerifyEmailContent() {
   const router = useRouter();
@@ -145,23 +148,23 @@ function VerifyEmailContent() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+      <div className={`${archivo.className} flex min-h-screen items-center justify-center bg-[#f3f2f2] px-4`}>
         <div className="w-full max-w-md text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-            <CheckCircle className="h-10 w-10 text-green-600" />
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center bg-[#f0fdf4]">
+            <CheckCircle className="h-10 w-10 text-[#166534]" />
           </div>
-          <h1 className="mb-2 text-2xl font-bold text-gray-900">Email vérifié !</h1>
-          <p className="text-gray-600">
+          <h1 className="mb-2 text-2xl font-extrabold text-[#201e1d]">Email vérifié !</h1>
+          <p className="text-[#605d5d]">
             Votre adresse email a été confirmée avec succès. Bienvenue sur Actu Plus !
           </p>
-          <p className="mt-4 text-sm text-gray-400">Redirection en cours...</p>
+          <p className="mt-4 text-sm text-[#9b9797]">Redirection en cours...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className={`${archivo.className} flex min-h-screen bg-[#f3f2f2] text-[#201e1d]`}>
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div className="mb-8 flex justify-center">
@@ -179,27 +182,27 @@ function VerifyEmailContent() {
           </div>
 
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-50">
-              <Mail className="h-8 w-8 text-primary-600" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center bg-[#ffe0d9]">
+              <Mail className="h-8 w-8 text-[#ec3013]" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Vérifiez votre email</h1>
-            <p className="mt-2 text-sm text-gray-600">
+            <h1 className="text-2xl font-extrabold text-[#201e1d]">Vérifiez votre email</h1>
+            <p className="mt-2 text-sm text-[#605d5d]">
               Nous avons envoyé un code à 6 chiffres à
             </p>
             {email && (
-              <p className="mt-1 font-semibold text-gray-900 break-all">{email}</p>
+              <p className="mt-1 font-semibold text-[#201e1d] break-all">{email}</p>
             )}
           </div>
 
           {error && (
-            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="mb-4 border border-[#ffc4b8] bg-[#fff2ef] px-4 py-3 text-sm text-[#ae1800]">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="mb-3 block text-center text-sm font-medium text-gray-700">
+              <label className="mb-3 block text-center text-sm font-medium text-[#201e1d]">
                 Entrez le code de vérification
               </label>
               <div className="flex justify-center gap-2" onPaste={handlePaste}>
@@ -215,14 +218,14 @@ function VerifyEmailContent() {
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     disabled={isLoading}
                     className={[
-                      'h-12 w-11 rounded-lg border-2 text-center text-xl font-bold',
+                      'h-12 w-11 border-2 text-center text-xl font-bold',
                       'transition-colors focus:outline-none',
                       'disabled:cursor-not-allowed disabled:opacity-50',
                       digit
-                        ? 'border-primary-500 bg-primary-50 text-primary-700'
-                        : 'border-gray-300 bg-white text-gray-900',
-                      'focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20',
-                      error ? 'border-red-400' : '',
+                        ? 'border-[#ec3013] bg-[#fff2ef] text-[#ae1800]'
+                        : 'border-[#d7d3d3] bg-white text-[#201e1d]',
+                      'focus:border-[#ec3013] focus:ring-2 focus:ring-[#ec3013]/20',
+                      error ? 'border-[#ff9783]' : '',
                     ].join(' ')}
                   />
                 ))}
@@ -233,9 +236,9 @@ function VerifyEmailContent() {
               type="submit"
               disabled={code.join('').length < 6 || isLoading}
               className={[
-                'w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition-colors',
+                'w-full px-4 py-2.5 text-sm font-semibold text-white transition-colors',
                 'disabled:cursor-not-allowed disabled:opacity-50',
-                'bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500/50',
+                'bg-[#ec3013] hover:bg-[#dd2b0f] focus:outline-none focus:ring-2 focus:ring-[#ec3013]/50',
               ].join(' ')}
             >
               {isLoading ? 'Vérification...' : 'Vérifier mon email'}
@@ -243,11 +246,11 @@ function VerifyEmailContent() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">Vous n'avez pas reçu le code ?</p>
+            <p className="text-sm text-[#605d5d]">Vous n'avez pas reçu le code ?</p>
             <button
               onClick={handleResend}
               disabled={resendCountdown > 0 || isResending || !email}
-              className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-[#ec3013] hover:text-[#ae1800] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <RefreshCw className={`h-4 w-4 ${isResending ? 'animate-spin' : ''}`} />
               {resendCountdown > 0
@@ -261,7 +264,7 @@ function VerifyEmailContent() {
           <div className="mt-8 text-center">
             <Link
               href="/register"
-              className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700"
+              className="inline-flex items-center gap-1.5 text-sm text-[#9b9797] hover:text-[#605d5d]"
             >
               <ArrowLeft className="h-4 w-4" />
               Retour à l'inscription
@@ -270,19 +273,20 @@ function VerifyEmailContent() {
         </div>
       </div>
 
-      <div className="relative hidden w-0 flex-1 lg:block">
+      <div className="relative hidden w-0 flex-1 border-l-2 border-[#201e1d] lg:block">
         <Image
           src="https://images.unsplash.com/photo-1495020689067-958852a7765e?q=80&w=1920&auto=format&fit=crop"
           alt="Actualités"
           fill
           className="object-cover"
+          style={{ filter: 'grayscale(1) contrast(1.08)' }}
           priority
           unoptimized={true}
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-600/80 to-primary-900/90">
+        <div className="absolute inset-0 bg-[#201e1d]/75">
           <div className="flex h-full flex-col items-center justify-center p-12 text-white">
-            <h2 className="mb-4 text-4xl font-bold">Presque prêt !</h2>
-            <p className="max-w-md text-center text-lg text-primary-100">
+            <h2 className="mb-4 text-4xl font-extrabold">Presque prêt !</h2>
+            <p className="max-w-md text-center text-lg text-[#bab6b6]">
               Confirmez votre email pour accéder à toutes les actualités.
             </p>
           </div>
@@ -295,8 +299,8 @@ function VerifyEmailContent() {
 export default function VerifyEmailPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-[#f3f2f2]">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#ec3013] border-t-transparent" />
       </div>
     }>
       <VerifyEmailContent />

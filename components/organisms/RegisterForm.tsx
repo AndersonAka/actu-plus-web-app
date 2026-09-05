@@ -73,43 +73,43 @@ const RegisterForm = () => {
   return (
     <div className="w-full max-w-md">
       <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Créer un compte</h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="text-2xl font-extrabold text-[#201e1d]">Créer un compte</h1>
+        <p className="mt-2 text-[#605d5d]">
           Rejoignez Actu Plus pour accéder à toutes les actualités
         </p>
       </div>
 
       {error && (
-        <Alert variant="error" className="mb-6" onClose={() => setError(null)}>
+        <Alert variant="error" className="mb-6 rounded-none" onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Civilité</label>
+          <label className="block text-sm font-medium text-[#201e1d] mb-1">Civilité</label>
           <div className="flex gap-4">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
                 value="M."
                 {...register('civility')}
-                className="h-4 w-4 border-gray-300 text-primary-500 focus:ring-primary-500"
+                className="h-4 w-4 border-[#d7d3d3] text-[#ec3013] focus:ring-[#ec3013]/20"
               />
-              <span className="text-sm text-gray-700">Monsieur</span>
+              <span className="text-sm text-[#201e1d]">Monsieur</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
                 value="Mme"
                 {...register('civility')}
-                className="h-4 w-4 border-gray-300 text-primary-500 focus:ring-primary-500"
+                className="h-4 w-4 border-[#d7d3d3] text-[#ec3013] focus:ring-[#ec3013]/20"
               />
-              <span className="text-sm text-gray-700">Madame</span>
+              <span className="text-sm text-[#201e1d]">Madame</span>
             </label>
           </div>
           {errors.civility && (
-            <p className="mt-1 text-sm text-red-500">{errors.civility.message}</p>
+            <p className="mt-1 text-sm text-[#ec3013]">{errors.civility.message}</p>
           )}
         </div>
 
@@ -119,6 +119,7 @@ const RegisterForm = () => {
             placeholder="Jean"
             leftIcon={<User className="h-5 w-5" />}
             error={errors.firstName?.message}
+            className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
             {...register('firstName')}
           />
 
@@ -127,6 +128,7 @@ const RegisterForm = () => {
             placeholder="Dupont"
             leftIcon={<User className="h-5 w-5" />}
             error={errors.lastName?.message}
+            className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
             {...register('lastName')}
           />
         </div>
@@ -137,6 +139,7 @@ const RegisterForm = () => {
           placeholder="votre@email.com"
           leftIcon={<Mail className="h-5 w-5" />}
           error={errors.email?.message}
+          className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
           {...register('email')}
         />
 
@@ -146,17 +149,19 @@ const RegisterForm = () => {
           placeholder="+2250000000000"
           leftIcon={<Phone className="h-5 w-5" />}
           error={errors.phone?.message}
+          className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
           {...register('phone')}
           hint="Format international sans espaces (ex: +2250700000000)"
         />
 
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-          <p className="mb-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Vous êtes un employé d'entreprise ?</p>
+        <div className="border border-[#d7d3d3] bg-[#f8f4f4] p-3">
+          <p className="mb-2 text-xs font-semibold text-[#605d5d] uppercase tracking-wide">Vous êtes un employé d'entreprise ?</p>
           <Input
             label="Code de référence entreprise (optionnel)"
             placeholder="ENT-XXXX-XXXX"
             leftIcon={<Building2 className="h-5 w-5" />}
             error={errors.enterpriseReferenceCode?.message}
+            className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
             {...register('enterpriseReferenceCode')}
             hint="Renseignez le code transmis par votre entreprise pour bénéficier de l'abonnement inclus"
           />
@@ -168,6 +173,7 @@ const RegisterForm = () => {
           placeholder="••••••••"
           leftIcon={<Lock className="h-5 w-5" />}
           error={errors.password?.message}
+          className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
           {...register('password')}
         />
 
@@ -177,6 +183,7 @@ const RegisterForm = () => {
           placeholder="••••••••"
           leftIcon={<Lock className="h-5 w-5" />}
           error={errors.confirmPassword?.message}
+          className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
           {...register('confirmPassword')}
         />
 
@@ -185,15 +192,15 @@ const RegisterForm = () => {
             type="checkbox"
             id="terms"
             required
-            className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+            className="mt-1 h-4 w-4 rounded-none border-[#d7d3d3] text-[#ec3013] focus:ring-[#ec3013]/20"
           />
-          <label htmlFor="terms" className="text-sm text-gray-600">
+          <label htmlFor="terms" className="text-sm text-[#605d5d]">
             J'accepte les{' '}
-            <Link href="/terms" className="text-primary-600 hover:underline">
+            <Link href="/terms" className="text-[#ec3013] hover:underline">
               conditions d'utilisation
             </Link>{' '}
             et la{' '}
-            <Link href="/privacy" className="text-primary-600 hover:underline">
+            <Link href="/privacy" className="text-[#ec3013] hover:underline">
               politique de confidentialité
             </Link>
           </label>
@@ -201,8 +208,8 @@ const RegisterForm = () => {
 
         <Button
           type="submit"
-          variant="primary"
-          className="w-full"
+          variant="modernist"
+          className="w-full justify-center"
           isLoading={isLoading}
         >
           Créer mon compte
@@ -213,11 +220,11 @@ const RegisterForm = () => {
 
       <SocialLoginButtons mode="register" />
 
-      <p className="mt-6 text-center text-sm text-gray-600">
+      <p className="mt-6 text-center text-sm text-[#605d5d]">
         Déjà un compte ?{' '}
         <Link
           href="/login"
-          className="font-medium text-primary-600 hover:text-primary-700"
+          className="font-semibold text-[#ec3013] hover:text-[#ae1800]"
         >
           Se connecter
         </Link>

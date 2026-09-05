@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { Header, Footer } from '@/components/organisms';
+import { PublicShell } from '../PublicShell';
 import { Button, Input, Alert } from '@/components/atoms';
 import { Shield, Eye, EyeOff, ArrowLeft, Check } from 'lucide-react';
 
@@ -88,16 +88,14 @@ export default function SecurityPage() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex flex-1 items-center justify-center">
+      <PublicShell>
+        <div className="flex flex-1 items-center justify-center py-24">
           <div className="text-center">
-            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600"></div>
-            <p className="mt-4 text-gray-600">Chargement...</p>
+            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#ffe0d9] border-t-[#ec3013]"></div>
+            <p className="mt-4 text-[#605d5d]">Chargement...</p>
           </div>
-        </main>
-        <Footer />
-      </div>
+        </div>
+      </PublicShell>
     );
   }
 
@@ -106,14 +104,13 @@ export default function SecurityPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
-      <Header />
-      <main className="flex-1 py-8">
+    <PublicShell>
+      <div className="py-8">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
           {/* Back link */}
           <Link
             href="/profile"
-            className="mb-6 inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+            className="mb-6 inline-flex items-center gap-1 text-sm text-[#605d5d] hover:text-[#201e1d]"
           >
             <ArrowLeft className="h-4 w-4" />
             Retour au profil
@@ -122,12 +119,12 @@ export default function SecurityPage() {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100">
-                <Shield className="h-6 w-6 text-green-600" />
+              <div className="flex h-12 w-12 items-center justify-center bg-[#ffe0d9]">
+                <Shield className="h-6 w-6 text-[#ae1800]" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Sécurité</h1>
-                <p className="text-gray-600">Modifier votre mot de passe</p>
+                <h1 className="text-2xl font-extrabold text-[#201e1d]">Sécurité</h1>
+                <p className="text-[#605d5d]">Modifier votre mot de passe</p>
               </div>
             </div>
           </div>
@@ -145,8 +142,8 @@ export default function SecurityPage() {
           )}
 
           {/* Change Password Form */}
-          <div className="rounded-lg bg-white p-6 shadow-sm">
-            <h2 className="mb-6 text-lg font-semibold text-gray-900">Changer le mot de passe</h2>
+          <div className="border border-[#d7d3d3] bg-white p-6">
+            <h2 className="mb-6 text-lg font-bold text-[#201e1d]">Changer le mot de passe</h2>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Current Password */}
@@ -157,11 +154,12 @@ export default function SecurityPage() {
                   value={formData.currentPassword}
                   onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
                   placeholder="Saisissez votre mot de passe actuel"
+                  className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-9 text-[#9b9797] hover:text-[#201e1d]"
                 >
                   {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -175,11 +173,12 @@ export default function SecurityPage() {
                   value={formData.newPassword}
                   onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
                   placeholder="Saisissez votre nouveau mot de passe"
+                  className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-9 text-[#9b9797] hover:text-[#201e1d]"
                 >
                   {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -187,17 +186,17 @@ export default function SecurityPage() {
 
               {/* Password Requirements */}
               {formData.newPassword.length > 0 && (
-                <div className="rounded-lg bg-gray-50 p-4">
-                  <p className="mb-2 text-sm font-medium text-gray-700">Critères du mot de passe :</p>
+                <div className="border border-[#d7d3d3] bg-[#f8f4f4] p-4">
+                  <p className="mb-2 text-sm font-semibold text-[#201e1d]">Critères du mot de passe :</p>
                   <ul className="space-y-1">
                     {passwordRequirements.map((req, index) => (
                       <li
                         key={index}
                         className={`flex items-center gap-2 text-sm ${
-                          req.test(formData.newPassword) ? 'text-green-600' : 'text-gray-400'
+                          req.test(formData.newPassword) ? 'text-[#ae1800]' : 'text-[#9b9797]'
                         }`}
                       >
-                        <Check className={`h-4 w-4 ${req.test(formData.newPassword) ? 'text-green-500' : 'text-gray-300'}`} />
+                        <Check className={`h-4 w-4 ${req.test(formData.newPassword) ? 'text-[#ec3013]' : 'text-[#d7d3d3]'}`} />
                         {req.label}
                       </li>
                     ))}
@@ -213,19 +212,20 @@ export default function SecurityPage() {
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                   placeholder="Confirmez votre nouveau mot de passe"
+                  className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-9 text-[#9b9797] hover:text-[#201e1d]"
                 >
                   {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
                 {formData.confirmPassword.length > 0 && !doPasswordsMatch && (
-                  <p className="mt-1 text-sm text-red-500">Les mots de passe ne correspondent pas</p>
+                  <p className="mt-1 text-sm text-[#ae1800]">Les mots de passe ne correspondent pas</p>
                 )}
                 {doPasswordsMatch && (
-                  <p className="mt-1 text-sm text-green-500">Les mots de passe correspondent</p>
+                  <p className="mt-1 text-sm text-[#166534]">Les mots de passe correspondent</p>
                 )}
               </div>
 
@@ -233,7 +233,7 @@ export default function SecurityPage() {
               <div className="flex justify-end pt-2">
                 <Button
                   type="submit"
-                  variant="primary"
+                  variant="modernist"
                   isLoading={isLoading}
                   disabled={!isPasswordValid || !doPasswordsMatch || !formData.currentPassword}
                 >
@@ -243,8 +243,7 @@ export default function SecurityPage() {
             </form>
           </div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </PublicShell>
   );
 }

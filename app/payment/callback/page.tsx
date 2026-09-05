@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Header, Footer } from '@/components/organisms';
+import { PublicShell } from '../../PublicShell';
 import { Button } from '@/components/atoms';
 import { paymentService, PaymentStatus } from '@/lib/services/payment.service';
 import { CheckCircle, XCircle, Loader2, ArrowRight } from 'lucide-react';
@@ -44,7 +44,7 @@ function PaymentCallbackContent() {
           setMessage('Impossible de vérifier le paiement. Veuillez contacter le support.');
           return;
         }
-        
+
         switch (payment.status) {
           case PaymentStatus.COMPLETED:
             setStatus('success');
@@ -81,19 +81,18 @@ function PaymentCallbackContent() {
   }, [searchParams]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      <Header />
-      <main className="flex flex-1 items-center justify-center bg-gray-50 px-4 py-16">
-        <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-lg">
+    <PublicShell>
+      <div className="flex flex-1 items-center justify-center px-4 py-16">
+        <div className="w-full max-w-md border border-[#d7d3d3] bg-white p-8 text-center">
           {status === 'loading' && (
             <>
-              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary-100">
-                <Loader2 className="h-10 w-10 animate-spin text-primary-600" />
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center bg-[#ffe0d9]">
+                <Loader2 className="h-10 w-10 animate-spin text-[#ec3013]" />
               </div>
-              <h1 className="mb-2 text-2xl font-bold text-gray-900">
+              <h1 className="mb-2 text-2xl font-extrabold text-[#201e1d]">
                 Vérification en cours...
               </h1>
-              <p className="text-gray-600">
+              <p className="text-[#605d5d]">
                 Veuillez patienter pendant que nous vérifions votre paiement.
               </p>
             </>
@@ -101,25 +100,25 @@ function PaymentCallbackContent() {
 
           {status === 'success' && (
             <>
-              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-                <CheckCircle className="h-10 w-10 text-green-600" />
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center bg-[#dcfce7]">
+                <CheckCircle className="h-10 w-10 text-[#166534]" />
               </div>
-              <h1 className="mb-2 text-2xl font-bold text-gray-900">
+              <h1 className="mb-2 text-2xl font-extrabold text-[#201e1d]">
                 Paiement réussi !
               </h1>
-              <p className="mb-6 text-gray-600">{message}</p>
-              <p className="mb-8 text-sm text-gray-500">
+              <p className="mb-6 text-[#605d5d]">{message}</p>
+              <p className="mb-8 text-sm text-[#9b9797]">
                 Votre abonnement est maintenant actif. Profitez de tous les avantages de votre formule.
               </p>
               <div className="space-y-3">
                 <Link href="/">
-                  <Button variant="primary" className="w-full">
+                  <Button variant="modernist" className="w-full">
                     Accéder à l'accueil
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
                 <Link href="/profile">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="modernist-outline" className="w-full">
                     Voir mon abonnement
                   </Button>
                 </Link>
@@ -129,21 +128,21 @@ function PaymentCallbackContent() {
 
           {status === 'failed' && (
             <>
-              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
-                <XCircle className="h-10 w-10 text-red-600" />
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center bg-[#ffe0d9]">
+                <XCircle className="h-10 w-10 text-[#ae1800]" />
               </div>
-              <h1 className="mb-2 text-2xl font-bold text-gray-900">
+              <h1 className="mb-2 text-2xl font-extrabold text-[#201e1d]">
                 Paiement échoué
               </h1>
-              <p className="mb-8 text-gray-600">{message}</p>
+              <p className="mb-8 text-[#605d5d]">{message}</p>
               <div className="space-y-3">
                 <Link href="/subscriptions">
-                  <Button variant="primary" className="w-full">
+                  <Button variant="modernist" className="w-full">
                     Réessayer
                   </Button>
                 </Link>
                 <Link href="/">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="modernist-outline" className="w-full">
                     Retour à l'accueil
                   </Button>
                 </Link>
@@ -153,38 +152,35 @@ function PaymentCallbackContent() {
 
           {status === 'pending' && (
             <>
-              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-yellow-100">
-                <Loader2 className="h-10 w-10 animate-spin text-yellow-600" />
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center bg-[#fef9c3]">
+                <Loader2 className="h-10 w-10 animate-spin text-[#a16207]" />
               </div>
-              <h1 className="mb-2 text-2xl font-bold text-gray-900">
+              <h1 className="mb-2 text-2xl font-extrabold text-[#201e1d]">
                 Paiement en attente
               </h1>
-              <p className="mb-6 text-gray-600">{message}</p>
-              <p className="text-sm text-gray-500">
+              <p className="mb-6 text-[#605d5d]">{message}</p>
+              <p className="text-sm text-[#9b9797]">
                 Vous recevrez une notification dès que votre paiement sera confirmé.
               </p>
             </>
           )}
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </PublicShell>
   );
 }
 
 export default function PaymentCallbackPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen flex-col bg-white">
-        <Header />
-        <main className="flex flex-1 items-center justify-center bg-gray-50 px-4 py-16">
-          <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-lg">
-            <Loader2 className="mx-auto h-10 w-10 animate-spin text-primary-600" />
-            <p className="mt-4 text-gray-600">Chargement...</p>
+      <PublicShell>
+        <div className="flex flex-1 items-center justify-center px-4 py-16">
+          <div className="w-full max-w-md border border-[#d7d3d3] bg-white p-8 text-center">
+            <Loader2 className="mx-auto h-10 w-10 animate-spin text-[#ec3013]" />
+            <p className="mt-4 text-[#605d5d]">Chargement...</p>
           </div>
-        </main>
-        <Footer />
-      </div>
+        </div>
+      </PublicShell>
     }>
       <PaymentCallbackContent />
     </Suspense>

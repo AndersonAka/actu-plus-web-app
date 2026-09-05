@@ -1,28 +1,27 @@
-import { Header, Footer } from '@/components/organisms';
+import { PublicShell } from '../PublicShell';
 import { Shield } from 'lucide-react';
 
 export default function PrivacyPage() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 bg-gray-50 py-12">
+    <PublicShell>
+      <div className="py-12">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-lg bg-white p-8 shadow-sm">
+          <div className="border border-[#d7d3d3] bg-white p-8">
             <div className="mb-8 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100">
-                <Shield className="h-6 w-6 text-primary-600" />
+              <div className="flex h-12 w-12 items-center justify-center bg-[#ffe0d9]">
+                <Shield className="h-6 w-6 text-[#ae1800]" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-3xl font-extrabold text-[#201e1d]">
                   Politique de confidentialité
                 </h1>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-[#605d5d]">
                   Dernière mise à jour : 5 février 2026
                 </p>
               </div>
             </div>
 
-            <div className="prose prose-gray max-w-none">
+            <div className="prose prose-gray max-w-none prose-headings:font-extrabold prose-headings:text-[#201e1d] prose-a:text-[#ec3013] prose-a:no-underline hover:prose-a:underline prose-strong:text-[#201e1d]">
               <h2>1. Introduction</h2>
               <p>
                 Chez Actu Plus, nous accordons une grande importance à la protection de
@@ -199,7 +198,7 @@ export default function PrivacyPage() {
               </ul>
               <p>
                 Pour exercer ces droits, contactez-nous à :{' '}
-                <a href="mailto:privacy@actuplus.com" className="text-primary-600 hover:text-primary-700">
+                <a href="mailto:privacy@actuplus.com" className="text-[#ec3013] hover:text-[#ae1800]">
                   privacy@actuplus.com
                 </a>
               </p>
@@ -229,7 +228,7 @@ export default function PrivacyPage() {
               <ul>
                 <li>
                   <strong>Email :</strong>{' '}
-                  <a href="mailto:privacy@actuplus.com" className="text-primary-600 hover:text-primary-700">
+                  <a href="mailto:privacy@actuplus.com" className="text-[#ec3013] hover:text-[#ae1800]">
                     privacy@actuplus.com
                   </a>
                 </li>
@@ -248,8 +247,7 @@ export default function PrivacyPage() {
             </div>
           </div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </PublicShell>
   );
 }
