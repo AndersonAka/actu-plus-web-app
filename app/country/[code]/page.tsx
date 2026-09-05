@@ -525,14 +525,19 @@ export default function CountryPage() {
               <div className="divide-y divide-[#d7d3d3]">
                 {filteredVeilleItems.map((item, index) => (
                   <div key={index} className={index === 0 ? 'pb-6' : 'py-6'}>
-                    <div className="mb-2">
-                      <div className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#ec3013]">
-                        {item.sector ? SECTOR_LABELS[item.sector] : 'Veille sectorielle'}
-                      </div>
-                      {veilleTime && (
-                        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#9b9797]">
-                          {veilleTime}
+                    <div className="mb-2 flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#ec3013]">
+                          {item.sector ? SECTOR_LABELS[item.sector] : 'Veille sectorielle'}
                         </div>
+                        {veilleTime && (
+                          <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#9b9797]">
+                            {veilleTime}
+                          </div>
+                        )}
+                      </div>
+                      {veilleSectorielleArticle?.isPremium && (
+                        <span className="bg-[#ffe0d9] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-[#ae1800]">Pro</span>
                       )}
                     </div>
                     <h3 className="mb-2 text-xl font-extrabold text-[#201e1d]">{item.title}</h3>

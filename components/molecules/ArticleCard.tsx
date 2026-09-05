@@ -74,7 +74,7 @@ const ArticleCard = ({
             {article.isPremium && (
               <div className="absolute right-1 top-1">
                 <Badge size="sm" className={cn(badgeReset, 'bg-[#ec3013] text-white')}>
-                  Abonné
+                  PRO
                 </Badge>
               </div>
             )}
@@ -123,7 +123,7 @@ const ArticleCard = ({
           {article.isPremium && (
             <div className="absolute left-1.5 top-1.5">
               <Badge size="sm" className={cn(badgeReset, 'bg-[#ec3013] text-white')}>
-                Abonné
+                PRO
               </Badge>
             </div>
           )}
@@ -231,7 +231,7 @@ const ArticleCard = ({
             )}
             {article.isPremium && (
               <Badge className={cn(badgeReset, 'bg-white text-[#201e1d]')}>
-                Abonné
+                PRO
               </Badge>
             )}
           </div>
@@ -297,7 +297,7 @@ const ArticleCard = ({
             )}
             {article.isPremium && (
               <Badge className={cn(badgeReset, 'bg-white text-[#201e1d]')}>
-                Abonné
+                PRO
               </Badge>
             )}
           </div>

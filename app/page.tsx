@@ -103,6 +103,7 @@ interface VeilleSectorielleEntry {
   title: string;
   summary: string;
   link?: string;
+  isPremium?: boolean;
   publishedAt: string | null;
   country: { id: string; code: string; name: string; flag?: string } | null;
 }
@@ -294,11 +295,13 @@ export default async function HomePage() {
             <Link href="#revue-de-presse" className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
               Revue de presse
             </Link>
-            <Link href="/veille-sectorielle" className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
+            <Link href="/veille-sectorielle" className="flex items-center gap-2 px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
               Veille sectorielle
+              <span className="bg-[#ffe0d9] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-[#ae1800]">Pro</span>
             </Link>
-            <Link href="/focus" className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
+            <Link href="/focus" className="flex items-center gap-2 px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
               Focus
+              <span className="bg-[#ffe0d9] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-[#ae1800]">Pro</span>
             </Link>
             <Link href="/archives" className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
               Archives
@@ -548,16 +551,28 @@ export default async function HomePage() {
                       {entry.sector ? SECTOR_LABELS[entry.sector] : 'Veille sectorielle'}
                       {entry.country?.name ? ` · ${entry.country.name}` : ''}
                     </span>
+                    {entry.isPremium && (
+                      <span className="bg-[#ffe0d9] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-[#ae1800]">Pro</span>
+                    )}
                   </div>
                   <div className="mb-3 text-2xl font-extrabold leading-[1.1] tracking-[-0.018em]">{entry.title}</div>
                   <p className="text-sm leading-[1.55] text-[#444141]">{getTextPreview(entry.summary)}</p>
                   <div className="mt-4 flex items-center gap-4">
-                    <Link
-                      href={entry.country?.code ? `/country/${entry.country.code.toLowerCase()}?tab=veille-sectorielle` : `/articles/${entry.articleSlug}`}
-                      className="flex h-11 items-center bg-[#ec3013] px-5 text-sm font-extrabold text-white transition-colors hover:bg-[#dd2b0f]"
-                    >
-                      Voir plus
-                    </Link>
+                    {entry.isPremium ? (
+                      <Link
+                        href="/subscriptions"
+                        className="flex h-11 items-center bg-[#ec3013] px-5 text-sm font-extrabold text-white transition-colors hover:bg-[#dd2b0f]"
+                      >
+                        Débloquer avec Pro
+                      </Link>
+                    ) : (
+                      <Link
+                        href={entry.country?.code ? `/country/${entry.country.code.toLowerCase()}?tab=veille-sectorielle` : `/articles/${entry.articleSlug}`}
+                        className="flex h-11 items-center bg-[#ec3013] px-5 text-sm font-extrabold text-white transition-colors hover:bg-[#dd2b0f]"
+                      >
+                        Voir plus
+                      </Link>
+                    )}
                     {entry.publishedAt && (
                       <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#605d5d]">
                         {new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(new Date(entry.publishedAt))}

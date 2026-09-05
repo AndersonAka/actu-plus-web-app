@@ -20,6 +20,7 @@ interface VeilleSectorielleEntry {
   title: string;
   summary: string;
   link?: string;
+  isPremium?: boolean;
   publishedAt: string | null;
   country: { id: string; code: string; name: string; flag?: string } | null;
 }
@@ -231,17 +232,22 @@ function VeilleSectoriellePageInner() {
                     href={entry.country?.code ? `/country/${entry.country.code.toLowerCase()}?tab=veille-sectorielle` : `/articles/${entry.articleSlug}`}
                     className="group flex flex-col border border-[#d7d3d3] p-5 transition-colors hover:border-[#201e1d]/40 hover:bg-[#f8f4f4]"
                   >
-                    <div className="mb-2 flex items-center gap-2 flex-wrap">
-                      {entry.sector && (
-                        <span className="bg-[#ffe0d9] px-2.5 py-0.5 text-xs font-semibold text-[#ae1800]">
-                          {SECTOR_LABELS[entry.sector] || entry.sector}
-                        </span>
-                      )}
-                      {entry.country && (
-                        <span className="text-xs text-[#9b9797]">
-                          {entry.country.flag && <span className="mr-1">{entry.country.flag}</span>}
-                          {entry.country.name}
-                        </span>
+                    <div className="mb-2 flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {entry.sector && (
+                          <span className="bg-[#ffe0d9] px-2.5 py-0.5 text-xs font-semibold text-[#ae1800]">
+                            {SECTOR_LABELS[entry.sector] || entry.sector}
+                          </span>
+                        )}
+                        {entry.country && (
+                          <span className="text-xs text-[#9b9797]">
+                            {entry.country.flag && <span className="mr-1">{entry.country.flag}</span>}
+                            {entry.country.name}
+                          </span>
+                        )}
+                      </div>
+                      {entry.isPremium && (
+                        <span className="bg-[#ec3013] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-white">Pro</span>
                       )}
                     </div>
                     <h3 className="mb-2 line-clamp-2 font-bold text-[#201e1d] group-hover:text-[#ec3013] transition-colors">
