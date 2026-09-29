@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -191,7 +191,7 @@ function SearchContent() {
 
         {/* Filters Panel */}
         {showFilters && (
-          <div className="mb-6 border border-[#d7d3d3] bg-white p-4">
+          <div className="mb-6 border border-[var(--public-border)] bg-white p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-[#201e1d] flex items-center gap-2">
                 <Filter className="h-4 w-4" />
@@ -218,7 +218,7 @@ function SearchContent() {
                 <select
                   value={filters.category}
                   onChange={(e) => handleFilterChange('category', e.target.value)}
-                  className="w-full rounded-none border border-[#d7d3d3] bg-white px-3 py-2 text-sm focus:border-[#ec3013] focus:outline-none focus:ring-1 focus:ring-[#ec3013]"
+                  className="w-full rounded-none border border-[var(--public-border)] bg-white px-3 py-2 text-sm focus:border-[#ec3013] focus:outline-none focus:ring-1 focus:ring-[#ec3013]"
                 >
                   <option value="">Toutes les catégories</option>
                   {categories.map((cat) => (
@@ -238,7 +238,7 @@ function SearchContent() {
                 <select
                   value={filters.country}
                   onChange={(e) => handleFilterChange('country', e.target.value)}
-                  className="w-full rounded-none border border-[#d7d3d3] bg-white px-3 py-2 text-sm focus:border-[#ec3013] focus:outline-none focus:ring-1 focus:ring-[#ec3013]"
+                  className="w-full rounded-none border border-[var(--public-border)] bg-white px-3 py-2 text-sm focus:border-[#ec3013] focus:outline-none focus:ring-1 focus:ring-[#ec3013]"
                 >
                   <option value="">Tous les pays</option>
                   {countries.map((country) => (
@@ -258,7 +258,7 @@ function SearchContent() {
                 <select
                   value={filters.sortBy}
                   onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                  className="w-full rounded-none border border-[#d7d3d3] bg-white px-3 py-2 text-sm focus:border-[#ec3013] focus:outline-none focus:ring-1 focus:ring-[#ec3013]"
+                  className="w-full rounded-none border border-[var(--public-border)] bg-white px-3 py-2 text-sm focus:border-[#ec3013] focus:outline-none focus:ring-1 focus:ring-[#ec3013]"
                 >
                   <option value="relevance">Pertinence</option>
                   <option value="date">Plus récents</option>
@@ -294,7 +294,7 @@ function SearchContent() {
             {isLoading ? (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="animate-pulse border border-[#d7d3d3] bg-white p-4">
+                  <div key={i} className="animate-pulse border border-[var(--public-border)] bg-white p-4">
                     <div className="mb-4 h-40 bg-[#eae9e9]" />
                     <div className="mb-2 h-4 w-3/4 bg-[#eae9e9]" />
                     <div className="h-4 w-1/2 bg-[#eae9e9]" />
@@ -311,7 +311,7 @@ function SearchContent() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="mt-8 flex justify-center gap-0 border border-[#201e1d]">
+                  <div className="mt-8 flex justify-center gap-0 border border-[var(--public-border)]">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page, i) => (
                       <button
                         key={page}
@@ -320,10 +320,10 @@ function SearchContent() {
                           params.set('page', String(page));
                           router.push(`/search?${params.toString()}`);
                         }}
-                        className={`flex h-10 w-10 items-center justify-center text-sm font-semibold transition-colors ${i > 0 ? 'border-l border-[#201e1d]' : ''} ${
+                        className={`flex h-10 w-10 items-center justify-center text-sm font-semibold transition-colors ${i > 0 ? 'border-l border-[var(--public-border)]' : ''} ${
                           page === pageParam
                             ? 'bg-[#201e1d] text-white'
-                            : 'text-[#201e1d] hover:bg-[#eae9e9]'
+                            : 'text-[#201e1d] hover:bg-gray-50'
                         }`}
                       >
                         {page}
@@ -333,7 +333,7 @@ function SearchContent() {
                 )}
               </>
             ) : (
-              <div className="border border-[#d7d3d3] bg-white p-12 text-center">
+              <div className="border border-[var(--public-border)] bg-white p-12 text-center">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center bg-[#eae9e9]">
                   <Search className="h-8 w-8 text-[#9b9797]" />
                 </div>
@@ -353,7 +353,7 @@ function SearchContent() {
           </>
         ) : (
           /* Empty State - No Query */
-          <div className="border border-[#d7d3d3] bg-white p-12 text-center">
+          <div className="border border-[var(--public-border)] bg-white p-12 text-center">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center bg-[#ffe0d9]">
               <Newspaper className="h-10 w-10 text-[#ae1800]" />
             </div>
@@ -370,7 +370,7 @@ function SearchContent() {
                 <Link
                   key={cat.id}
                   href={`/search?category=${cat.id}`}
-                  className="border border-[#d7d3d3] px-4 py-2 text-sm text-[#201e1d] hover:border-[#ec3013] hover:bg-[#fff2ef] transition-colors"
+                  className="border border-[var(--public-border)] px-4 py-2 text-sm text-[#201e1d] hover:border-[#ec3013] hover:bg-[#fff2ef] transition-colors"
                 >
                   {cat.name}
                 </Link>

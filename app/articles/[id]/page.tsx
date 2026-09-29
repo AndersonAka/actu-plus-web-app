@@ -141,7 +141,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
 
           {/* Sources Section */}
           {article.sources && article.sources.length > 0 && (
-            <div className="mt-8 border border-[#d7d3d3] bg-[#f8f4f4] p-6">
+            <div className="mt-8 border border-[var(--public-border)] bg-white p-6">
               <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-[#201e1d]">
                 <ExternalLink className="h-5 w-5 text-[#ec3013]" />
                 Sources

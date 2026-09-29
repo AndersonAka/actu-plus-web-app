@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -162,23 +162,23 @@ export default function NotificationsPage() {
           )}
 
           {/* Filter Tabs */}
-          <div className="mb-4 flex gap-0 border border-[#201e1d]">
+          <div className="mb-4 flex gap-0 border border-[var(--public-border)]">
             <button
               onClick={() => setFilter('all')}
               className={`px-4 py-2 text-sm font-semibold transition-colors ${
                 filter === 'all'
                   ? 'bg-[#201e1d] text-white'
-                  : 'text-[#201e1d] hover:bg-[#eae9e9]'
+                  : 'text-[#201e1d] hover:bg-gray-50'
               }`}
             >
               Toutes ({notifications.length})
             </button>
             <button
               onClick={() => setFilter('unread')}
-              className={`border-l border-[#201e1d] px-4 py-2 text-sm font-semibold transition-colors ${
+              className={`border-l border-[var(--public-border)] px-4 py-2 text-sm font-semibold transition-colors ${
                 filter === 'unread'
                   ? 'bg-[#201e1d] text-white'
-                  : 'text-[#201e1d] hover:bg-[#eae9e9]'
+                  : 'text-[#201e1d] hover:bg-gray-50'
               }`}
             >
               Non lues ({unreadCount})
@@ -191,7 +191,7 @@ export default function NotificationsPage() {
               <Loader2 className="h-8 w-8 animate-spin text-[#ec3013]" />
             </div>
           ) : filteredNotifications.length === 0 ? (
-            <div className="border border-[#d7d3d3] bg-white p-12 text-center">
+            <div className="border border-[var(--public-border)] bg-white p-12 text-center">
               <BellOff className="mx-auto h-12 w-12 text-[#d7d3d3]" />
               <h3 className="mt-4 text-lg font-bold text-[#201e1d]">
                 {filter === 'unread' ? 'Aucune notification non lue' : 'Aucune notification'}

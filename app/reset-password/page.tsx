@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { Archivo } from 'next/font/google';
@@ -213,7 +213,7 @@ function ResetPasswordContent() {
                   inputMode="numeric"
                   maxLength={6}
                   {...register('code')}
-                  className="w-full border border-[#d7d3d3] py-3 px-4 text-center text-lg tracking-[0.5em] font-semibold transition-colors focus:border-[#ec3013] focus:outline-none focus:ring-2 focus:ring-[#ec3013]/20"
+                  className="w-full border border-[var(--public-border)] py-3 px-4 text-center text-lg tracking-[0.5em] font-semibold transition-colors focus:border-[#ec3013] focus:outline-none focus:ring-2 focus:ring-[#ec3013]/20"
                   placeholder="••••••"
                   autoFocus
                 />
@@ -362,7 +362,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className={`${archivo.className} flex min-h-screen bg-[#f3f2f2] text-[#201e1d]`}>
+    <div className={`${archivo.className} flex min-h-screen bg-white text-[#201e1d]`}>
       {/* Left Section - Form */}
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
@@ -394,7 +394,7 @@ export default function ResetPasswordPage() {
       </div>
 
       {/* Right Section - Visual */}
-      <div className="relative hidden w-0 flex-1 border-l-2 border-[#201e1d] lg:block">
+      <div className="relative hidden w-0 flex-1 border-l border-[var(--public-divider)] lg:block">
         <Image
           src="https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1920&auto=format&fit=crop"
           alt="Background"

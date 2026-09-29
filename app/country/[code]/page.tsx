@@ -381,7 +381,7 @@ export default function CountryPage() {
   );
 
   const renderPremiumLock = () => (
-    <div className="flex flex-col items-center justify-center border-2 border-dashed border-[#d7d3d3] bg-[#f8f4f4] p-8 text-center">
+    <div className="flex flex-col items-center justify-center border border-dashed border-[var(--public-border)] bg-white p-8 text-center">
       <Lock className="mb-4 h-12 w-12 text-[#9b9797]" />
       <h3 className="mb-2 text-lg font-bold text-[#201e1d]">Contenu Abonné</h3>
       <p className="mb-4 text-sm text-[#605d5d]">
@@ -420,7 +420,7 @@ export default function CountryPage() {
   };
 
   const renderViewToggle = () => (
-    <div className="flex items-center gap-1 border border-[#d7d3d3] bg-[#f8f4f4] p-1">
+    <div className="flex items-center gap-1 border border-[var(--public-border)] bg-white p-1">
       <button
         onClick={() => setViewMode('grid')}
         className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold transition-colors ${
@@ -565,11 +565,11 @@ export default function CountryPage() {
 
       case 'essentiel': {
         const chips = (
-          <div className="flex flex-wrap border border-[#201e1d]">
+          <div className="flex flex-wrap border border-[var(--public-border)]">
             <button
               onClick={() => setEssentielCategoryFilter(null)}
               className={`px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide transition-colors ${
-                essentielCategoryFilter === null ? 'bg-[#201e1d] text-white' : 'text-[#201e1d] hover:bg-[#f8f4f4]'
+                essentielCategoryFilter === null ? 'bg-[#201e1d] text-white' : 'text-[#201e1d] hover:bg-gray-50'
               }`}
             >
               Tout
@@ -578,8 +578,8 @@ export default function CountryPage() {
               <button
                 key={cat.id}
                 onClick={() => setEssentielCategoryFilter(cat.id)}
-                className={`border-l border-[#201e1d] px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide transition-colors ${
-                  essentielCategoryFilter === cat.id ? 'bg-[#201e1d] text-white' : 'text-[#201e1d] hover:bg-[#f8f4f4]'
+                className={`border-l border-[var(--public-border)] px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide transition-colors ${
+                  essentielCategoryFilter === cat.id ? 'bg-[#201e1d] text-white' : 'text-[#201e1d] hover:bg-gray-50'
                 }`}
               >
                 {cat.name}
@@ -619,7 +619,7 @@ export default function CountryPage() {
           <>
             {renderSectionHeader('Focus', 'Notre note d\'analyse sur les dossiers structurants du pays. Réservée aux abonnés Pro.')}
             {focusArticle ? (
-              <div className="border border-[#201e1d]/40 bg-white p-6">
+              <div className="border border-[var(--public-border)] bg-white p-6">
                 <div className="mb-3 flex items-center gap-2">
                   <span className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#605d5d]">Note d'analyse</span>
                   {focusArticle.isPremium && (
@@ -704,7 +704,7 @@ export default function CountryPage() {
     return (
       <PublicShell>
         <div className="flex flex-1 items-center justify-center px-4 py-16">
-          <div className="w-full max-w-md border border-[#201e1d]/40 bg-white p-8 text-center">
+          <div className="w-full max-w-md border border-[var(--public-border)] bg-white p-8 text-center">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center bg-[#ffe0d9]">
               <Lock className="h-10 w-10 text-[#ec3013]" />
             </div>
@@ -739,7 +739,7 @@ export default function CountryPage() {
   return (
     <PublicShell>
       {/* Hero Banner */}
-      <div className="relative border-b-2 border-[#201e1d] bg-[#ec3013] text-white overflow-hidden">
+      <div className="relative border-b border-[var(--public-divider)] bg-[#ec3013] text-white overflow-hidden">
         <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -781,7 +781,7 @@ export default function CountryPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Tab bar */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b-2 border-[#201e1d]/40">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-[var(--public-divider)]">
           <div className="flex flex-wrap">
             {sections.map((section) => {
               const IconComponent = section.icon;
@@ -823,14 +823,14 @@ export default function CountryPage() {
         {/* Active Section Content (layout varies by tab) */}
         {activeSection === 'veille-sectorielle' ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
-            <aside className="h-fit border border-[#d7d3d3] bg-white p-2">
+            <aside className="h-fit border border-[var(--public-border)] bg-white p-2">
               <div className="px-3 pt-2 pb-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#9b9797]">
                 Filières
               </div>
               <button
                 onClick={() => setSectorFilter(null)}
                 className={`block w-full px-3 py-2 text-left text-sm font-semibold transition-colors ${
-                  sectorFilter === null ? 'bg-[#201e1d] text-white' : 'text-[#201e1d] hover:bg-[#f8f4f4]'
+                  sectorFilter === null ? 'bg-[#201e1d] text-white' : 'text-[#201e1d] hover:bg-gray-50'
                 }`}
               >
                 Toutes
@@ -840,22 +840,22 @@ export default function CountryPage() {
                   key={value}
                   onClick={() => setSectorFilter(value)}
                   className={`block w-full px-3 py-2 text-left text-sm font-semibold transition-colors ${
-                    sectorFilter === value ? 'bg-[#201e1d] text-white' : 'text-[#201e1d] hover:bg-[#f8f4f4]'
+                    sectorFilter === value ? 'bg-[#201e1d] text-white' : 'text-[#201e1d] hover:bg-gray-50'
                   }`}
                 >
                   {label}
                 </button>
               ))}
             </aside>
-            <div className="border border-[#d7d3d3] bg-white p-6">{renderSection()}</div>
+            <div className="border border-[var(--public-border)] bg-white p-6">{renderSection()}</div>
           </div>
         ) : activeSection === 'toute-actualite' ? (
-          <div className="border border-[#d7d3d3] bg-white p-6">{renderSection()}</div>
+          <div className="border border-[var(--public-border)] bg-white p-6">{renderSection()}</div>
         ) : (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
-            <div className="border border-[#d7d3d3] bg-white p-6">{renderSection()}</div>
+            <div className="border border-[var(--public-border)] bg-white p-6">{renderSection()}</div>
             {focusArticle && (
-              <aside className="h-fit border border-[#d7d3d3] bg-white p-5">
+              <aside className="h-fit border border-[var(--public-border)] bg-white p-5">
                 <div className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#9b9797]">
                   Focus en cours
                 </div>
@@ -888,7 +888,7 @@ export default function CountryPage() {
                   <Link
                     key={c.id}
                     href={`/country/${c.code.toLowerCase()}`}
-                    className="flex items-center gap-2 border border-[#d7d3d3] bg-white px-3 py-1.5 text-sm text-[#201e1d] hover:border-[#ec3013] hover:text-[#ec3013] transition-colors"
+                    className="flex items-center gap-2 border border-[var(--public-border)] bg-white px-3 py-1.5 text-sm text-[#201e1d] hover:border-[#ec3013] hover:text-[#ec3013] transition-colors"
                   >
                     <span>{c.flag}</span>
                     <span>{c.name}</span>

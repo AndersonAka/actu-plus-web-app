@@ -68,7 +68,7 @@ const Header = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b-2 border-[#201e1d]/40 bg-[#f3f2f2]">
+    <header className="sticky top-0 z-50 border-b border-[var(--public-divider)] bg-white">
       <div className="mx-auto max-w-360 px-5 sm:px-9">
         <div className="flex h-18 items-center justify-between gap-4">
           {/* Logo */}
@@ -90,7 +90,7 @@ const Header = () => {
               <Link
                 key={link.href}
                 href={link.href}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-[#201e1d] transition-colors hover:bg-[#eae9e9]"
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-[#201e1d] transition-colors hover:bg-gray-50"
               >
                 <link.icon className="h-4 w-4" />
                 {link.label}
@@ -119,7 +119,7 @@ const Header = () => {
                         size="sm"
                       />
                       {hasActiveSubscription && (
-                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center bg-[#ec3013] ring-2 ring-[#f3f2f2]" title={subscription?.plan?.name || 'Abonné'}>
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center bg-[#ec3013] ring-2 ring-white" title={subscription?.plan?.name || 'Abonné'}>
                           <Crown className="h-2.5 w-2.5 text-white" />
                         </span>
                       )}
@@ -133,7 +133,7 @@ const Header = () => {
                         className="fixed inset-0 z-10"
                         onClick={() => setUserMenuOpen(false)}
                       />
-                      <div className="absolute right-0 top-full z-20 mt-2 w-56 border border-[#201e1d]/40 bg-[#f3f2f2] py-2 shadow-[0_4px_16px_rgba(32,30,29,0.15)]">
+                      <div className="absolute right-0 top-full z-20 mt-2 w-56 border border-[var(--public-border)] bg-white py-2 shadow-[0_4px_16px_rgba(32,30,29,0.08)]">
                         <div className="border-b border-[#d7d3d3] px-4 pb-2">
                           <p className="font-semibold text-[#201e1d]">
                             {user.firstName} {user.lastName}
@@ -150,7 +150,7 @@ const Header = () => {
                         <div className="py-1">
                           <Link
                             href="/profile"
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-[#201e1d] hover:bg-[#eae9e9]"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-[#201e1d] hover:bg-gray-50"
                             onClick={() => setUserMenuOpen(false)}
                           >
                             <User className="h-4 w-4" />
@@ -162,7 +162,7 @@ const Header = () => {
                           <div className="border-t border-[#d7d3d3] py-1">
                             <Link
                               href="/veilleur"
-                              className="flex items-center gap-2 px-4 py-2 text-sm text-[#201e1d] hover:bg-[#eae9e9]"
+                              className="flex items-center gap-2 px-4 py-2 text-sm text-[#201e1d] hover:bg-gray-50"
                               onClick={() => setUserMenuOpen(false)}
                             >
                               <FileText className="h-4 w-4" />
@@ -175,7 +175,7 @@ const Header = () => {
                           <div className="border-t border-[#d7d3d3] py-1">
                             <Link
                               href="/moderateur"
-                              className="flex items-center gap-2 px-4 py-2 text-sm text-[#201e1d] hover:bg-[#eae9e9]"
+                              className="flex items-center gap-2 px-4 py-2 text-sm text-[#201e1d] hover:bg-gray-50"
                               onClick={() => setUserMenuOpen(false)}
                             >
                               <Settings className="h-4 w-4" />
@@ -188,7 +188,7 @@ const Header = () => {
                           <div className="border-t border-[#d7d3d3] py-1">
                             <Link
                               href="/admin"
-                              className="flex items-center gap-2 px-4 py-2 text-sm text-[#201e1d] hover:bg-[#eae9e9]"
+                              className="flex items-center gap-2 px-4 py-2 text-sm text-[#201e1d] hover:bg-gray-50"
                               onClick={() => setUserMenuOpen(false)}
                             >
                               <Settings className="h-4 w-4" />
@@ -239,14 +239,14 @@ const Header = () => {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="border-t-2 border-[#201e1d]/40 bg-[#f3f2f2] md:hidden">
+        <div className="border-t border-[var(--public-divider)] bg-white md:hidden">
           <div className="space-y-1 px-4 py-3">
             <SearchBar placeholder="Rechercher..." size="sm" className="mb-3" />
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="block px-3 py-2 text-[#201e1d] hover:bg-[#eae9e9]"
+                className="block px-3 py-2 text-[#201e1d] hover:bg-gray-50"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.label}
@@ -258,7 +258,7 @@ const Header = () => {
                 <div className="my-2 border-t border-[#d7d3d3]" />
                 <Link
                   href="/profile"
-                  className="flex items-center gap-2 px-3 py-2 text-[#201e1d] hover:bg-[#eae9e9]"
+                  className="flex items-center gap-2 px-3 py-2 text-[#201e1d] hover:bg-gray-50"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Mon profil
@@ -272,7 +272,7 @@ const Header = () => {
                 {isVeilleur() && (
                   <Link
                     href="/veilleur"
-                    className="block px-3 py-2 text-[#201e1d] hover:bg-[#eae9e9]"
+                    className="block px-3 py-2 text-[#201e1d] hover:bg-gray-50"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Espace Veilleur
@@ -281,7 +281,7 @@ const Header = () => {
                 {isModerateur() && (
                   <Link
                     href="/moderateur"
-                    className="block px-3 py-2 text-[#201e1d] hover:bg-[#eae9e9]"
+                    className="block px-3 py-2 text-[#201e1d] hover:bg-gray-50"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Espace Modérateur
@@ -290,7 +290,7 @@ const Header = () => {
                 {isAdmin() && (
                   <Link
                     href="/admin"
-                    className="block px-3 py-2 text-[#201e1d] hover:bg-[#eae9e9]"
+                    className="block px-3 py-2 text-[#201e1d] hover:bg-gray-50"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Administration

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { PublicShell } from '../PublicShell';
@@ -130,14 +130,14 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Info Cards */}
-      <section className="border-b-2 border-[#201e1d]/40 py-10">
+      <section className="border-b border-[var(--public-divider)] py-10">
         <div className="mx-auto max-w-[1440px] px-5 sm:px-9">
-          <div className="grid gap-0 border border-[#d7d3d3] sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-0 border border-[var(--public-border)] sm:grid-cols-2 lg:grid-cols-4">
             {contactInfo.map((item, index) => (
               <a
                 key={index}
                 href={item.href}
-                className={`group flex items-center gap-4 p-5 transition-colors hover:bg-[#eae9e9] ${
+                className={`group flex items-center gap-4 p-5 transition-colors hover:bg-gray-50 ${
                   index > 0 ? 'border-t border-[#d7d3d3] sm:border-t-0 sm:border-l' : ''
                 }`}
               >
@@ -159,7 +159,7 @@ export default function ContactPage() {
         <div className="mx-auto max-w-[1440px] px-5 sm:px-9">
           <div className="grid gap-10 lg:grid-cols-2">
             {/* Contact Form */}
-            <div className="border border-[#d7d3d3] bg-white p-8">
+            <div className="border border-[var(--public-border)] bg-white p-8">
               <h2 className="mb-6 flex items-center gap-2 text-2xl font-extrabold text-[#201e1d]">
                 <Send className="h-6 w-6 text-[#ec3013]" />
                 Envoyez-nous un message
@@ -197,7 +197,7 @@ export default function ContactPage() {
                       {contactTypes.map((type) => (
                         <label
                           key={type.value}
-                          className="relative flex cursor-pointer items-center gap-2 border border-[#d7d3d3] p-3 transition-colors hover:border-[#201e1d] has-[:checked]:border-[#ec3013] has-[:checked]:bg-[#fff2ef]"
+                          className="relative flex cursor-pointer items-center gap-2 border border-[var(--public-border)] p-3 transition-colors hover:border-[var(--public-border)] has-[:checked]:border-[#ec3013] has-[:checked]:bg-[#fff2ef]"
                         >
                           <input
                             type="radio"
@@ -321,7 +321,7 @@ export default function ContactPage() {
             {/* Info Section */}
             <div className="space-y-8">
               {/* About */}
-              <div className="border border-[#d7d3d3] bg-white p-8">
+              <div className="border border-[var(--public-border)] bg-white p-8">
                 <h3 className="mb-4 flex items-center gap-2 text-xl font-extrabold text-[#201e1d]">
                   <Globe2 className="h-5 w-5 text-[#ec3013]" />
                   À propos d'Actu Plus
@@ -338,7 +338,7 @@ export default function ContactPage() {
               </div>
 
               {/* Social Links */}
-              <div className="border border-[#d7d3d3] bg-white p-8">
+              <div className="border border-[var(--public-border)] bg-white p-8">
                 <h3 className="mb-4 text-xl font-extrabold text-[#201e1d]">
                   Suivez-nous
                 </h3>
@@ -350,7 +350,7 @@ export default function ContactPage() {
                     <a
                       key={index}
                       href={social.href}
-                      className="flex h-11 w-11 items-center justify-center border border-[#d7d3d3] text-[#605d5d] transition-colors hover:border-[#ec3013] hover:bg-[#ec3013] hover:text-white"
+                      className="flex h-11 w-11 items-center justify-center border border-[var(--public-border)] text-[#605d5d] transition-colors hover:border-[#ec3013] hover:bg-[#ec3013] hover:text-white"
                       aria-label={social.label}
                     >
                       <social.icon className="h-5 w-5" />
@@ -364,7 +364,7 @@ export default function ContactPage() {
       </section>
 
       {/* Map Section (placeholder) */}
-      <section className="relative h-64 border-t-2 border-[#201e1d]/40 bg-[#eae9e9]">
+      <section className="relative h-64 border-t border-[var(--public-divider)] bg-gray-50">
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <MapPin className="mx-auto mb-2 h-12 w-12 text-[#9b9797]" />

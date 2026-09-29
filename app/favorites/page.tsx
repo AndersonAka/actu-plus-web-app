@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -145,15 +145,15 @@ export default function FavoritesPage() {
           </div>
 
           {/* Filtres */}
-          <div className="mb-6 flex gap-0 border border-[#201e1d]">
+          <div className="mb-6 flex gap-0 border border-[var(--public-border)]">
             {filters.map((filter, i) => (
               <button
                 key={filter.value}
                 onClick={() => setContentFilter(filter.value as ContentFilter)}
-                className={`px-4 py-2 text-sm font-semibold transition-colors ${i > 0 ? 'border-l border-[#201e1d]' : ''} ${
+                className={`px-4 py-2 text-sm font-semibold transition-colors ${i > 0 ? 'border-l border-[var(--public-border)]' : ''} ${
                   contentFilter === filter.value
                     ? 'bg-[#201e1d] text-white'
-                    : 'text-[#201e1d] hover:bg-[#eae9e9]'
+                    : 'text-[#201e1d] hover:bg-gray-50'
                 }`}
               >
                 {filter.label}
@@ -179,7 +179,7 @@ export default function FavoritesPage() {
               </Button>
             </div>
           ) : articles.length === 0 ? (
-            <div className="border border-[#d7d3d3] bg-[#f8f4f4] p-12 text-center">
+            <div className="border border-[var(--public-border)] bg-white p-12 text-center">
               <Heart className="mx-auto h-12 w-12 text-[#d7d3d3]" />
               <h3 className="mt-4 text-lg font-bold text-[#201e1d]">
                 Aucun favori
@@ -200,7 +200,7 @@ export default function FavoritesPage() {
                   <ArticleCard article={article} variant="compact" />
                   <button
                     onClick={() => handleRemoveFavorite(article.id)}
-                    className="absolute right-3 top-3 border border-[#d7d3d3] bg-white p-2 transition-colors hover:border-[#ec3013] hover:bg-[#fff2ef]"
+                    className="absolute right-3 top-3 border border-[var(--public-border)] bg-white p-2 transition-colors hover:border-[#ec3013] hover:bg-[#fff2ef]"
                     title="Retirer des favoris"
                   >
                     <Heart className="h-4 w-4 fill-[#ec3013] text-[#ec3013]" />

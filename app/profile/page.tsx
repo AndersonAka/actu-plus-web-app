@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -229,7 +229,7 @@ export default function ProfilePage() {
             {/* Left Column - Profile Info */}
             <div className="lg:col-span-2 space-y-6">
               {/* Personal Information Card */}
-              <div className="border border-[#d7d3d3] bg-white p-6">
+              <div className="border border-[var(--public-border)] bg-white p-6">
                 <div className="mb-6 flex items-center justify-between">
                   <h2 className="text-xl font-bold text-[#201e1d]">Informations personnelles</h2>
                   {!isEditing ? (
@@ -316,12 +316,12 @@ export default function ProfilePage() {
               </div>
 
               {/* Quick Actions */}
-              <div className="border border-[#d7d3d3] bg-white p-6">
+              <div className="border border-[var(--public-border)] bg-white p-6">
                 <h2 className="mb-4 text-xl font-bold text-[#201e1d]">Accès rapide</h2>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <button
                     onClick={() => router.push('/favorites')}
-                    className="flex items-center gap-3 border border-[#d7d3d3] p-4 transition-colors hover:border-[#201e1d]/40 hover:bg-[#f8f4f4]"
+                    className="flex items-center gap-3 border border-[var(--public-border)] p-4 transition-colors hover:border-[var(--public-border)] hover:bg-gray-50"
                   >
                     <div className="flex h-10 w-10 items-center justify-center bg-[#ffe0d9]">
                       <Heart className="h-5 w-5 text-[#ae1800]" />
@@ -334,7 +334,7 @@ export default function ProfilePage() {
 
                   <button
                     onClick={() => router.push('/notifications')}
-                    className="flex items-center gap-3 border border-[#d7d3d3] p-4 transition-colors hover:border-[#201e1d]/40 hover:bg-[#f8f4f4]"
+                    className="flex items-center gap-3 border border-[var(--public-border)] p-4 transition-colors hover:border-[var(--public-border)] hover:bg-gray-50"
                   >
                     <div className="flex h-10 w-10 items-center justify-center bg-[#ffe0d9]">
                       <Bell className="h-5 w-5 text-[#ae1800]" />
@@ -347,7 +347,7 @@ export default function ProfilePage() {
 
                   <button
                     onClick={() => router.push('/security')}
-                    className="flex items-center gap-3 border border-[#d7d3d3] p-4 transition-colors hover:border-[#201e1d]/40 hover:bg-[#f8f4f4]"
+                    className="flex items-center gap-3 border border-[var(--public-border)] p-4 transition-colors hover:border-[var(--public-border)] hover:bg-gray-50"
                   >
                     <div className="flex h-10 w-10 items-center justify-center bg-[#ffe0d9]">
                       <Shield className="h-5 w-5 text-[#ae1800]" />
@@ -409,7 +409,7 @@ export default function ProfilePage() {
               </div>
 
               {/* Account Info */}
-              <div className="border border-[#d7d3d3] bg-white p-6">
+              <div className="border border-[var(--public-border)] bg-white p-6">
                 <h3 className="mb-4 text-lg font-bold text-[#201e1d]">Informations du compte</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
@@ -469,7 +469,7 @@ export default function ProfilePage() {
     {/* Modal de confirmation de suppression */}
     {showDeleteModal && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-        <div className="w-full max-w-md border border-[#201e1d]/40 bg-white p-6">
+        <div className="w-full max-w-md border border-[var(--public-border)] bg-white p-6">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center bg-[#ffe0d9]">
               <AlertTriangle className="h-6 w-6 text-[#ae1800]" />
@@ -501,7 +501,7 @@ export default function ProfilePage() {
               onChange={(e) => setDeletePassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleDeleteAccount()}
               placeholder="Votre mot de passe actuel"
-              className="w-full rounded-none border border-[#d7d3d3] px-4 py-2.5 text-[#201e1d] focus:border-[#ae1800] focus:outline-none focus:ring-2 focus:ring-[#ae1800]/20"
+              className="w-full rounded-none border border-[var(--public-border)] px-4 py-2.5 text-[#201e1d] focus:border-[#ae1800] focus:outline-none focus:ring-2 focus:ring-[#ae1800]/20"
               autoFocus
             />
           </div>
@@ -510,7 +510,7 @@ export default function ProfilePage() {
             <button
               onClick={() => { setShowDeleteModal(false); setDeletePassword(''); setDeleteError(null); }}
               disabled={isDeletingAccount}
-              className="flex-1 border border-[#d7d3d3] bg-white px-4 py-2.5 text-sm font-semibold text-[#201e1d] transition-colors hover:bg-[#eae9e9] disabled:opacity-50"
+              className="flex-1 border border-[var(--public-border)] bg-white px-4 py-2.5 text-sm font-semibold text-[#201e1d] transition-colors hover:bg-gray-50 disabled:opacity-50"
             >
               Annuler
             </button>

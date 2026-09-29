@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -154,7 +154,7 @@ const RegisterForm = () => {
           hint="Format international sans espaces (ex: +2250700000000)"
         />
 
-        <div className="border border-[#d7d3d3] bg-[#f8f4f4] p-3">
+        <div className="border border-[var(--public-border)] bg-white p-3">
           <p className="mb-2 text-xs font-semibold text-[#605d5d] uppercase tracking-wide">Vous êtes un employé d'entreprise ?</p>
           <Input
             label="Code de référence entreprise (optionnel)"

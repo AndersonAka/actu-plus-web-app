@@ -249,15 +249,15 @@ export default async function HomePage() {
   const politique = categories.find((c) => c.slug === 'politique');
 
   return (
-    <div className={`${archivo.className} bg-[#f3f2f2] text-[#201e1d]`} style={{ fontSize: 15, lineHeight: 1.55 }}>
+    <div className={`${archivo.className} bg-white text-[#201e1d]`} style={{ fontSize: 15, lineHeight: 1.55 }}>
       <div className="mx-auto max-w-[1440px]">
         {/* MASTHEAD */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-[#201e1d]/40 px-5 py-5 sm:px-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--public-divider)] px-5 py-5 sm:px-10">
           <Link href="/" className="shrink-0">
             <Image src="/images/logo-actu-plus.webp" alt="Actu Plus" width={180} height={57} priority unoptimized className="h-12 w-auto sm:h-14" />
           </Link>
           <div className="flex flex-1 flex-wrap items-center justify-end gap-3">
-            <form action="/articles" method="GET" className="flex h-[42px] w-full max-w-[260px] items-center gap-2.5 border border-[#d7d3d3] bg-[#f8f4f4] px-4 text-sm text-[#605d5d]">
+            <form action="/articles" method="GET" className="flex h-[42px] w-full max-w-[260px] items-center gap-2.5 border border-[var(--public-border)] bg-white px-4 text-sm text-[#605d5d]">
               <Search className="h-4 w-4 shrink-0" strokeWidth={2} />
               <input
                 type="text"
@@ -266,7 +266,7 @@ export default async function HomePage() {
                 className="w-full bg-transparent text-sm text-[#201e1d] placeholder:text-[#605d5d] focus:outline-none"
               />
             </form>
-            <Link href="/favorites" className="flex h-[42px] items-center border border-[#201e1d] px-4 text-sm font-semibold text-[#201e1d] transition-colors hover:bg-[#eae9e9]">
+            <Link href="/favorites" className="flex h-[42px] items-center border border-[var(--public-border)] px-4 text-sm font-semibold text-[#201e1d] transition-colors hover:bg-gray-50">
               Favoris
             </Link>
             <Link href="/subscriptions" className="flex h-[42px] items-center bg-[#ec3013] px-5 text-sm font-extrabold text-white transition-colors hover:bg-[#dd2b0f]">
@@ -277,33 +277,33 @@ export default async function HomePage() {
         </div>
 
         {/* NAV */}
-        <div className="flex flex-wrap items-stretch justify-between gap-y-2 border-b-2 border-[#201e1d]/40 px-5 sm:px-10">
+        <div className="flex flex-wrap items-stretch justify-between gap-y-2 border-b border-[var(--public-divider)] px-5 sm:px-10">
           <div className="flex flex-wrap items-stretch">
             <Link href="/" className="flex items-center py-3 pr-4.5 mr-4.5 text-sm font-extrabold shadow-[inset_0_-4px_0_#ec3013]">
               À la une
             </Link>
             {economie && (
-              <Link href={`/articles?category=${economie.id}`} className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
+              <Link href={`/articles?category=${economie.id}`} className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-gray-50">
                 Économie
               </Link>
             )}
             {politique && (
-              <Link href={`/articles?category=${politique.id}`} className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
+              <Link href={`/articles?category=${politique.id}`} className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-gray-50">
                 Politique
               </Link>
             )}
-            <Link href="#revue-de-presse" className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
+            <Link href="#revue-de-presse" className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-gray-50">
               Revue de presse
             </Link>
-            <Link href="/veille-sectorielle" className="flex items-center gap-2 px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
+            <Link href="/veille-sectorielle" className="flex items-center gap-2 px-4.5 py-3 text-sm transition-colors hover:bg-gray-50">
               Veille sectorielle
               <span className="bg-[#ffe0d9] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-[#ae1800]">Pro</span>
             </Link>
-            <Link href="/focus" className="flex items-center gap-2 px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
+            <Link href="/focus" className="flex items-center gap-2 px-4.5 py-3 text-sm transition-colors hover:bg-gray-50">
               Focus
               <span className="bg-[#ffe0d9] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-[#ae1800]">Pro</span>
             </Link>
-            <Link href="/archives" className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-[#eae9e9]">
+            <Link href="/archives" className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-gray-50">
               Archives
             </Link>
           </div>
@@ -313,10 +313,10 @@ export default async function HomePage() {
         </div>
 
         {/* UNE + LE FIL */}
-        <div className="grid grid-cols-1 border-b-2 border-[#201e1d]/40 lg:grid-cols-[1fr_360px]">
-          <div className="lg:border-r-2 lg:border-[#201e1d]/40">
+        <div className="grid grid-cols-1 border-b border-[var(--public-divider)] lg:grid-cols-[1fr_360px]">
+          <div className="lg:border-r lg:border-[var(--public-divider)]">
             {/* UNE */}
-            <div className="border-b-2 border-[#201e1d]/40 px-5 py-8 sm:px-9 sm:py-10">
+            <div className="border-b border-[var(--public-divider)] px-5 py-8 sm:px-9 sm:py-10">
               <HomeHeroCarousel items={heroItems} />
             </div>
 
@@ -327,7 +327,7 @@ export default async function HomePage() {
                   <Link
                     key={article.id}
                     href={getArticlePublicPath(article)}
-                    className={`p-7 ${i < secondaryArticles.length - 1 ? 'border-b border-[#d7d3d3] sm:border-b-0 sm:border-r' : ''} ${i >= 2 ? 'border-t sm:border-t-0' : ''}`}
+                    className={`p-7 ${i < secondaryArticles.length - 1 ? 'border-b border-[var(--public-divider)] sm:border-b-0 sm:border-r' : ''} ${i >= 2 ? 'border-t border-[var(--public-divider)] sm:border-t-0' : ''}`}
                   >
                     {(article.coverImage || article.imageUrl) && (
                       <div className="mb-4.5 h-[170px] overflow-hidden">
@@ -351,14 +351,14 @@ export default async function HomePage() {
 
           {/* LE FIL — TEMPS RÉEL */}
           <div className="px-5 py-7 sm:px-7">
-            <div className="mb-4 flex items-baseline justify-between border-b-2 border-[#201e1d]/40 pb-3">
+            <div className="mb-4 flex items-baseline justify-between border-b border-[var(--public-divider)] pb-3">
               <span className="text-sm font-extrabold uppercase tracking-[0.12em]">Le Fil</span>
               <span className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#ec3013]">Temps réel</span>
             </div>
             {latestArticles.length === 0 ? (
               <p className="text-sm text-[#605d5d]">Aucun article publié pour le moment.</p>
             ) : (
-              <div className="divide-y divide-[#d7d3d3]">
+              <div className="divide-y divide-[var(--public-divider)]">
                 {latestArticles.map((article) => {
                   const publishedDate = article.publishedAt || article.createdAt;
                   const time = publishedDate ? format(new Date(publishedDate), "HH'h'mm") : null;
@@ -393,13 +393,13 @@ export default async function HomePage() {
             </div>
           </div>
           {countryHeadlines.length === 0 ? (
-            <p className="border-t-2 border-[#201e1d]/40 py-8 text-center text-sm text-[#605d5d]">Aucun pays disponible.</p>
+            <p className="border-t border-[var(--public-divider)] py-8 text-center text-sm text-[#605d5d]">Aucun pays disponible.</p>
           ) : (
-            <div className="grid grid-cols-1 border-t-2 border-b-2 border-[#201e1d]/40 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 border border-[var(--public-divider)] sm:grid-cols-2 lg:grid-cols-3">
               {countryHeadlines.map((country, i) => (
                 <div
                   key={country.id}
-                  className={`p-6.5 ${i < countryHeadlines.length - 1 ? 'border-b border-[#d7d3d3] sm:border-b-0 sm:border-r' : ''}`}
+                  className={`p-6.5 ${i < countryHeadlines.length - 1 ? 'border-b border-[var(--public-divider)] sm:border-b-0 sm:border-r' : ''}`}
                 >
                   <div className="mb-4 flex items-baseline justify-between">
                     <span className="text-xl font-extrabold tracking-[-0.01em]">
@@ -434,7 +434,7 @@ export default async function HomePage() {
         </div>
 
         {/* INTERNATIONALE */}
-        <div className="border-t-2 border-[#201e1d]/40 px-5 py-11 sm:px-9 sm:py-12">
+        <div className="border-t border-[var(--public-divider)] px-5 py-11 sm:px-9 sm:py-12">
           <div className="mb-6.5 flex flex-wrap items-end justify-between gap-4">
             <div>
               <h2 className="text-[28px] font-extrabold leading-[1.05] tracking-[-0.022em] sm:text-[34px]">Internationale</h2>
@@ -447,12 +447,12 @@ export default async function HomePage() {
               Toute l'actualité internationale <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
             </Link>
           </div>
-          <div className="grid grid-cols-1 border-t-2 border-b-2 border-[#201e1d]/40 sm:grid-cols-2">
+          <div className="grid grid-cols-1 border border-[var(--public-divider)] sm:grid-cols-2">
             {[
               { label: 'Zone UEMOA', zone: 'uemoa' as const, data: uemoaHeadlines },
               { label: 'Zone Hors UEMOA', zone: 'hors-uemoa' as const, data: horsUemoaHeadlines },
             ].map((col, i) => (
-              <div key={col.zone} className={`p-6.5 ${i === 0 ? 'border-b border-[#d7d3d3] sm:border-b-0 sm:border-r sm:pr-7.5' : 'sm:pl-7.5'}`}>
+              <div key={col.zone} className={`p-6.5 ${i === 0 ? 'border-b border-[var(--public-divider)] sm:border-b-0 sm:border-r sm:pr-7.5' : 'sm:pl-7.5'}`}>
                 <div className="mb-4 flex items-baseline justify-between">
                   <span className="text-xl font-extrabold tracking-[-0.01em]">{col.label}</span>
                   <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#605d5d]">
@@ -497,7 +497,7 @@ export default async function HomePage() {
                 Découvrir Actu Plus Pro
               </Link>
             </div>
-            <div className="grid gap-0 border-t-2 border-white/50">
+            <div className="grid gap-0 border-t border-white/40">
               {[
                 { n: '01', t: "Résumé de l'actualité", d: 'Une synthèse par pays, chaque matin.' },
                 { n: '02', t: 'Veille sectorielle', d: 'Banque, énergie, agro-industrie…' },
@@ -520,15 +520,15 @@ export default async function HomePage() {
         <div className="px-5 py-11 sm:px-9 sm:py-13">
           <div className="mb-5.5 flex flex-wrap items-end justify-between gap-4">
             <h2 className="text-[28px] font-extrabold leading-[1.05] tracking-[-0.022em] sm:text-[34px]">Veille sectorielle</h2>
-            <div className="flex flex-wrap border border-[#201e1d]">
-              <Link href="/veille-sectorielle" className="px-4 py-2 text-[13px] font-extrabold text-[#201e1d] transition-colors hover:bg-[#eae9e9]">
+            <div className="flex flex-wrap border border-[var(--public-border)]">
+              <Link href="/veille-sectorielle" className="px-4 py-2 text-[13px] font-extrabold text-[#201e1d] transition-colors hover:bg-gray-50">
                 Toutes
               </Link>
               {Object.entries(SECTOR_LABELS).map(([value, label]) => (
                 <Link
                   key={value}
                   href={`/veille-sectorielle?sector=${value}`}
-                  className="border-l border-[#201e1d] px-4 py-2 text-[13px] text-[#201e1d] transition-colors hover:bg-[#eae9e9]"
+                  className="border-l border-[var(--public-border)] px-4 py-2 text-[13px] text-[#201e1d] transition-colors hover:bg-gray-50"
                 >
                   {label}
                 </Link>
@@ -536,15 +536,15 @@ export default async function HomePage() {
             </div>
           </div>
           {veilleSectorielleEntries.length === 0 ? (
-            <p className="border-t-2 border-[#201e1d]/40 py-8 text-center text-sm text-[#605d5d]">
+            <p className="border-t border-[var(--public-divider)] py-8 text-center text-sm text-[#605d5d]">
               Aucune veille sectorielle disponible pour le moment.
             </p>
           ) : (
-            <div className="grid grid-cols-1 border-t-2 border-[#201e1d]/40 sm:grid-cols-2">
+            <div className="grid grid-cols-1 border-t border-[var(--public-divider)] sm:grid-cols-2">
               {veilleSectorielleEntries.map((entry, i) => (
                 <div
                   key={`${entry.articleId}-${i}`}
-                  className={`py-6.5 ${i % 2 === 0 ? 'sm:border-r sm:pr-7.5' : 'sm:pl-7.5'} ${i > 0 ? 'border-t border-[#d7d3d3] sm:border-t-0' : ''} ${i >= 2 ? 'sm:border-t sm:border-[#d7d3d3]' : ''}`}
+                  className={`py-6.5 ${i % 2 === 0 ? 'sm:border-r sm:border-[var(--public-divider)] sm:pr-7.5' : 'sm:pl-7.5'} ${i > 0 ? 'border-t border-[var(--public-divider)] sm:border-t-0' : ''} ${i >= 2 ? 'sm:border-t sm:border-[var(--public-divider)]' : ''}`}
                 >
                   <div className="mb-3.5 flex items-center justify-between">
                     <span className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#605d5d]">
@@ -587,9 +587,9 @@ export default async function HomePage() {
 
         {/* FOOTER */}
         <div className="bg-[#201e1d] px-5 py-12 text-[#bab6b6] sm:px-9">
-          <div className="grid grid-cols-1 gap-10 border-b-2 border-[#f3f2f2]/35 pb-9 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr] lg:gap-12">
+          <div className="grid grid-cols-1 gap-10 border-b border-white/15 pb-9 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr] lg:gap-12">
             <div>
-              <div className="mb-4 w-max bg-[#f3f2f2] px-3 py-2.5">
+              <div className="mb-4 w-max bg-white px-3 py-2.5">
                 <Image src="/images/logo-actu-plus.webp" alt="Actu Plus" width={130} height={41} unoptimized className="h-9 w-auto" />
               </div>
               <div className="max-w-[40ch] text-sm leading-[1.6]">

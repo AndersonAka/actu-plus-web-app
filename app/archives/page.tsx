@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -185,16 +185,16 @@ export default function ArchivesPage() {
             </div>
           </div>
 
-          <div className="mb-6 flex flex-wrap gap-0 border border-[#201e1d]">
+          <div className="mb-6 flex flex-wrap gap-0 border border-[var(--public-border)]">
             {filters.map((filter, i) => (
               <button
                 key={filter.value}
                 type="button"
                 onClick={() => handleFilterChange(filter.value)}
-                className={`px-4 py-2 text-sm font-semibold transition-colors ${i > 0 ? 'border-l border-[#201e1d]' : ''} ${
+                className={`px-4 py-2 text-sm font-semibold transition-colors ${i > 0 ? 'border-l border-[var(--public-border)]' : ''} ${
                   contentFilter === filter.value
                     ? 'bg-[#201e1d] text-white'
-                    : 'text-[#201e1d] hover:bg-[#eae9e9]'
+                    : 'text-[#201e1d] hover:bg-gray-50'
                 }`}
               >
                 {filter.label}
@@ -219,7 +219,7 @@ export default function ArchivesPage() {
               </Button>
             </div>
           ) : articles.length === 0 ? (
-            <div className="border border-[#d7d3d3] bg-[#f8f4f4] p-12 text-center">
+            <div className="border border-[var(--public-border)] bg-white p-12 text-center">
               <Archive className="mx-auto h-12 w-12 text-[#d7d3d3]" />
               <h3 className="mt-4 text-lg font-bold text-[#201e1d]">
                 Aucune archive

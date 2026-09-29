@@ -83,7 +83,7 @@ function PaymentCallbackContent() {
   return (
     <PublicShell>
       <div className="flex flex-1 items-center justify-center px-4 py-16">
-        <div className="w-full max-w-md border border-[#d7d3d3] bg-white p-8 text-center">
+        <div className="w-full max-w-md border border-[var(--public-border)] bg-white p-8 text-center">
           {status === 'loading' && (
             <>
               <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center bg-[#ffe0d9]">
@@ -175,7 +175,7 @@ export default function PaymentCallbackPage() {
     <Suspense fallback={
       <PublicShell>
         <div className="flex flex-1 items-center justify-center px-4 py-16">
-          <div className="w-full max-w-md border border-[#d7d3d3] bg-white p-8 text-center">
+          <div className="w-full max-w-md border border-[var(--public-border)] bg-white p-8 text-center">
             <Loader2 className="mx-auto h-10 w-10 animate-spin text-[#ec3013]" />
             <p className="mt-4 text-[#605d5d]">Chargement...</p>
           </div>

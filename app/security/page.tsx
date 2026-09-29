@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -142,7 +142,7 @@ export default function SecurityPage() {
           )}
 
           {/* Change Password Form */}
-          <div className="border border-[#d7d3d3] bg-white p-6">
+          <div className="border border-[var(--public-border)] bg-white p-6">
             <h2 className="mb-6 text-lg font-bold text-[#201e1d]">Changer le mot de passe</h2>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -186,7 +186,7 @@ export default function SecurityPage() {
 
               {/* Password Requirements */}
               {formData.newPassword.length > 0 && (
-                <div className="border border-[#d7d3d3] bg-[#f8f4f4] p-4">
+                <div className="border border-[var(--public-border)] bg-white p-4">
                   <p className="mb-2 text-sm font-semibold text-[#201e1d]">Critères du mot de passe :</p>
                   <ul className="space-y-1">
                     {passwordRequirements.map((req, index) => (

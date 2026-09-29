@@ -10,7 +10,7 @@ const archivo = Archivo({ subsets: ['latin'], weight: ['400', '500', '600', '800
  */
 export function PublicShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`${archivo.className} flex min-h-screen flex-col bg-[#f3f2f2] text-[#201e1d]`}>
+    <div className={`${archivo.className} flex min-h-screen flex-col bg-white text-[#201e1d]`}>
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />

@@ -81,7 +81,7 @@ export function HomeHeroCarousel({ items }: { items: HomeHeroItem[] }) {
               type="button"
               onClick={prev}
               aria-label="Article précédent"
-              className="flex h-9 w-9 items-center justify-center border border-[#201e1d] transition-colors hover:bg-[#eae9e9]"
+              className="flex h-9 w-9 items-center justify-center border border-[var(--public-border)] transition-colors hover:bg-gray-50"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -89,7 +89,7 @@ export function HomeHeroCarousel({ items }: { items: HomeHeroItem[] }) {
               type="button"
               onClick={next}
               aria-label="Article suivant"
-              className="flex h-9 w-9 items-center justify-center border border-[#201e1d] transition-colors hover:bg-[#eae9e9]"
+              className="flex h-9 w-9 items-center justify-center border border-[var(--public-border)] transition-colors hover:bg-gray-50"
             >
               <ChevronRight className="h-4 w-4" />
             </button>

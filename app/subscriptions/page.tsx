@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -122,22 +122,22 @@ function SubscriptionsContent() {
     switch (category) {
       case 'standard':
         return {
-          bg: 'bg-[#f8f4f4]',
-          border: 'border-[#201e1d]',
+          bg: 'bg-white',
+          border: 'border-[var(--public-border)]',
           icon: 'text-[#ec3013]',
           button: 'bg-[#ec3013] hover:bg-[#dd2b0f]',
         };
       case 'enterprise':
         return {
           bg: 'bg-[#201e1d]',
-          border: 'border-[#201e1d]',
+          border: 'border-[var(--public-border)]',
           icon: 'text-white',
-          button: 'bg-white text-[#201e1d] hover:bg-[#eae9e9]',
+          button: 'bg-white text-[#201e1d] hover:bg-gray-50',
         };
       default:
         return {
-          bg: 'bg-[#f8f4f4]',
-          border: 'border-[#d7d3d3]',
+          bg: 'bg-white',
+          border: 'border-[var(--public-border)]',
           icon: 'text-[#605d5d]',
           button: 'bg-[#201e1d] hover:bg-[#2d2b2b]',
         };
@@ -271,7 +271,7 @@ function SubscriptionsContent() {
   return (
     <PublicShell>
       {/* Hero Section */}
-      <section className="border-b-2 border-[#201e1d] bg-[#201e1d] py-16 text-white">
+      <section className="border-b border-[var(--public-divider)] bg-[#201e1d] py-16 text-white">
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <h1 className="mb-4 text-4xl font-extrabold sm:text-5xl">
             Choisissez votre formule
@@ -310,7 +310,7 @@ function SubscriptionsContent() {
             const colors = getPlanColors('standard');
 
             return (
-              <div className={`relative border-2 p-8 ${colors.bg} ${colors.border}`}>
+              <div className={`relative border p-8 ${colors.bg} ${colors.border}`}>
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                   <span className="inline-flex items-center gap-1 bg-[#ec3013] px-4 py-1 text-sm font-extrabold text-white">
                     <Star className="h-4 w-4 fill-current" />
@@ -332,7 +332,7 @@ function SubscriptionsContent() {
                     title="Durée"
                     value={standardDuration}
                     onChange={(e) => setStandardDuration(Number(e.target.value))}
-                    className="w-full border border-[#d7d3d3] bg-white px-3 py-2 text-xl font-medium focus:border-[#ec3013] focus:outline-none focus:ring-1 focus:ring-[#ec3013]/20"
+                    className="w-full border border-[var(--public-border)] bg-white px-3 py-2 text-xl font-medium focus:border-[#ec3013] focus:outline-none focus:ring-1 focus:ring-[#ec3013]/20"
                   >
                     {standardPlans.map(plan => (
                       <option key={plan.id} value={plan.duration}>
@@ -388,7 +388,7 @@ function SubscriptionsContent() {
             }).filter(Boolean);
 
             return (
-              <div className={`relative border-2 p-8 ${colors.bg} ${colors.border}`}>
+              <div className={`relative border p-8 ${colors.bg} ${colors.border}`}>
                 <div className={`mb-4 ${colors.icon}`}>
                   <Building2 className="h-8 w-8" />
                 </div>
@@ -449,7 +449,7 @@ function SubscriptionsContent() {
       {/* Enterprise Quote Modal */}
       {showEnterpriseForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto border border-[#201e1d]/40 bg-white p-8">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto border border-[var(--public-border)] bg-white p-8">
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-extrabold text-[#201e1d]">Demande de devis Entreprise</h2>
@@ -487,7 +487,7 @@ function SubscriptionsContent() {
                       type="text"
                       value={enterpriseForm.companyName}
                       onChange={e => setEnterpriseForm(f => ({ ...f, companyName: e.target.value }))}
-                      className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                      className="w-full border border-[var(--public-border)] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
                       placeholder="Nom de votre entreprise"
                     />
                   </div>
@@ -498,7 +498,7 @@ function SubscriptionsContent() {
                         type="text"
                         value={enterpriseForm.firstName}
                         onChange={e => setEnterpriseForm(f => ({ ...f, firstName: e.target.value }))}
-                        className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                        className="w-full border border-[var(--public-border)] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
                         placeholder="Prénom du responsable"
                       />
                     </div>
@@ -508,7 +508,7 @@ function SubscriptionsContent() {
                         type="text"
                         value={enterpriseForm.lastName}
                         onChange={e => setEnterpriseForm(f => ({ ...f, lastName: e.target.value }))}
-                        className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                        className="w-full border border-[var(--public-border)] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
                         placeholder="Nom du responsable"
                       />
                     </div>
@@ -520,7 +520,7 @@ function SubscriptionsContent() {
                         type="email"
                         value={enterpriseForm.email}
                         onChange={e => setEnterpriseForm(f => ({ ...f, email: e.target.value }))}
-                        className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                        className="w-full border border-[var(--public-border)] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
                         placeholder="email@entreprise.com"
                       />
                     </div>
@@ -530,7 +530,7 @@ function SubscriptionsContent() {
                         type="tel"
                         value={enterpriseForm.phone}
                         onChange={e => setEnterpriseForm(f => ({ ...f, phone: e.target.value }))}
-                        className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                        className="w-full border border-[var(--public-border)] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
                         placeholder="+225 07 00 00 00"
                       />
                     </div>
@@ -542,7 +542,7 @@ function SubscriptionsContent() {
                         type="text"
                         value={enterpriseForm.country}
                         onChange={e => setEnterpriseForm(f => ({ ...f, country: e.target.value }))}
-                        className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                        className="w-full border border-[var(--public-border)] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
                         placeholder="Côte d'Ivoire"
                       />
                     </div>
@@ -553,7 +553,7 @@ function SubscriptionsContent() {
                         min={1}
                         value={enterpriseForm.numberOfAccess}
                         onChange={e => setEnterpriseForm(f => ({ ...f, numberOfAccess: e.target.value }))}
-                        className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                        className="w-full border border-[var(--public-border)] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
                         placeholder="Ex: 25"
                       />
                     </div>
@@ -564,7 +564,7 @@ function SubscriptionsContent() {
                       rows={3}
                       value={enterpriseForm.message}
                       onChange={e => setEnterpriseForm(f => ({ ...f, message: e.target.value }))}
-                      className="w-full border border-[#d7d3d3] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
+                      className="w-full border border-[var(--public-border)] px-3 py-2.5 text-sm focus:border-[#ec3013] focus:outline-none"
                       placeholder="Précisez votre besoin..."
                     />
                   </div>
@@ -574,7 +574,7 @@ function SubscriptionsContent() {
                   <button
                     title="Annuler"
                     onClick={() => setShowEnterpriseForm(false)}
-                    className="flex-1 border border-[#d7d3d3] px-4 py-3 text-sm font-semibold text-[#201e1d] hover:bg-[#f8f4f4]"
+                    className="flex-1 border border-[var(--public-border)] px-4 py-3 text-sm font-semibold text-[#201e1d] hover:bg-gray-50"
                   >
                     Annuler
                   </button>
@@ -598,14 +598,14 @@ function SubscriptionsContent() {
       )}
 
       {/* FAQ Section */}
-      <section className="border-t-2 border-[#201e1d]/40 bg-[#f8f4f4] py-16">
+      <section className="border-t border-[var(--public-divider)] bg-white py-16">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <h2 className="mb-8 text-center text-2xl font-extrabold text-[#201e1d]">
             Questions fréquentes
           </h2>
 
           <div className="space-y-4">
-            <details className="group border border-[#d7d3d3] bg-white p-4">
+            <details className="group border border-[var(--public-border)] bg-white p-4">
               <summary className="flex cursor-pointer items-center justify-between font-semibold text-[#201e1d]">
                 Quels moyens de paiement acceptez-vous ?
                 <span className="ml-2 transition-transform group-open:rotate-180">▼</span>
@@ -616,7 +616,7 @@ function SubscriptionsContent() {
               </p>
             </details>
 
-            <details className="group border border-[#d7d3d3] bg-white p-4">
+            <details className="group border border-[var(--public-border)] bg-white p-4">
               <summary className="flex cursor-pointer items-center justify-between font-semibold text-[#201e1d]">
                 Puis-je changer de formule à tout moment ?
                 <span className="ml-2 transition-transform group-open:rotate-180">▼</span>
@@ -627,7 +627,7 @@ function SubscriptionsContent() {
               </p>
             </details>
 
-            <details className="group border border-[#d7d3d3] bg-white p-4">
+            <details className="group border border-[var(--public-border)] bg-white p-4">
               <summary className="flex cursor-pointer items-center justify-between font-semibold text-[#201e1d]">
                 Comment fonctionne la formule Enterprise ?
                 <span className="ml-2 transition-transform group-open:rotate-180">▼</span>

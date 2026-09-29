@@ -1,4 +1,4 @@
-import { Archivo } from 'next/font/google';
+﻿import { Archivo } from 'next/font/google';
 import { RegisterForm } from '@/components/organisms';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -12,7 +12,7 @@ export const metadata = {
 
 export default function RegisterPage() {
   return (
-    <div className={`${archivo.className} flex min-h-screen bg-[#f3f2f2] text-[#201e1d]`}>
+    <div className={`${archivo.className} flex min-h-screen bg-white text-[#201e1d]`}>
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div className="mb-8 flex justify-center">
@@ -31,7 +31,7 @@ export default function RegisterPage() {
           <RegisterForm />
         </div>
       </div>
-      <div className="relative hidden w-0 flex-1 border-l-2 border-[#201e1d] lg:block">
+      <div className="relative hidden w-0 flex-1 border-l border-[var(--public-divider)] lg:block">
         <Image
           src="https://images.unsplash.com/photo-1495020689067-958852a7765e?q=80&w=1920&auto=format&fit=crop"
           alt="Actualités"

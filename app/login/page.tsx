@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+﻿import { Suspense } from 'react';
 import { Archivo } from 'next/font/google';
 import { LoginForm } from '@/components/organisms';
 import Link from 'next/link';
@@ -13,7 +13,7 @@ export const metadata = {
 
 export default function LoginPage() {
   return (
-    <div className={`${archivo.className} flex min-h-screen bg-[#f3f2f2] text-[#201e1d]`}>
+    <div className={`${archivo.className} flex min-h-screen bg-white text-[#201e1d]`}>
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div className="mb-8 flex justify-center">
@@ -41,7 +41,7 @@ export default function LoginPage() {
           </Suspense>
         </div>
       </div>
-      <div className="relative hidden w-0 flex-1 border-l-2 border-[#201e1d] lg:block">
+      <div className="relative hidden w-0 flex-1 border-l border-[var(--public-divider)] lg:block">
         <Image
           src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1920&auto=format&fit=crop"
           alt="Actualités"

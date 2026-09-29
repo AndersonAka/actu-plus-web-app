@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { cn } from '@/lib/utils/cn';
 
@@ -28,7 +28,7 @@ const SocialLoginButtons = ({ mode = 'login', className }: SocialLoginButtonsPro
       <button
         type="button"
         onClick={handleGoogleLogin}
-        className="flex w-full items-center justify-center gap-3 border border-[#d7d3d3] bg-white px-4 py-2.5 text-sm font-semibold text-[#201e1d] transition-colors hover:bg-[#f8f4f4] focus:outline-none focus:ring-2 focus:ring-[#201e1d]/20"
+        className="flex w-full items-center justify-center gap-3 border border-[var(--public-border)] bg-white px-4 py-2.5 text-sm font-semibold text-[#201e1d] transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#201e1d]/20"
       >
         <svg className="h-5 w-5" viewBox="0 0 24 24">
           <path

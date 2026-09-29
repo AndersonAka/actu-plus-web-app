@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback, Suspense } from 'react';
 import Link from 'next/link';
@@ -154,16 +154,16 @@ function VeilleSectoriellePageInner() {
             </div>
           </div>
 
-          <div className="mb-4 flex flex-wrap border border-[#201e1d]">
+          <div className="mb-4 flex flex-wrap border border-[var(--public-border)]">
             {sectorFilters.map((filter, i) => (
               <button
                 key={filter.value}
                 type="button"
                 onClick={() => setSectorFilter(filter.value)}
-                className={`px-4 py-2 text-sm font-semibold transition-colors ${i > 0 ? 'border-l border-[#201e1d]' : ''} ${
+                className={`px-4 py-2 text-sm font-semibold transition-colors ${i > 0 ? 'border-l border-[var(--public-border)]' : ''} ${
                   sectorFilter === filter.value
                     ? 'bg-[#201e1d] text-white'
-                    : 'text-[#201e1d] hover:bg-[#eae9e9]'
+                    : 'text-[#201e1d] hover:bg-gray-50'
                 }`}
               >
                 {filter.label}
@@ -218,7 +218,7 @@ function VeilleSectoriellePageInner() {
               </Button>
             </div>
           ) : entries.length === 0 ? (
-            <div className="border border-[#d7d3d3] bg-[#f8f4f4] p-12 text-center">
+            <div className="border border-[var(--public-border)] bg-white p-12 text-center">
               <Radar className="mx-auto h-12 w-12 text-[#d7d3d3]" />
               <h3 className="mt-4 text-lg font-bold text-[#201e1d]">Aucune entrée</h3>
               <p className="mt-2 text-sm text-[#605d5d]">Aucune entrée de Veille Sectorielle pour ce filtre.</p>
@@ -230,7 +230,7 @@ function VeilleSectoriellePageInner() {
                   <Link
                     key={`${entry.articleId}-${index}`}
                     href={entry.country?.code ? `/country/${entry.country.code.toLowerCase()}?tab=veille-sectorielle` : `/articles/${entry.articleSlug}`}
-                    className="group flex flex-col border border-[#d7d3d3] p-5 transition-colors hover:border-[#201e1d]/40 hover:bg-[#f8f4f4]"
+                    className="group flex flex-col border border-[var(--public-border)] bg-white p-5 transition-colors hover:border-[var(--public-divider)] hover:bg-gray-50"
                   >
                     <div className="mb-2 flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-2 flex-wrap">

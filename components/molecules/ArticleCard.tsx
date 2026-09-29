@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -58,7 +58,7 @@ const ArticleCard = ({
       <Link
         href={articleUrl}
         className={cn(
-          'flex gap-3 p-2 transition-colors hover:bg-[#eae9e9]',
+          'flex gap-3 p-2 transition-colors hover:bg-gray-50',
           className
         )}
       >
@@ -102,7 +102,7 @@ const ArticleCard = ({
     return (
       <article
         className={cn(
-          'group flex gap-4 border border-[#d7d3d3] bg-[#f3f2f2] p-3 transition-colors hover:border-[#201e1d]/40',
+          'group flex gap-4 border border-[var(--public-border)] bg-white p-3 transition-colors hover:border-[var(--public-border)]',
           className
         )}
       >
@@ -261,7 +261,7 @@ const ArticleCard = ({
   return (
     <article
       className={cn(
-        'group overflow-hidden border border-[#d7d3d3] bg-[#f3f2f2] transition-colors hover:border-[#201e1d]/40',
+        'group overflow-hidden border border-[var(--public-border)] bg-white transition-colors hover:border-[var(--public-border)]',
         className
       )}
     >

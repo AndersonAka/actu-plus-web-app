@@ -77,7 +77,7 @@ export default async function CountryPage({ params }: PageProps) {
   return (
     <PublicShell>
       {/* Hero Section */}
-      <section className="border-b-2 border-[#201e1d] bg-[#201e1d] py-12 text-white">
+      <section className="border-b border-[var(--public-divider)] bg-[#201e1d] py-12 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center bg-white/10">
@@ -118,7 +118,7 @@ export default async function CountryPage({ params }: PageProps) {
               ))}
             </div>
           ) : (
-            <div className="border border-[#d7d3d3] bg-white p-12 text-center">
+            <div className="border border-[var(--public-border)] bg-white p-12 text-center">
               <Globe className="mx-auto h-12 w-12 text-[#9b9797]" />
               <h3 className="mt-4 text-lg font-bold text-[#201e1d]">
                 Aucun article disponible

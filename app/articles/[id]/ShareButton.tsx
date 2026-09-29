@@ -100,7 +100,7 @@ export function ShareButton({ title, excerpt, articlePath }: ShareButtonProps) {
             className="fixed inset-0 z-40"
             onClick={() => setShowMenu(false)}
           />
-          <div className="absolute right-0 bottom-full mb-2 z-50 w-64 border border-[#201e1d]/40 bg-white p-4">
+          <div className="absolute right-0 bottom-full mb-2 z-50 w-64 border border-[var(--public-border)] bg-white p-4">
             <div className="flex items-center justify-between mb-3">
               <span className="font-bold text-[#201e1d]">Partager</span>
               <button
@@ -119,7 +119,7 @@ export function ShareButton({ title, excerpt, articlePath }: ShareButtonProps) {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex flex-col items-center gap-1 p-2 border border-[#d7d3d3] transition-all ${link.color}`}
+                  className={`flex flex-col items-center gap-1 border border-[var(--public-border)] p-2 transition-all ${link.color}`}
                   onClick={() => setShowMenu(false)}
                 >
                   <link.icon className="h-5 w-5" />
@@ -136,7 +136,7 @@ export function ShareButton({ title, excerpt, articlePath }: ShareButtonProps) {
                   type="text"
                   value={shareUrl}
                   readOnly
-                  className="flex-1 px-3 py-2 text-xs bg-[#f8f4f4] border border-[#d7d3d3] truncate"
+                  className="flex-1 truncate border border-[var(--public-border)] bg-white px-3 py-2 text-xs"
                 />
                 <button
                   title="Copier le lien"

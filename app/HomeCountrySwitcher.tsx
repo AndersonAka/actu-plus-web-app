@@ -29,13 +29,13 @@ export function HomeCountrySwitcher() {
   return (
     <div className="flex items-center">
       <span className="mr-3.5 text-[11px] font-semibold uppercase tracking-widest text-[#605d5d]">Pays</span>
-      <div className="flex items-stretch border-l border-[#d7d3d3]">
+      <div className="flex items-stretch border-l border-[var(--public-divider)]">
         {countries.map((country) => (
           <button
             key={country.id}
             type="button"
             onClick={() => router.push(`/country/${country.code.toLowerCase()}`)}
-            className="flex items-center border-r border-[#d7d3d3] px-3.5 text-[13px] font-extrabold text-[#201e1d] transition-colors hover:bg-[#eae9e9]"
+            className="flex items-center border-r border-[var(--public-divider)] px-3.5 text-[13px] font-extrabold text-[#201e1d] transition-colors hover:bg-gray-50"
           >
             {country.code.toUpperCase()}
           </button>

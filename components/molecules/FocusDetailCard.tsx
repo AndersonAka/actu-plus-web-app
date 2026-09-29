@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -44,9 +44,9 @@ export const FocusDetailCard = ({
     : {
         headerBg: 'bg-[#201e1d]',
         headerText: 'text-white',
-        accentBorder: 'border-[#201e1d]',
+        accentBorder: 'border-[var(--public-border)]',
         accentText: 'text-[#201e1d]',
-        accentBg: 'bg-[#f8f4f4]',
+        accentBg: 'bg-white',
         badgeBg: 'bg-[#eae9e9]',
         ctaBg: 'bg-[#201e1d] hover:bg-[#2d2b2b]',
         divider: 'bg-[#201e1d]',
@@ -68,7 +68,7 @@ export const FocusDetailCard = ({
   const contentPreview = article.excerpt || getTextPreview(article.content || '');
 
   return (
-    <div className="overflow-hidden border border-[#201e1d]/40 bg-white">
+    <div className="overflow-hidden border border-[var(--public-border)] bg-white">
       {/* Header Bar - Style journal */}
       <div className={`${colorClasses.headerBg} px-6 py-4`}>
         <div className="flex items-center justify-between">
@@ -108,7 +108,7 @@ export const FocusDetailCard = ({
           {/* Image floated left */}
           {imageUrl && (
             <div className="mb-4 mr-6 float-left w-full sm:w-70 lg:w-80">
-              <div className="relative aspect-4/3 overflow-hidden border border-[#d7d3d3]">
+              <div className="relative aspect-4/3 overflow-hidden border border-[var(--public-border)]">
                 <Image
                   src={imageUrl}
                   alt={article.title}

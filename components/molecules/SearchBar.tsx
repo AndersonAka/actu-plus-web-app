@@ -78,7 +78,7 @@ const SearchBar = ({
         placeholder={placeholder}
         autoFocus={autoFocus}
         className={cn(
-          'w-full rounded-none border border-[#d7d3d3] bg-[#f8f4f4] text-[#201e1d] transition-colors',
+          'w-full rounded-none border border-[var(--public-border)] bg-white text-[#201e1d] transition-colors',
           'placeholder:text-[#605d5d]',
           'focus:border-[#ec3013] focus:outline-none focus:ring-2 focus:ring-[#ec3013]/20',
           sizes[size]

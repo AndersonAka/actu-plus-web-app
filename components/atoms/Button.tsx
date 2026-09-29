@@ -46,7 +46,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       modernist:
         'rounded-none justify-start bg-[#ec3013] text-white font-extrabold hover:bg-[#dd2b0f] focus:ring-[#ec3013]',
       'modernist-outline':
-        'rounded-none justify-start border border-[#201e1d] bg-transparent text-[#201e1d] font-semibold hover:bg-[#eae9e9] focus:ring-[#201e1d]',
+        'rounded-none justify-start border border-[var(--public-border)] bg-transparent text-[#201e1d] font-semibold hover:bg-gray-50 focus:ring-[#201e1d]',
     };
 
     const sizes = {

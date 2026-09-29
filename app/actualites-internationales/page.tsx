@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
@@ -144,16 +144,16 @@ export default function ActualitesInternationalesPage() {
             </div>
           </div>
 
-          <div className="mb-6 flex flex-wrap border border-[#201e1d]">
+          <div className="mb-6 flex flex-wrap border border-[var(--public-border)]">
             {zoneFilters.map((filter, i) => (
               <button
                 key={filter.value}
                 type="button"
                 onClick={() => setZoneFilter(filter.value)}
-                className={`px-4 py-2 text-sm font-semibold transition-colors ${i > 0 ? 'border-l border-[#201e1d]' : ''} ${
+                className={`px-4 py-2 text-sm font-semibold transition-colors ${i > 0 ? 'border-l border-[var(--public-border)]' : ''} ${
                   zoneFilter === filter.value
                     ? 'bg-[#201e1d] text-white'
-                    : 'text-[#201e1d] hover:bg-[#eae9e9]'
+                    : 'text-[#201e1d] hover:bg-gray-50'
                 }`}
               >
                 {filter.label}
@@ -173,7 +173,7 @@ export default function ActualitesInternationalesPage() {
               </Button>
             </div>
           ) : articles.length === 0 ? (
-            <div className="border border-[#d7d3d3] bg-[#f8f4f4] p-12 text-center">
+            <div className="border border-[var(--public-border)] bg-white p-12 text-center">
               <Globe2 className="mx-auto h-12 w-12 text-[#d7d3d3]" />
               <h3 className="mt-4 text-lg font-bold text-[#201e1d]">Aucune actualité internationale</h3>
               <p className="mt-2 text-sm text-[#605d5d]">Revenez bientôt pour découvrir nos actualités internationales.</p>
@@ -185,7 +185,7 @@ export default function ActualitesInternationalesPage() {
                   <Link
                     key={article.id}
                     href={getArticlePublicPath(article)}
-                    className="group flex flex-col overflow-hidden border border-[#d7d3d3] bg-white transition-colors hover:border-[#201e1d]/40"
+                    className="group flex flex-col overflow-hidden border border-[var(--public-border)] bg-white transition-colors hover:border-[var(--public-divider)]"
                   >
                     <div className="relative aspect-video w-full overflow-hidden">
                       {(article.coverImage || article.imageUrl) ? (

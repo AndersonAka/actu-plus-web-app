@@ -26,12 +26,12 @@ const Footer = ({ className }: { className?: string }) => {
   };
 
   return (
-    <footer className={cn('border-t-2 border-[#201e1d]/40 bg-[#201e1d] text-[#bab6b6]', className)}>
+    <footer className={cn('border-t border-[var(--public-divider)] bg-[#201e1d] text-[#bab6b6]', className)}>
       <div className="mx-auto max-w-360 px-5 py-12 sm:px-9">
-        <div className="grid gap-8 border-b-2 border-[#f3f2f2]/20 pb-9 md:grid-cols-3">
+        <div className="grid gap-8 border-b border-white/15 pb-9 md:grid-cols-3">
           {/* Brand */}
           <div>
-            <Link href="/" className="mb-4 inline-block w-max bg-[#f3f2f2] px-3 py-2.5">
+            <Link href="/" className="mb-4 inline-block w-max bg-white px-3 py-2.5">
               <Image
                 src="/images/logo-actu-plus.webp"
                 alt="Actu Plus"

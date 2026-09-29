@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
@@ -141,7 +141,7 @@ export default function FocusPage() {
               </Button>
             </div>
           ) : articles.length === 0 ? (
-            <div className="border border-[#d7d3d3] bg-[#f8f4f4] p-12 text-center">
+            <div className="border border-[var(--public-border)] bg-white p-12 text-center">
               <Target className="mx-auto h-12 w-12 text-[#d7d3d3]" />
               <h3 className="mt-4 text-lg font-bold text-[#201e1d]">Aucun article Focus</h3>
               <p className="mt-2 text-sm text-[#605d5d]">Revenez bientôt pour découvrir nos analyses approfondies.</p>

@@ -6,7 +6,7 @@ export default function PrivacyPage() {
     <PublicShell>
       <div className="py-12">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="border border-[#d7d3d3] bg-white p-8">
+          <div className="border border-[var(--public-border)] bg-white p-8">
             <div className="mb-8 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center bg-[#ffe0d9]">
                 <Shield className="h-6 w-6 text-[#ae1800]" />
