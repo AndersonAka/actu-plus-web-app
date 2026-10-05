@@ -70,8 +70,10 @@ function extractArticles(result: any): any[] {
 
 async function getFeaturedArticles(): Promise<Article[]> {
   try {
+    // Sans publishedToday : la durée de vie « À la une » est gérée côté API
+    // via isFeaturedHome + featuredHomeExpiresAt (pas le filtre jour éditorial).
     const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles/featured-home?limit=10&publishedToday=true`,
+      `${apiConfig.baseUrl}/api/articles/featured-home?limit=10`,
       { cache: 'no-store' }
     );
     if (!response.ok) return [];
