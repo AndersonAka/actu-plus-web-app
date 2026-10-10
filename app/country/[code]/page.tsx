@@ -463,39 +463,59 @@ export default function CountryPage() {
         const summaryTime = summary?.publishedAt || summary?.createdAt
           ? format(new Date(summary.publishedAt || summary.createdAt), "HH'h'mm")
           : null;
+        // Regrouper les sujets par catégorie (ordre d'apparition conservé)
+        const itemsByCategory = (items || []).reduce<
+          { category: string; items: NonNullable<typeof items> }[]
+        >((groups, item) => {
+          const category = (item.categoryName || 'Actualité').trim() || 'Actualité';
+          const existing = groups.find(
+            (g) => g.category.toLowerCase() === category.toLowerCase(),
+          );
+          if (existing) {
+            existing.items.push(item);
+          } else {
+            groups.push({ category, items: [item] });
+          }
+          return groups;
+        }, []);
         return (
           <>
             {renderSectionHeader("Résumé de l'actualité", `Ce qu'il faut retenir de la presse ${countryLabel} ce matin, classé par thème.`)}
-            {items && items.length > 0 ? (
-              <div className="divide-y divide-[#d7d3d3]">
-                {items.map((item, index) => (
-                  <div key={index} className={index === 0 ? 'pb-6' : 'py-6'}>
-                    <div className="mb-2">
-                      <div className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#ec3013]">
-                        {item.categoryName || 'Actualité'}
-                      </div>
-                      {summaryTime && (
-                        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#9b9797]">
-                          {summaryTime}
-                        </div>
-                      )}
+            {itemsByCategory.length > 0 ? (
+              <div className="space-y-10">
+                {itemsByCategory.map((group) => (
+                  <section key={group.category}>
+                    <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--public-divider)] pb-2">
+                      <h3 className="text-[13px] font-extrabold uppercase tracking-[0.12em] text-[#ec3013]">
+                        {group.category}
+                      </h3>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#9b9797]">
+                        {group.items.length} sujet{group.items.length > 1 ? 's' : ''}
+                        {summaryTime ? ` · ${summaryTime}` : ''}
+                      </span>
                     </div>
-                    <h3 className="mb-2 text-xl font-extrabold text-[#201e1d]">{item.title}</h3>
-                    <div
-                      className="mb-2 text-sm leading-relaxed text-[#605d5d]"
-                      dangerouslySetInnerHTML={{ __html: sanitizeArticleContent(item.summary) }}
-                    />
-                    {item.link && !isInternalPrivateLink(item.link) && (
-                      <a
-                        href={item.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs font-extrabold uppercase tracking-[0.08em] text-[#ae1800] hover:text-[#ec3013]"
-                      >
-                        En savoir plus →
-                      </a>
-                    )}
-                  </div>
+                    <div className="divide-y divide-[var(--public-divider)]">
+                      {group.items.map((item, index) => (
+                        <div key={`${group.category}-${index}`} className={index === 0 ? 'pb-6' : 'py-6'}>
+                          <h4 className="mb-2 text-xl font-extrabold text-[#201e1d]">{item.title}</h4>
+                          <div
+                            className="mb-2 text-sm leading-relaxed text-[#605d5d]"
+                            dangerouslySetInnerHTML={{ __html: sanitizeArticleContent(item.summary) }}
+                          />
+                          {item.link && !isInternalPrivateLink(item.link) && (
+                            <a
+                              href={item.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs font-extrabold uppercase tracking-[0.08em] text-[#ae1800] hover:text-[#ec3013]"
+                            >
+                              En savoir plus →
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </section>
                 ))}
               </div>
             ) : summary?.content ? (

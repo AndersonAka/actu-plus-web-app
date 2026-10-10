@@ -276,20 +276,29 @@ export default function AdminUsersPage() {
     { value: '', label: 'Tous les rôles' },
     { value: 'user', label: 'Utilisateur' },
     { value: 'veilleur', label: 'Veilleur' },
-    { value: 'manager', label: 'Modérateur' },
+    { value: 'moderateur', label: 'Modérateur' },
+    { value: 'manager', label: 'Manager' },
     { value: 'admin', label: 'Admin' },
   ];
 
-  const roleFormOptions = [
-    { value: 'admin', label: 'Admin' },
+  /** Création admin : rôles staff uniquement (user interdit côté backend). */
+  const roleCreateOptions = [
     { value: 'veilleur', label: 'Veilleur' },
-    { value: 'manager', label: 'Modérateur' },
+    { value: 'moderateur', label: 'Modérateur' },
+    { value: 'manager', label: 'Manager' },
+    { value: 'admin', label: 'Admin' },
   ];
 
-  const effectiveRoleFormOptions =
-    editingUser?.role && !roleFormOptions.some((o) => o.value === editingUser.role)
-      ? [{ value: editingUser.role, label: editingUser.role === 'user' ? 'Utilisateur' : editingUser.role }, ...roleFormOptions]
-      : roleFormOptions;
+  /** Édition : tous les rôles, y compris rétrogradation vers utilisateur. */
+  const roleEditOptions = [
+    { value: 'user', label: 'Utilisateur' },
+    { value: 'veilleur', label: 'Veilleur' },
+    { value: 'moderateur', label: 'Modérateur' },
+    { value: 'manager', label: 'Manager' },
+    { value: 'admin', label: 'Admin' },
+  ];
+
+  const effectiveRoleFormOptions = editingUser ? roleEditOptions : roleCreateOptions;
 
   const civilityOptions = [
     { value: 'M.', label: 'M.' },
@@ -300,6 +309,7 @@ export default function AdminUsersPage() {
     const roleConfig: Record<string, { variant: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error'; label: string }> = {
       admin: { variant: 'error', label: 'Admin' },
       manager: { variant: 'warning', label: 'Manager' },
+      moderateur: { variant: 'secondary', label: 'Modérateur' },
       veilleur: { variant: 'primary', label: 'Veilleur' },
       user: { variant: 'default', label: 'Utilisateur' },
     };
