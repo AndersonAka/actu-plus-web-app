@@ -13,6 +13,7 @@ import { ArticleContent } from './ArticleContent';
 import { BackButton } from './BackButton';
 import { ShareButton } from './ShareButton';
 import { FavoriteButton } from './FavoriteButton';
+import { ArticleEngagement } from './ArticleEngagement';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
 import { fetchArticleByIdOrSlug } from '@/lib/articles/fetch-article';
 
@@ -180,6 +181,8 @@ export default async function ArticleDetailPage({ params }: PageProps) {
               />
             </div>
           </div>
+
+          <ArticleEngagement articleId={article.id} />
 
           {relatedArticles.length > 0 && (
             <section className="mt-12 border-t border-[#d7d3d3] pt-12">
