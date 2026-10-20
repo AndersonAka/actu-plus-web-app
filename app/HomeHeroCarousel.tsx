@@ -55,13 +55,42 @@ export function HomeHeroCarousel({ items }: { items: HomeHeroItem[] }) {
             <img src={image} alt={article.title} className="h-full w-full object-cover" />
           </div>
         )}
-        <h1 className="mb-4 max-w-[20ch] text-[32px] font-extrabold leading-[1.05] tracking-[-0.025em] sm:text-[56px]">
-          {article.title}
-        </h1>
-        {article.excerpt && (
-          <p className="max-w-[62ch] text-[17px] leading-normal text-[#444141] sm:text-[19px]">{article.excerpt}</p>
-        )}
       </Link>
+      <div className={items.length > 1 ? 'grid items-start gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(240px,0.75fr)]' : ''}>
+          <Link href={getArticlePublicPath(article)} className="block min-w-0">
+            <h1 className="mb-4 text-[32px] font-extrabold leading-[1.05] tracking-[-0.025em] sm:text-[46px]">
+              {article.title}
+            </h1>
+            {article.excerpt && (
+              <p className="text-[17px] leading-normal text-[#444141] sm:text-[19px]">{article.excerpt}</p>
+            )}
+          </Link>
+          {items.length > 1 && (
+            <div className="flex flex-col border border-[var(--public-divider)]">
+              {items
+                .map((item, i) => ({ item, i }))
+                .filter(({ i }) => i !== safeIndex)
+                .slice(0, 4)
+                .map(({ item, i }) => (
+                <button
+                  key={item.article.id}
+                  type="button"
+                  onClick={() => goTo(i)}
+                  className="border-b border-[var(--public-divider)] px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-gray-50"
+                >
+                  {item.timeLabel && (
+                    <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#ec3013]">
+                      {item.timeLabel}
+                    </div>
+                  )}
+                  <div className="line-clamp-2 text-sm font-semibold leading-snug text-[#444141]">
+                    {item.article.title}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
       {items.length > 1 && (
         <div className="mt-6 flex items-center gap-4">

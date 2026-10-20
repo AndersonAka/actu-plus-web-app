@@ -197,9 +197,23 @@ body {
 }
 
 /* Fil d'actualité — défilement horizontal */
-@keyframes home-fil-scroll-x {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+.home-ad-cycle {
+  animation: home-ad-cycle 14s ease-in-out infinite;
+}
+
+@keyframes home-ad-cycle {
+  0%, 14% { transform: translateY(0); }
+  18%, 32% { transform: translateY(-1.5rem); }
+  36%, 50% { transform: translateY(-3rem); }
+  54%, 68% { transform: translateY(-4.5rem); }
+  72%, 86% { transform: translateY(-6rem); }
+  92%, 100% { transform: translateY(-7.5rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-ad-cycle {
+    animation: none;
+  }
 }
 
 .home-fil-viewport-x {

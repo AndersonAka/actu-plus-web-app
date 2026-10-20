@@ -14,6 +14,7 @@ export interface NewsFilArticle {
 
 interface NewsFilProps {
   articles: NewsFilArticle[];
+  compact?: boolean;
 }
 
 function filMeta(article: NewsFilArticle) {
@@ -107,9 +108,9 @@ export async function fetchNewsFilArticles(limit = 10): Promise<NewsFilArticle[]
   });
 }
 
-export function NewsFilHorizontal({ articles }: NewsFilProps) {
+export function NewsFilHorizontal({ articles, compact = false }: NewsFilProps) {
   return (
-    <div className="relative flex h-[4.75rem] min-w-0 items-center gap-4 overflow-hidden border border-[#ec3013]/70 bg-[#1a1614] px-4 text-white">
+    <div className={`relative flex min-w-0 items-center gap-4 overflow-hidden border border-[#ec3013]/70 bg-[#1a1614] text-white ${compact ? 'h-11 px-3' : 'h-[4.75rem] px-4'}`}>
       <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#ec3013] to-transparent" />
       <span className="inline-flex shrink-0 items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-white/90">
         <span className="relative flex h-2 w-2">
@@ -143,7 +144,7 @@ export function NewsFilHorizontal({ articles }: NewsFilProps) {
                     <span className="max-w-[280px] truncate text-sm font-medium text-white/90 group-hover:text-white">
                       {article.title}
                     </span>
-                    {tags && (
+                    {tags && !compact && (
                       <span className="max-w-[140px] truncate text-[11px] text-white/40">{tags}</span>
                     )}
                   </Link>

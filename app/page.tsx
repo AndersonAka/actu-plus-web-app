@@ -7,6 +7,7 @@ import { HomeCountrySwitcher } from './HomeCountrySwitcher';
 import { HomeAuthButton } from './HomeAuthButton';
 import { HomeHeroCarousel } from './HomeHeroCarousel';
 import { NewsFil } from '@/components/organisms/NewsFil';
+import { HomeAdSlot } from './HomeAdSlot';
 import { Search, ArrowRight } from 'lucide-react';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
 import { formatDistanceToNow } from 'date-fns';
@@ -309,10 +310,11 @@ export default async function HomePage() {
         </div>
 
         {/* NAV */}
-        <div className="flex items-center justify-end border-b border-[var(--public-divider)] px-5 sm:px-10">
-          <div className="flex items-center py-2">
-            <HomeCountrySwitcher />
+        <div className="flex items-center gap-4 border-b border-[var(--public-divider)] px-5 py-2 sm:px-10">
+          <div className="min-w-0 flex-1">
+            <HomeAdSlot />
           </div>
+          <HomeCountrySwitcher />
         </div>
 
         {/* UNE + LE FIL */}
@@ -371,11 +373,19 @@ export default async function HomePage() {
           {countryHeadlines.length === 0 ? (
             <p className="border-t border-[var(--public-divider)] py-8 text-center text-sm text-[#605d5d]">Aucun pays disponible.</p>
           ) : (
-            <div className="grid grid-cols-1 border border-[var(--public-divider)] sm:grid-cols-2 lg:grid-cols-3">
-              {countryHeadlines.map((country, i) => (
+            <div className={`grid gap-px border border-[var(--public-divider)] bg-[var(--public-divider)] ${
+              countryHeadlines.length <= 1
+                ? 'grid-cols-1'
+                : countryHeadlines.length === 2 || countryHeadlines.length === 4
+                  ? 'grid-cols-1 sm:grid-cols-2'
+                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+            }`}>
+              {countryHeadlines.map((country) => {
+                const spreadHeadlines = countryHeadlines.length === 1 && country.headlines.length > 1;
+                return (
                 <div
                   key={country.id}
-                  className={`bg-white p-6.5 shadow-[inset_0_3px_0_#201e1d] transition-colors hover:bg-[#fffdfb] ${i < countryHeadlines.length - 1 ? 'border-b border-[var(--public-divider)] sm:border-b-0 sm:border-r' : ''}`}
+                  className="bg-white p-6.5 shadow-[inset_0_3px_0_#201e1d] transition-colors hover:bg-[#fffdfb]"
                 >
                   <div className="mb-4 flex items-baseline justify-between">
                     <span className="text-xl font-extrabold tracking-[-0.01em]">
@@ -386,7 +396,9 @@ export default async function HomePage() {
                     </span>
                   </div>
                   {country.headlines.length > 0 ? (
-                    <div className="grid gap-2.5 text-sm leading-[1.4] text-[#2d2b2b]">
+                    <div className={`grid gap-x-8 gap-y-2.5 text-sm leading-[1.4] text-[#2d2b2b] ${
+                      spreadHeadlines ? 'sm:grid-cols-2' : ''
+                    } ${spreadHeadlines && country.headlines.length > 4 ? 'lg:grid-cols-3' : ''}`}>
                       {country.headlines.map((h) => (
                         <Link key={h.id} href={`/articles/${h.slug || h.id}`} className="grid grid-cols-[16px_1fr] hover:text-[#ec3013]">
                           <span className="font-extrabold text-[#ec3013]">·</span>
@@ -404,7 +416,8 @@ export default async function HomePage() {
                     Lire la synthèse <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
                   </Link>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
