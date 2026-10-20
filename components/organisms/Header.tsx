@@ -117,6 +117,7 @@ const Header = () => {
                         src={user.avatar}
                         name={`${user.firstName || ''} ${user.lastName || ''}`}
                         size="sm"
+                        className="rounded-none bg-[#201e1d] font-extrabold text-white"
                       />
                       {hasActiveSubscription && (
                         <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center bg-[#ec3013] ring-2 ring-white" title={subscription?.plan?.name || 'Abonné'}>

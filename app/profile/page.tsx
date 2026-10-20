@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { PublicShell } from '../PublicShell';
 import { Button, Input, Alert } from '@/components/atoms';
-import { User, Mail, Phone, Calendar, Crown, Heart, Bell, Shield, LogOut, Trash2, AlertTriangle } from 'lucide-react';
+import { User, Mail, Phone, Crown, Heart, Bell, Shield, LogOut, Trash2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { User as UserType } from '@/types';
@@ -205,12 +205,13 @@ export default function ProfilePage() {
   return (
     <>
     <PublicShell>
-      <div className="py-8">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          {/* Header Section */}
+      <div className="relative overflow-hidden bg-[#1a1614] text-white">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ec3013] to-transparent" />
+        <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8 [&_label]:text-[11px] [&_label]:font-semibold [&_label]:uppercase [&_label]:tracking-[0.14em] [&_label]:text-white/50">
           <div className="mb-8">
-            <h1 className="text-3xl font-extrabold text-[#201e1d]">Mon Profil</h1>
-            <p className="mt-2 text-[#605d5d]">Gérez vos informations personnelles et préférences</p>
+            <p className="mb-2 text-[11px] font-semibold tracking-[0.22em] text-[#ff7a62]">COMPTE</p>
+            <h1 className="text-3xl font-extrabold tracking-[-0.03em]">Mon Profil</h1>
+            <p className="mt-2 text-sm text-white/50">Gérez vos informations personnelles et préférences</p>
           </div>
 
           {error && (
@@ -229,13 +230,14 @@ export default function ProfilePage() {
             {/* Left Column - Profile Info */}
             <div className="lg:col-span-2 space-y-6">
               {/* Personal Information Card */}
-              <div className="border border-[var(--public-border)] bg-white p-6">
+              <div className="relative overflow-hidden border border-white/10 bg-white/[0.04] p-6">
                 <div className="mb-6 flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-[#201e1d]">Informations personnelles</h2>
+                  <h2 className="text-xl font-medium tracking-[-0.02em] text-white/90">Informations personnelles</h2>
                   {!isEditing ? (
                     <Button
                       variant="modernist-outline"
                       size="sm"
+                      className="border-white/20 text-white hover:bg-white/10 hover:text-white"
                       onClick={() => setIsEditing(true)}
                     >
                       Modifier
@@ -245,6 +247,7 @@ export default function ProfilePage() {
                       <Button
                         variant="modernist-outline"
                         size="sm"
+                        className="border-white/20 text-white hover:bg-white/10 hover:text-white"
                         onClick={() => {
                           setUserData(savedUserData);
                           setIsEditing(false);
@@ -266,8 +269,8 @@ export default function ProfilePage() {
                 </div>
 
                 {loadingProfile ? (
-                  <div className="flex items-center gap-2 py-4 text-[#605d5d]">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#ffe0d9] border-t-[#ec3013]" />
+                  <div className="flex items-center gap-2 py-4 text-white/50">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/15 border-t-[#ff5a3c]" />
                     <span className="text-sm">Chargement des informations…</span>
                   </div>
                 ) : (
@@ -279,7 +282,7 @@ export default function ProfilePage() {
                       value={userData.firstName}
                       onChange={(e) => setUserData({ ...userData, firstName: e.target.value })}
                       disabled={!isEditing}
-                      className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
+                      className="rounded-none border-white/10 bg-white/[0.04] text-white placeholder:text-white/30 focus:border-[#ff5a3c] focus:ring-[#ff5a3c]/20 disabled:border-white/10 disabled:bg-white/[0.03] disabled:text-white/70"
                     />
                     <Input
                       label="Nom"
@@ -287,7 +290,7 @@ export default function ProfilePage() {
                       value={userData.lastName}
                       onChange={(e) => setUserData({ ...userData, lastName: e.target.value })}
                       disabled={!isEditing}
-                      className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
+                      className="rounded-none border-white/10 bg-white/[0.04] text-white placeholder:text-white/30 focus:border-[#ff5a3c] focus:ring-[#ff5a3c]/20 disabled:border-white/10 disabled:bg-white/[0.03] disabled:text-white/70"
                     />
                   </div>
 
@@ -297,7 +300,7 @@ export default function ProfilePage() {
                     leftIcon={<Mail className="h-5 w-5" />}
                     value={userData.email}
                     disabled
-                    className="rounded-none border-[#d7d3d3]"
+                    className="rounded-none border-white/10 bg-white/[0.04] text-white disabled:border-white/10 disabled:bg-white/[0.03] disabled:text-white/70"
                   />
 
                   <Input
@@ -308,7 +311,7 @@ export default function ProfilePage() {
                     onChange={(e) => setUserData({ ...userData, phone: e.target.value })}
                     disabled={!isEditing}
                     placeholder="Optionnel"
-                    className="rounded-none border-[#d7d3d3] focus:border-[#ec3013] focus:ring-[#ec3013]/20"
+                    className="rounded-none border-white/10 bg-white/[0.04] text-white placeholder:text-white/30 focus:border-[#ff5a3c] focus:ring-[#ff5a3c]/20 disabled:border-white/10 disabled:bg-white/[0.03] disabled:text-white/70"
                   />
 
                 </div>
@@ -316,45 +319,39 @@ export default function ProfilePage() {
               </div>
 
               {/* Quick Actions */}
-              <div className="border border-[var(--public-border)] bg-white p-6">
-                <h2 className="mb-4 text-xl font-bold text-[#201e1d]">Accès rapide</h2>
+              <div className="relative overflow-hidden border border-white/10 bg-white/[0.04] p-6">
+                <h2 className="mb-4 text-xl font-medium tracking-[-0.02em] text-white/90">Accès rapide</h2>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <button
                     onClick={() => router.push('/favorites')}
-                    className="flex items-center gap-3 border border-[var(--public-border)] p-4 transition-colors hover:border-[var(--public-border)] hover:bg-gray-50"
+                    className="group relative flex items-center gap-3 overflow-hidden bg-white/[0.04] px-4 py-3.5 text-left transition-all duration-300 hover:bg-white/[0.08] before:absolute before:inset-y-3 before:left-0 before:w-px before:bg-[#ff5a3c]/50 before:transition-all before:duration-300 hover:before:w-0.5 hover:before:bg-[#ff5a3c] hover:before:shadow-[0_0_14px_#ff5a3c]"
                   >
-                    <div className="flex h-10 w-10 items-center justify-center bg-[#ffe0d9]">
-                      <Heart className="h-5 w-5 text-[#ae1800]" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-[#201e1d]">Mes Favoris</p>
-                      <p className="text-sm text-[#605d5d]">Articles sauvegardés</p>
+                    <Heart className="h-5 w-5 shrink-0 text-[#ff7a62]" />
+                    <div>
+                      <p className="font-medium text-white/90">Mes Favoris</p>
+                      <p className="text-[11px] tracking-[0.04em] text-white/40">Articles sauvegardés</p>
                     </div>
                   </button>
 
                   <button
                     onClick={() => router.push('/notifications')}
-                    className="flex items-center gap-3 border border-[var(--public-border)] p-4 transition-colors hover:border-[var(--public-border)] hover:bg-gray-50"
+                    className="group relative flex items-center gap-3 overflow-hidden bg-white/[0.04] px-4 py-3.5 text-left transition-all duration-300 hover:bg-white/[0.08] before:absolute before:inset-y-3 before:left-0 before:w-px before:bg-[#ff5a3c]/50 before:transition-all before:duration-300 hover:before:w-0.5 hover:before:bg-[#ff5a3c] hover:before:shadow-[0_0_14px_#ff5a3c]"
                   >
-                    <div className="flex h-10 w-10 items-center justify-center bg-[#ffe0d9]">
-                      <Bell className="h-5 w-5 text-[#ae1800]" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-[#201e1d]">Notifications</p>
-                      <p className="text-sm text-[#605d5d]">Gérer les alertes</p>
+                    <Bell className="h-5 w-5 shrink-0 text-[#ff7a62]" />
+                    <div>
+                      <p className="font-medium text-white/90">Notifications</p>
+                      <p className="text-[11px] tracking-[0.04em] text-white/40">Gérer les alertes</p>
                     </div>
                   </button>
 
                   <button
                     onClick={() => router.push('/security')}
-                    className="flex items-center gap-3 border border-[var(--public-border)] p-4 transition-colors hover:border-[var(--public-border)] hover:bg-gray-50"
+                    className="group relative flex items-center gap-3 overflow-hidden bg-white/[0.04] px-4 py-3.5 text-left transition-all duration-300 hover:bg-white/[0.08] before:absolute before:inset-y-3 before:left-0 before:w-px before:bg-[#ff5a3c]/50 before:transition-all before:duration-300 hover:before:w-0.5 hover:before:bg-[#ff5a3c] hover:before:shadow-[0_0_14px_#ff5a3c]"
                   >
-                    <div className="flex h-10 w-10 items-center justify-center bg-[#ffe0d9]">
-                      <Shield className="h-5 w-5 text-[#ae1800]" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-[#201e1d]">Sécurité</p>
-                      <p className="text-sm text-[#605d5d]">Mot de passe</p>
+                    <Shield className="h-5 w-5 shrink-0 text-[#ff7a62]" />
+                    <div>
+                      <p className="font-medium text-white/90">Sécurité</p>
+                      <p className="text-[11px] tracking-[0.04em] text-white/40">Mot de passe</p>
                     </div>
                   </button>
                 </div>
@@ -364,27 +361,28 @@ export default function ProfilePage() {
             {/* Right Column - Subscription & Stats */}
             <div className="space-y-6">
               {/* Subscription Card */}
-              <div className="bg-[#201e1d] p-6 text-white">
+              <div className="relative overflow-hidden border border-[#ec3013]/70 bg-[#141110] p-6">
+                <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[#ec3013] to-transparent" />
                 <div className="mb-4 flex items-center gap-2">
-                  <Crown className="h-6 w-6" />
-                  <h3 className="text-lg font-bold">Abonnement</h3>
+                  <Crown className="h-5 w-5 text-[#ff7a62]" />
+                  <h3 className="text-sm font-semibold tracking-[0.18em] text-white/90">ABONNEMENT</h3>
                 </div>
 
                 {loadingSubscription ? (
                   <div className="flex items-center gap-2">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"></div>
-                    <p className="text-sm text-[#bab6b6]">Chargement...</p>
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/15 border-t-[#ff5a3c]"></div>
+                    <p className="text-sm text-white/50">Chargement...</p>
                   </div>
                 ) : subscription?.status === 'active' ? (
                   <>
-                    <p className="mb-2 text-2xl font-extrabold">{subscription.plan?.name || 'Premium'}</p>
-                    <p className="mb-4 text-sm text-[#bab6b6]">
+                    <p className="mb-2 text-2xl font-medium tracking-[-0.03em]">{subscription.plan?.name || 'Premium'}</p>
+                    <p className="mb-4 text-sm text-white/50">
                       Expire le {format(new Date(subscription.endDate), 'dd MMMM yyyy', { locale: fr })}
                     </p>
                     <Button
                       variant="modernist-outline"
                       size="sm"
-                      className="w-full border-white text-white hover:bg-white hover:text-[#201e1d]"
+                      className="w-full border-white/20 text-white hover:bg-white hover:text-[#201e1d]"
                       onClick={() => router.push('/subscriptions')}
                     >
                       Gérer l'abonnement
@@ -392,14 +390,14 @@ export default function ProfilePage() {
                   </>
                 ) : (
                   <>
-                    <p className="mb-2 text-xl font-bold">Gratuit</p>
-                    <p className="mb-4 text-sm text-[#bab6b6]">
+                    <p className="mb-2 text-2xl font-medium tracking-[-0.03em]">Gratuit</p>
+                    <p className="mb-4 text-sm text-white/50">
                       Passez à Premium pour un accès illimité
                     </p>
                     <Button
                       variant="modernist-outline"
                       size="sm"
-                      className="w-full border-white text-white hover:bg-white hover:text-[#201e1d]"
+                      className="w-full border-white/20 text-white hover:bg-white hover:text-[#201e1d]"
                       onClick={() => router.push('/subscriptions')}
                     >
                       Découvrir Premium
@@ -408,53 +406,48 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              {/* Account Info */}
-              <div className="border border-[var(--public-border)] bg-white p-6">
-                <h3 className="mb-4 text-lg font-bold text-[#201e1d]">Informations du compte</h3>
+              <div className="relative overflow-hidden border border-white/10 bg-white/[0.04] p-6">
+                <h3 className="mb-4 text-sm font-semibold tracking-[0.18em] text-white/70">COMPTE</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-[#605d5d]">Rôle</span>
-                    <span className="font-semibold text-[#201e1d] capitalize">{user?.role || 'Utilisateur'}</span>
+                    <span className="text-white/40">Rôle</span>
+                    <span className="font-medium capitalize text-white/90">{user?.role || 'Utilisateur'}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-[#605d5d]">Membre depuis</span>
-                    <span className="font-semibold text-[#201e1d]">
+                    <span className="text-white/40">Membre depuis</span>
+                    <span className="font-medium text-white/90">
                       {format(new Date((profileUser ?? user)?.createdAt || Date.now()), 'MMM yyyy', { locale: fr })}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-[#605d5d]">Statut</span>
-                    <span className="bg-[#dcfce7] px-2.5 py-0.5 text-xs font-semibold text-[#166534]">
-                      Actif
-                    </span>
+                    <span className="text-white/40">Statut</span>
+                    <span className="text-[11px] font-semibold tracking-[0.14em] text-[#7dffb2]">ACTIF</span>
                   </div>
                 </div>
               </div>
 
-              {/* Logout Button */}
               <button
                 onClick={async () => {
                   await fetch('/api/proxy/auth/logout', { method: 'POST' });
                   router.push('/login');
                 }}
-                className="flex w-full items-center justify-center gap-2 border border-[#ffc4b8] bg-white p-3 text-[#ae1800] transition-colors hover:bg-[#fff2ef]"
+                className="flex w-full items-center justify-center gap-2 border border-white/10 bg-white/[0.04] p-3 text-white/80 transition-colors hover:bg-white/[0.08] hover:text-white"
               >
                 <LogOut className="h-5 w-5" />
-                <span className="font-semibold">Se déconnecter</span>
+                <span className="font-medium">Se déconnecter</span>
               </button>
 
-              {/* Delete Account */}
-              <div className="border border-[#ffc4b8] bg-[#fff2ef] p-4">
+              <div className="border border-[#ec3013]/40 bg-[#ec3013]/10 p-4">
                 <div className="mb-3 flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-[#ae1800]" />
-                  <h3 className="font-bold text-[#ae1800]">Zone de danger</h3>
+                  <AlertTriangle className="h-5 w-5 text-[#ff7a62]" />
+                  <h3 className="text-sm font-semibold tracking-[0.14em] text-[#ff7a62]">ZONE DE DANGER</h3>
                 </div>
-                <p className="mb-3 text-sm text-[#7c1405]">
+                <p className="mb-3 text-sm text-white/50">
                   La suppression de votre compte est irréversible. Toutes vos données seront définitivement effacées.
                 </p>
                 <button
                   onClick={() => { setShowDeleteModal(true); setDeleteError(null); setDeletePassword(''); }}
-                  className="flex w-full items-center justify-center gap-2 border border-[#ae1800] bg-white p-2.5 text-sm font-semibold text-[#ae1800] transition-colors hover:bg-[#ae1800] hover:text-white"
+                  className="flex w-full items-center justify-center gap-2 border border-[#ec3013]/70 p-2.5 text-sm font-medium text-[#ff7a62] transition-colors hover:bg-[#ec3013] hover:text-white"
                 >
                   <Trash2 className="h-4 w-4" />
                   Supprimer mon compte

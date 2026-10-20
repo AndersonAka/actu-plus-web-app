@@ -255,12 +255,41 @@ export default async function HomePage() {
     <div className={`${archivo.className} bg-white text-[#201e1d]`} style={{ fontSize: 15, lineHeight: 1.55 }}>
       <div className="mx-auto max-w-[1440px]">
         {/* MASTHEAD */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--public-divider)] px-5 py-5 sm:px-10">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-[var(--public-divider)] px-5 py-4 sm:px-10">
           <Link href="/" className="shrink-0">
             <Image src="/images/logo-actu-plus.webp" alt="Actu Plus" width={180} height={57} priority unoptimized className="h-12 w-auto sm:h-14" />
           </Link>
-          <div className="flex flex-1 flex-wrap items-center justify-end gap-3">
-            <form action="/articles" method="GET" className="flex h-[42px] w-full max-w-[260px] items-center gap-2.5 border border-[var(--public-border)] bg-white px-4 text-sm text-[#605d5d]">
+          <nav className="flex min-w-0 flex-1 flex-wrap items-center">
+            <Link href="/" className="flex items-center px-3 py-2 text-sm font-extrabold text-[#201e1d] shadow-[inset_0_-3px_0_#ec3013]">
+              À la une
+            </Link>
+            {economie && (
+              <Link href={`/articles?category=${economie.id}`} className="flex items-center px-3 py-2 text-sm text-[#201e1d] transition-colors hover:text-[#ec3013]">
+                Économie
+              </Link>
+            )}
+            {politique && (
+              <Link href={`/articles?category=${politique.id}`} className="flex items-center px-3 py-2 text-sm text-[#201e1d] transition-colors hover:text-[#ec3013]">
+                Politique
+              </Link>
+            )}
+            <Link href="#revue-de-presse" className="flex items-center px-3 py-2 text-sm text-[#201e1d] transition-colors hover:text-[#ec3013]">
+              Revue de presse
+            </Link>
+            <Link href="/veille-sectorielle" className="flex items-center gap-1.5 px-3 py-2 text-sm text-[#201e1d] transition-colors hover:text-[#ec3013]">
+              Veille sectorielle
+              <span className="bg-[#ffe0d9] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-[#ae1800]">Pro</span>
+            </Link>
+            <Link href="/focus" className="flex items-center gap-1.5 px-3 py-2 text-sm text-[#201e1d] transition-colors hover:text-[#ec3013]">
+              Focus
+              <span className="bg-[#ffe0d9] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-[#ae1800]">Pro</span>
+            </Link>
+            <Link href="/archives" className="flex items-center px-3 py-2 text-sm text-[#201e1d] transition-colors hover:text-[#ec3013]">
+              Archives
+            </Link>
+          </nav>
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <form action="/articles" method="GET" className="flex h-[42px] w-[220px] shrink-0 items-center gap-2.5 border border-[var(--public-border)] bg-white px-4 text-sm text-[#605d5d] max-sm:w-full">
               <Search className="h-4 w-4 shrink-0" strokeWidth={2} />
               <input
                 type="text"
@@ -280,36 +309,7 @@ export default async function HomePage() {
         </div>
 
         {/* NAV */}
-        <div className="flex flex-wrap items-stretch justify-between gap-y-2 border-b border-[var(--public-divider)] px-5 sm:px-10">
-          <div className="flex flex-wrap items-stretch">
-            <Link href="/" className="flex items-center py-3 pr-4.5 mr-4.5 text-sm font-extrabold shadow-[inset_0_-4px_0_#ec3013]">
-              À la une
-            </Link>
-            {economie && (
-              <Link href={`/articles?category=${economie.id}`} className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-gray-50">
-                Économie
-              </Link>
-            )}
-            {politique && (
-              <Link href={`/articles?category=${politique.id}`} className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-gray-50">
-                Politique
-              </Link>
-            )}
-            <Link href="#revue-de-presse" className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-gray-50">
-              Revue de presse
-            </Link>
-            <Link href="/veille-sectorielle" className="flex items-center gap-2 px-4.5 py-3 text-sm transition-colors hover:bg-gray-50">
-              Veille sectorielle
-              <span className="bg-[#ffe0d9] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-[#ae1800]">Pro</span>
-            </Link>
-            <Link href="/focus" className="flex items-center gap-2 px-4.5 py-3 text-sm transition-colors hover:bg-gray-50">
-              Focus
-              <span className="bg-[#ffe0d9] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-[#ae1800]">Pro</span>
-            </Link>
-            <Link href="/archives" className="flex items-center px-4.5 py-3 text-sm transition-colors hover:bg-gray-50">
-              Archives
-            </Link>
-          </div>
+        <div className="flex items-center justify-end border-b border-[var(--public-divider)] px-5 sm:px-10">
           <div className="flex items-center py-2">
             <HomeCountrySwitcher />
           </div>

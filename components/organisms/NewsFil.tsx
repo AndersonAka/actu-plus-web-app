@@ -124,7 +124,7 @@ export function NewsFilHorizontal({ articles }: NewsFilProps) {
         <div className="home-fil-viewport-x">
           <div
             className="home-fil-track-x"
-            style={{ animationDuration: `${Math.max(articles.length, 1) * 6}s` }}
+            style={{ animationDuration: `${Math.max(articles.length, 1) * 12}s` }}
           >
             {[0, 1].map((copy) =>
               articles.map((article) => {
