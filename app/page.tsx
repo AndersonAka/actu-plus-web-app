@@ -87,7 +87,7 @@ async function getFeaturedArticles(): Promise<Article[]> {
 async function getLatestArticles(): Promise<Article[]> {
   try {
     const response = await fetch(
-      `${apiConfig.baseUrl}/api/articles?limit=6&sortBy=date&sortOrder=DESC`,
+      `${apiConfig.baseUrl}/api/articles?limit=10&sortBy=date&sortOrder=DESC`,
       { cache: 'no-store' }
     );
     if (!response.ok) return [];
@@ -317,12 +317,10 @@ export default async function HomePage() {
         {/* UNE + LE FIL */}
         <div className="grid grid-cols-1 border-b border-[var(--public-divider)] lg:grid-cols-[1fr_360px]">
           <div className="lg:border-r lg:border-[var(--public-divider)]">
-            {/* UNE */}
             <div className="border-b border-[var(--public-divider)] px-5 py-8 sm:px-9 sm:py-10">
               <HomeHeroCarousel items={heroItems} />
             </div>
 
-            {/* 3 UNES SECONDAIRES */}
             {secondaryArticles.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2">
                 {secondaryArticles.map((article, i) => (
@@ -351,46 +349,67 @@ export default async function HomePage() {
             )}
           </div>
 
-          {/* LE FIL — TEMPS RÉEL */}
-          <div className="px-5 py-7 sm:px-7">
-            <div className="mb-4 flex items-baseline justify-between border-b border-[var(--public-divider)] pb-3">
+          <div className="border-2 border-[#ec3013] bg-[#fff8f6] px-5 py-7 sm:px-7">
+            <div className="mb-4 flex items-baseline justify-between border-b border-[#201e1d]/20 pb-3">
               <span className="text-sm font-extrabold uppercase tracking-[0.12em]">Le Fil</span>
-              <span className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#ec3013]">Temps réel</span>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#ec3013]">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ec3013] opacity-70" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#ec3013]" />
+                </span>
+                Temps réel
+              </span>
             </div>
             {latestArticles.length === 0 ? (
               <p className="text-sm text-[#605d5d]">Aucun article publié pour le moment.</p>
             ) : (
-              <div className="divide-y divide-[var(--public-divider)]">
-                {latestArticles.map((article) => {
-                  const publishedDate = article.publishedAt || article.createdAt;
-                  const time = publishedDate ? format(new Date(publishedDate), "HH'h'mm") : null;
-                  const tags = [article.country?.name, article.category?.name].filter(Boolean).join(' · ');
-                  return (
-                    <Link key={article.id} href={getArticlePublicPath(article)} className="group block py-4 first:pt-0">
-                      {time && (
-                        <div className="mb-1.5 text-[11px] font-extrabold text-[#ec3013]">{time}</div>
-                      )}
-                      <div className="mb-1.5 line-clamp-2 text-[15px] font-extrabold leading-tight text-[#201e1d] transition-colors group-hover:text-[#ec3013]">
-                        {article.title}
-                      </div>
-                      {tags && (
-                        <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#9b9797]">
-                          {tags}
-                        </div>
-                      )}
-                    </Link>
-                  );
-                })}
+              <div className="home-fil-viewport">
+                <div
+                  className="home-fil-track"
+                  style={{ animationDuration: `${Math.max(latestArticles.length, 1) * 4.5}s` }}
+                >
+                  {[0, 1].map((copy) =>
+                    latestArticles.map((article) => {
+                      const publishedDate = article.publishedAt || article.createdAt;
+                      const time = publishedDate ? format(new Date(publishedDate), "HH'h'mm") : null;
+                      const tags = [article.country?.name, article.category?.name].filter(Boolean).join(' · ');
+                      return (
+                        <Link
+                          key={`${copy}-${article.id}`}
+                          href={getArticlePublicPath(article)}
+                          className={`group block shrink-0 border border-[#201e1d]/20 bg-white px-3.5 py-3 transition-colors hover:border-[#ec3013] hover:bg-[#fff1ed] ${copy === 1 ? 'home-fil-duplicate' : ''}`}
+                          aria-hidden={copy === 1 ? true : undefined}
+                          tabIndex={copy === 1 ? -1 : undefined}
+                        >
+                          {time && (
+                            <div className="mb-1.5 text-[11px] font-extrabold text-[#ec3013]">{time}</div>
+                          )}
+                          <div className="mb-1.5 line-clamp-2 text-[15px] font-extrabold leading-tight text-[#201e1d] transition-colors group-hover:text-[#ec3013]">
+                            {article.title}
+                          </div>
+                          {tags && (
+                            <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#9b9797]">
+                              {tags}
+                            </div>
+                          )}
+                        </Link>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             )}
           </div>
         </div>
 
         {/* REVUE DE PRESSE */}
-        <div id="revue-de-presse" className="scroll-mt-4 px-5 py-11 sm:px-9 sm:py-12">
+        <div id="revue-de-presse" className="scroll-mt-4 bg-[#fff6f1] px-5 py-11 sm:px-9 sm:py-12">
           <div className="mb-6.5 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h2 className="text-[28px] font-extrabold leading-[1.05] tracking-[-0.022em] sm:text-[34px]">Revue de presse</h2>
+              <h2 className="flex items-center gap-3 text-[28px] font-extrabold leading-[1.05] tracking-[-0.022em] sm:text-[34px]">
+                <img src="/images/home/icon-revue-de-presse-v2.png" alt="" className="h-12 w-12 shrink-0 object-contain sm:h-14 sm:w-14" />
+                Revue de presse
+              </h2>
               <div className="mt-2 text-[14.5px] text-[#605d5d]">Ce que disent les journaux du jour, pays par pays.</div>
             </div>
           </div>
@@ -401,7 +420,7 @@ export default async function HomePage() {
               {countryHeadlines.map((country, i) => (
                 <div
                   key={country.id}
-                  className={`p-6.5 ${i < countryHeadlines.length - 1 ? 'border-b border-[var(--public-divider)] sm:border-b-0 sm:border-r' : ''}`}
+                  className={`bg-white p-6.5 shadow-[inset_0_3px_0_#201e1d] transition-colors hover:bg-[#fffdfb] ${i < countryHeadlines.length - 1 ? 'border-b border-[var(--public-divider)] sm:border-b-0 sm:border-r' : ''}`}
                 >
                   <div className="mb-4 flex items-baseline justify-between">
                     <span className="text-xl font-extrabold tracking-[-0.01em]">
@@ -436,10 +455,13 @@ export default async function HomePage() {
         </div>
 
         {/* INTERNATIONALE */}
-        <div className="border-t border-[var(--public-divider)] px-5 py-11 sm:px-9 sm:py-12">
+        <div className="border-t border-[var(--public-divider)] bg-[#f3f7fb] px-5 py-11 sm:px-9 sm:py-12">
           <div className="mb-6.5 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h2 className="text-[28px] font-extrabold leading-[1.05] tracking-[-0.022em] sm:text-[34px]">Internationale</h2>
+              <h2 className="flex items-center gap-3 text-[28px] font-extrabold leading-[1.05] tracking-[-0.022em] sm:text-[34px]">
+                <img src="/images/home/icon-internationale-v2.png" alt="" className="h-12 w-12 shrink-0 object-contain sm:h-14 sm:w-14" />
+                Internationale
+              </h2>
               <div className="mt-2 text-[14.5px] text-[#605d5d]">L'actualité de la zone UEMOA et au-delà.</div>
             </div>
             <Link
@@ -451,12 +473,15 @@ export default async function HomePage() {
           </div>
           <div className="grid grid-cols-1 border border-[var(--public-divider)] sm:grid-cols-2">
             {[
-              { label: 'Zone UEMOA', zone: 'uemoa' as const, data: uemoaHeadlines },
-              { label: 'Zone Hors UEMOA', zone: 'hors-uemoa' as const, data: horsUemoaHeadlines },
+              { label: 'Zone UEMOA', zone: 'uemoa' as const, data: uemoaHeadlines, icon: '/images/home/icon-zone-uemoa-v2.png' },
+              { label: 'Zone Hors UEMOA', zone: 'hors-uemoa' as const, data: horsUemoaHeadlines, icon: '/images/home/icon-zone-hors-uemoa-v2.png' },
             ].map((col, i) => (
-              <div key={col.zone} className={`p-6.5 ${i === 0 ? 'border-b border-[var(--public-divider)] sm:border-b-0 sm:border-r sm:pr-7.5' : 'sm:pl-7.5'}`}>
-                <div className="mb-4 flex items-baseline justify-between">
-                  <span className="text-xl font-extrabold tracking-[-0.01em]">{col.label}</span>
+              <div key={col.zone} className={`bg-white p-6.5 shadow-[inset_0_3px_0_#201e1d] ${i === 0 ? 'border-b border-[var(--public-divider)] sm:border-b-0 sm:border-r sm:pr-7.5' : 'sm:pl-7.5'}`}>
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <span className="flex items-center gap-3 text-xl font-extrabold tracking-[-0.01em]">
+                    <img src={col.icon} alt="" className="h-10 w-10 shrink-0 object-contain" />
+                    {col.label}
+                  </span>
                   <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#605d5d]">
                     {col.data.total} titre{col.data.total !== 1 ? 's' : ''}
                   </span>
@@ -519,11 +544,14 @@ export default async function HomePage() {
         </div>
 
         {/* VEILLE SECTORIELLE */}
-        <div className="px-5 py-11 sm:px-9 sm:py-13">
+        <div className="bg-[#fbf8f2] px-5 py-11 sm:px-9 sm:py-13">
           <div className="mb-5.5 flex flex-wrap items-end justify-between gap-4">
-            <h2 className="text-[28px] font-extrabold leading-[1.05] tracking-[-0.022em] sm:text-[34px]">Veille sectorielle</h2>
+            <h2 className="flex items-center gap-3 text-[28px] font-extrabold leading-[1.05] tracking-[-0.022em] sm:text-[34px]">
+              <img src="/images/home/icon-veille-sectorielle-v2.png" alt="" className="h-12 w-12 shrink-0 object-contain sm:h-14 sm:w-14" />
+              Veille sectorielle
+            </h2>
             <div className="flex flex-wrap border border-[var(--public-border)]">
-              <Link href="/veille-sectorielle" className="px-4 py-2 text-[13px] font-extrabold text-[#201e1d] transition-colors hover:bg-gray-50">
+              <Link href="/veille-sectorielle" className="bg-[#201e1d] px-4 py-2 text-[13px] font-extrabold text-white transition-colors hover:bg-[#ec3013]">
                 Toutes
               </Link>
               {Object.entries(SECTOR_LABELS).map(([value, label]) => (

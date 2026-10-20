@@ -171,6 +171,52 @@ body {
   100% { background-position: 200% 0; }
 }
 
+/* Fil d'actualité — défilement vertical */
+@keyframes home-fil-scroll-y {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+.home-fil-viewport {
+  overflow: hidden;
+  max-height: 32rem;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+}
+
+.home-fil-track {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: home-fil-scroll-y linear infinite;
+}
+
+.home-fil-track:hover {
+  animation-play-state: paused;
+}
+
+@media (min-width: 1024px) {
+  .home-fil-viewport {
+    max-height: 40rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-fil-viewport {
+    overflow-y: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .home-fil-track {
+    animation: none;
+  }
+
+  .home-fil-duplicate {
+    display: none;
+  }
+}
+
 /* ========================================
    CLASSES D'ANIMATION UTILITAIRES
    ======================================== */
