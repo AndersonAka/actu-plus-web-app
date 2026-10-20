@@ -349,9 +349,10 @@ export default async function HomePage() {
             )}
           </div>
 
-          <div className="border-2 border-[#ec3013] bg-[#fff8f6] px-5 py-7 sm:px-7">
-            <div className="mb-4 flex items-baseline justify-between border-b border-[#201e1d]/20 pb-3">
-              <span className="text-sm font-extrabold uppercase tracking-[0.12em]">Le Fil</span>
+          <div className="relative border border-[#ec3013]/70 bg-[#1a1614] px-5 py-7 text-white sm:px-7">
+            <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[#ec3013] to-transparent" />
+            <div className="mb-4 flex items-baseline justify-between pb-3">
+              <span className="text-sm font-semibold tracking-[0.22em] text-white/90">LE FIL</span>
               <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#ec3013]">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ec3013] opacity-70" />
@@ -361,7 +362,7 @@ export default async function HomePage() {
               </span>
             </div>
             {latestArticles.length === 0 ? (
-              <p className="text-sm text-[#605d5d]">Aucun article publié pour le moment.</p>
+              <p className="text-sm text-white/50">Aucun article publié pour le moment.</p>
             ) : (
               <div className="home-fil-viewport">
                 <div
@@ -377,18 +378,18 @@ export default async function HomePage() {
                         <Link
                           key={`${copy}-${article.id}`}
                           href={getArticlePublicPath(article)}
-                          className={`group block shrink-0 border border-[#201e1d]/20 bg-white px-3.5 py-3 transition-colors hover:border-[#ec3013] hover:bg-[#fff1ed] ${copy === 1 ? 'home-fil-duplicate' : ''}`}
+                          className={`group relative block shrink-0 overflow-hidden bg-white/[0.04] px-4 py-3.5 transition-all duration-300 hover:bg-white/[0.08] before:absolute before:inset-y-3 before:left-0 before:w-px before:bg-[#ff5a3c]/50 before:transition-all before:duration-300 hover:before:w-0.5 hover:before:bg-[#ff5a3c] hover:before:shadow-[0_0_14px_#ff5a3c] ${copy === 1 ? 'home-fil-duplicate' : ''}`}
                           aria-hidden={copy === 1 ? true : undefined}
                           tabIndex={copy === 1 ? -1 : undefined}
                         >
                           {time && (
-                            <div className="mb-1.5 text-[11px] font-extrabold text-[#ec3013]">{time}</div>
+                            <div className="mb-1 font-medium tracking-[0.16em] text-[10px] text-[#ff7a62]">{time}</div>
                           )}
-                          <div className="mb-1.5 line-clamp-2 text-[15px] font-extrabold leading-tight text-[#201e1d] transition-colors group-hover:text-[#ec3013]">
+                          <div className="mb-1.5 line-clamp-2 text-[15px] font-medium leading-snug tracking-[-0.01em] text-white/90 transition-colors duration-300 group-hover:text-white">
                             {article.title}
                           </div>
                           {tags && (
-                            <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#9b9797]">
+                            <div className="text-[11px] font-medium tracking-[0.04em] text-white/40">
                               {tags}
                             </div>
                           )}
