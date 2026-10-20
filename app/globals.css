@@ -179,7 +179,8 @@ body {
 
 .home-fil-viewport {
   overflow: hidden;
-  max-height: 32rem;
+  min-height: 0;
+  flex: 1 1 auto;
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16px, #000 calc(100% - 16px), transparent);
   mask-image: linear-gradient(to bottom, transparent, #000 16px, #000 calc(100% - 16px), transparent);
 }
@@ -193,12 +194,6 @@ body {
 
 .home-fil-track:hover {
   animation-play-state: paused;
-}
-
-@media (min-width: 1024px) {
-  .home-fil-viewport {
-    max-height: 40rem;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
