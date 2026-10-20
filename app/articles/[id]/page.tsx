@@ -14,6 +14,7 @@ import { BackButton } from './BackButton';
 import { ShareButton } from './ShareButton';
 import { FavoriteButton } from './FavoriteButton';
 import { ArticleEngagement } from './ArticleEngagement';
+import { NewsFil, NewsFilArticle } from '@/components/organisms/NewsFil';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
 import { fetchArticleByIdOrSlug } from '@/lib/articles/fetch-article';
 
@@ -55,6 +56,33 @@ async function getArticle(idOrSlug: string): Promise<Article | null> {
   }
 }
 
+async function getLatestArticles(excludeId: string): Promise<NewsFilArticle[]> {
+  try {
+    const response = await fetch(
+      `${apiConfig.baseUrl}/api/articles?limit=12&sortBy=date&sortOrder=DESC`,
+      { cache: 'no-store' }
+    );
+    if (!response.ok) return [];
+    const result = await response.json();
+    const articles = result.data?.data || result.data || [];
+    const list = Array.isArray(articles) ? articles : [];
+    return list
+      .filter((item: { id?: string }) => item.id && item.id !== excludeId)
+      .slice(0, 10)
+      .map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        slug: item.slug,
+        publishedAt: item.publishedAt,
+        createdAt: item.createdAt,
+        country: item.country,
+        category: item.category,
+      }));
+  } catch {
+    return [];
+  }
+}
+
 async function getRelatedArticles(categoryId: string | undefined, excludeId: string): Promise<Article[]> {
   if (!categoryId) return [];
   try {
@@ -79,7 +107,10 @@ export default async function ArticleDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const relatedArticles = await getRelatedArticles(article.category?.id, article.id);
+  const [relatedArticles, latestArticles] = await Promise.all([
+    getRelatedArticles(article.category?.id, article.id),
+    getLatestArticles(article.id),
+  ]);
 
   const formattedDate = article.publishedAt
     ? format(new Date(article.publishedAt), 'dd MMMM yyyy', { locale: fr })
@@ -88,7 +119,8 @@ export default async function ArticleDetailPage({ params }: PageProps) {
   return (
     <PublicShell>
       <div className="py-8">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-[1180px] grid-cols-1 items-start gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
+        <div>
           <BackButton
             countryCode={article.country?.code}
             countryName={article.country?.name}
@@ -189,13 +221,18 @@ export default async function ArticleDetailPage({ params }: PageProps) {
               <h2 className="mb-6 text-2xl font-extrabold text-[#201e1d]">
                 Articles similaires
               </h2>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-6 sm:grid-cols-2">
                 {relatedArticles.slice(0, 3).map((relatedArticle) => (
                   <ArticleCard key={relatedArticle.id} article={relatedArticle} />
                 ))}
               </div>
             </section>
           )}
+        </div>
+
+        <aside className="h-[28rem] lg:sticky lg:top-[5.25rem] lg:h-[calc(100dvh-7rem)]">
+          <NewsFil articles={latestArticles} />
+        </aside>
         </div>
       </div>
     </PublicShell>

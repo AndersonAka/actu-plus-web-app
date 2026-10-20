@@ -14,6 +14,8 @@ export { LoginForm } from './LoginForm';
 export { RegisterForm } from './RegisterForm';
 
 export { ArticleView } from './ArticleView';
+export { NewsFil, NewsFilHorizontal } from './NewsFil';
+export type { NewsFilArticle } from './NewsFil';
 export type { ArticleViewProps } from './ArticleView';
 
 export { AxeptioIntegration } from './AxeptioIntegration';

@@ -6,9 +6,10 @@ import { Article, ArticleStatus } from '@/types';
 import { HomeCountrySwitcher } from './HomeCountrySwitcher';
 import { HomeAuthButton } from './HomeAuthButton';
 import { HomeHeroCarousel } from './HomeHeroCarousel';
+import { NewsFil } from '@/components/organisms/NewsFil';
 import { Search, ArrowRight } from 'lucide-react';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { CONTACT_INFO } from '@/lib/constants/contact';
 
@@ -322,57 +323,8 @@ export default async function HomePage() {
             </div>
 
             <div className="relative max-lg:h-[28rem] lg:min-h-0">
-              <div className="relative flex h-[28rem] min-h-0 flex-col overflow-hidden border border-[#ec3013]/70 bg-[#1a1614] px-5 py-7 text-white sm:px-7 lg:absolute lg:inset-0 lg:h-auto">
-              <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[#ec3013] to-transparent" />
-              <div className="mb-4 flex shrink-0 items-baseline justify-between pb-3">
-                <span className="text-sm font-semibold tracking-[0.22em] text-white/90">LE FIL</span>
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#ec3013]">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ec3013] opacity-70" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[#ec3013]" />
-                  </span>
-                  Temps réel
-                </span>
-              </div>
-              {latestArticles.length === 0 ? (
-                <p className="text-sm text-white/50">Aucun article publié pour le moment.</p>
-              ) : (
-                <div className="home-fil-viewport min-h-0 flex-1">
-                  <div
-                    className="home-fil-track"
-                    style={{ animationDuration: `${Math.max(latestArticles.length, 1) * 4.5}s` }}
-                  >
-                    {[0, 1].map((copy) =>
-                      latestArticles.map((article) => {
-                        const publishedDate = article.publishedAt || article.createdAt;
-                        const time = publishedDate ? format(new Date(publishedDate), "HH'h'mm") : null;
-                        const tags = [article.country?.name, article.category?.name].filter(Boolean).join(' · ');
-                        return (
-                          <Link
-                            key={`${copy}-${article.id}`}
-                            href={getArticlePublicPath(article)}
-                            className={`group relative block shrink-0 overflow-hidden bg-white/[0.04] px-4 py-3.5 transition-all duration-300 hover:bg-white/[0.08] before:absolute before:inset-y-3 before:left-0 before:w-px before:bg-[#ff5a3c]/50 before:transition-all before:duration-300 hover:before:w-0.5 hover:before:bg-[#ff5a3c] hover:before:shadow-[0_0_14px_#ff5a3c] ${copy === 1 ? 'home-fil-duplicate' : ''}`}
-                            aria-hidden={copy === 1 ? true : undefined}
-                            tabIndex={copy === 1 ? -1 : undefined}
-                          >
-                            {time && (
-                              <div className="mb-1 font-medium tracking-[0.16em] text-[10px] text-[#ff7a62]">{time}</div>
-                            )}
-                            <div className="mb-1.5 line-clamp-2 text-[15px] font-medium leading-snug tracking-[-0.01em] text-white/90 transition-colors duration-300 group-hover:text-white">
-                              {article.title}
-                            </div>
-                            {tags && (
-                              <div className="text-[11px] font-medium tracking-[0.04em] text-white/40">
-                                {tags}
-                              </div>
-                            )}
-                          </Link>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              )}
+              <div className="h-[28rem] lg:absolute lg:inset-0 lg:h-auto">
+                <NewsFil articles={latestArticles} />
               </div>
             </div>
           </div>

@@ -196,6 +196,31 @@ body {
   animation-play-state: paused;
 }
 
+/* Fil d'actualité — défilement horizontal */
+@keyframes home-fil-scroll-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.home-fil-viewport-x {
+  overflow: hidden;
+  min-width: 0;
+  flex: 1 1 auto;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12px, #000 calc(100% - 12px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 12px, #000 calc(100% - 12px), transparent);
+}
+
+.home-fil-track-x {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  animation: home-fil-scroll-x linear infinite;
+}
+
+.home-fil-track-x:hover {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-fil-viewport {
     overflow-y: auto;
@@ -203,7 +228,14 @@ body {
     mask-image: none;
   }
 
-  .home-fil-track {
+  .home-fil-viewport-x {
+    overflow-x: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .home-fil-track,
+  .home-fil-track-x {
     animation: none;
   }
 

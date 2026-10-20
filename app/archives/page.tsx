@@ -16,6 +16,7 @@ import {
   type SystemArchiveFilter,
 } from '@/lib/utils/system-archives';
 import { Article, ArticleStatus } from '@/types';
+import { fetchNewsFilArticles, NewsFilArticle, NewsFilHorizontal } from '@/components/organisms/NewsFil';
 import { Archive, ArrowLeft, Loader2 } from 'lucide-react';
 
 const PAGE_SIZE = getSystemArchivesPageSize();
@@ -73,6 +74,7 @@ export default function ArchivesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [filArticles, setFilArticles] = useState<NewsFilArticle[]>([]);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -127,6 +129,23 @@ export default function ArchivesPage() {
     }
   }, [isAuthenticated, authLoading, contentFilter, loadArchives]);
 
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    let cancelled = false;
+    fetchNewsFilArticles()
+      .then((items) => {
+        if (!cancelled) setFilArticles(items);
+      })
+      .catch(() => {
+        if (!cancelled) setFilArticles([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
   const handlePageChange = (page: number) => {
     loadArchives(page, contentFilter);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -162,26 +181,31 @@ export default function ArchivesPage() {
     <PublicShell>
       <div className="py-8">
         <div className="mx-auto max-w-360 px-5 sm:px-9">
-          <div className="mb-8">
-            <Link
-              href="/"
-              className="mb-4 inline-flex items-center gap-2 text-sm text-[#605d5d] hover:text-[#201e1d]"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Retour à l&apos;accueil
-            </Link>
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center bg-[#ffe0d9]">
-                <Archive className="h-6 w-6 text-[#ae1800]" />
+          <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center">
+            <div className="shrink-0">
+              <Link
+                href="/"
+                className="mb-4 inline-flex items-center gap-2 text-sm text-[#605d5d] hover:text-[#201e1d]"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Retour à l&apos;accueil
+              </Link>
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center bg-[#ffe0d9]">
+                  <Archive className="h-6 w-6 text-[#ae1800]" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-extrabold text-[#201e1d]">Archives</h1>
+                  <p className="text-sm text-[#605d5d]">
+                    {totalCount > 0
+                      ? `${totalCount} article${totalCount !== 1 ? 's' : ''} archivé${totalCount !== 1 ? 's' : ''}`
+                      : 'Articles archivés'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-extrabold text-[#201e1d]">Archives</h1>
-                <p className="text-sm text-[#605d5d]">
-                  {totalCount > 0
-                    ? `${totalCount} article${totalCount !== 1 ? 's' : ''} archivé${totalCount !== 1 ? 's' : ''}`
-                    : 'Articles archivés'}
-                </p>
-              </div>
+            </div>
+            <div className="min-w-0 flex-1">
+              <NewsFilHorizontal articles={filArticles} />
             </div>
           </div>
 

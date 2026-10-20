@@ -9,6 +9,7 @@ import { Button } from '@/components/atoms';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { favoritesService } from '@/lib/services';
 import { Article, ArticleStatus } from '@/types';
+import { fetchNewsFilArticles, NewsFilArticle, NewsFilHorizontal } from '@/components/organisms/NewsFil';
 import { Heart, ArrowLeft, Loader2 } from 'lucide-react';
 
 type ContentFilter = 'all' | 'summary' | 'article';
@@ -42,6 +43,7 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [contentFilter, setContentFilter] = useState<ContentFilter>('all');
+  const [filArticles, setFilArticles] = useState<NewsFilArticle[]>([]);
 
   // Rediriger vers login si non authentifié
   useEffect(() => {
@@ -87,6 +89,23 @@ export default function FavoritesPage() {
     }
   }, [isAuthenticated, authLoading, loadFavorites]);
 
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    let cancelled = false;
+    fetchNewsFilArticles()
+      .then((items) => {
+        if (!cancelled) setFilArticles(items);
+      })
+      .catch(() => {
+        if (!cancelled) setFilArticles([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
   const handleRemoveFavorite = async (articleId: string) => {
     try {
       await favoritesService.remove(articleId);
@@ -123,24 +142,29 @@ export default function FavoritesPage() {
       <div className="py-8">
         <div className="mx-auto max-w-360 px-5 sm:px-9">
           {/* Header */}
-          <div className="mb-8">
-            <Link
-              href="/"
-              className="mb-4 inline-flex items-center gap-2 text-sm text-[#605d5d] hover:text-[#201e1d]"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Retour à l'accueil
-            </Link>
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center bg-[#ffe0d9]">
-                <Heart className="h-6 w-6 text-[#ae1800]" />
+          <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center">
+            <div className="shrink-0">
+              <Link
+                href="/"
+                className="mb-4 inline-flex items-center gap-2 text-sm text-[#605d5d] hover:text-[#201e1d]"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Retour à l'accueil
+              </Link>
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center bg-[#ffe0d9]">
+                  <Heart className="h-6 w-6 text-[#ae1800]" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-extrabold text-[#201e1d]">Mes favoris</h1>
+                  <p className="text-sm text-[#605d5d]">
+                    {articles.length} article{articles.length !== 1 ? 's' : ''} sauvegardé{articles.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-extrabold text-[#201e1d]">Mes favoris</h1>
-                <p className="text-sm text-[#605d5d]">
-                  {articles.length} article{articles.length !== 1 ? 's' : ''} sauvegardé{articles.length !== 1 ? 's' : ''}
-                </p>
-              </div>
+            </div>
+            <div className="min-w-0 flex-1">
+              <NewsFilHorizontal articles={filArticles} />
             </div>
           </div>
 
