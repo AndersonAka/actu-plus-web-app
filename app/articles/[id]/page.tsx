@@ -121,10 +121,28 @@ export default async function ArticleDetailPage({ params }: PageProps) {
       <div className="py-8">
         <div className="mx-auto grid max-w-[1180px] grid-cols-1 items-start gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
         <div>
-          <BackButton
-            countryCode={article.country?.code}
-            countryName={article.country?.name}
-          />
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+            <BackButton
+              countryCode={article.country?.code}
+              countryName={article.country?.name}
+            />
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 text-sm text-[#605d5d]">
+                <Calendar className="h-4 w-4" />
+                {formattedDate}
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-sm text-[#605d5d]">
+                <Eye className="h-4 w-4" />
+                {article.views} vues
+              </span>
+              <FavoriteButton articleId={article.id} />
+              <ShareButton
+                title={article.title}
+                excerpt={article.excerpt}
+                articlePath={getArticlePublicPath(article)}
+              />
+            </div>
+          </div>
 
           <header className="mb-8">
             <div className="mb-4 flex items-center gap-2">
@@ -143,18 +161,8 @@ export default async function ArticleDetailPage({ params }: PageProps) {
               {article.title}
             </h1>
             {article.excerpt && (
-              <p className="mb-4 text-lg text-[#605d5d]">{article.excerpt}</p>
+              <p className="text-lg text-[#605d5d]">{article.excerpt}</p>
             )}
-            <div className="flex items-center gap-4 text-sm text-[#9b9797]">
-              <span className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                {formattedDate}
-              </span>
-              <span className="flex items-center gap-1">
-                <Eye className="h-4 w-4" />
-                {article.views} vues
-              </span>
-            </div>
           </header>
 
           {article.coverImage && (
@@ -202,17 +210,6 @@ export default async function ArticleDetailPage({ params }: PageProps) {
               </ul>
             </div>
           )}
-
-          <div className="mt-8 border-t border-[#d7d3d3] pt-8">
-            <div className="flex items-center justify-end gap-3">
-              <FavoriteButton articleId={article.id} />
-              <ShareButton
-                title={article.title}
-                excerpt={article.excerpt}
-                articlePath={getArticlePublicPath(article)}
-              />
-            </div>
-          </div>
 
           <ArticleEngagement articleId={article.id} />
 

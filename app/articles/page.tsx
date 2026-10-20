@@ -7,6 +7,7 @@ import { ArticleList } from '@/components/organisms';
 import { SearchBar } from '@/components/molecules';
 import { Select } from '@/components/atoms';
 import { Article, Category, ArticleListResponse } from '@/types';
+import { fetchNewsFilArticles, NewsFilArticle, NewsFilHorizontal } from '@/components/organisms/NewsFil';
 
 function ArticlesContent() {
   const router = useRouter();
@@ -16,6 +17,7 @@ function ArticlesContent() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
+  const [filArticles, setFilArticles] = useState<NewsFilArticle[]>([]);
   
   const currentPage = Number(searchParams.get('page')) || 1;
   const categoryFilter = searchParams.get('category') || '';
@@ -70,6 +72,21 @@ function ArticlesContent() {
     fetchData();
   }, [currentPage, categoryFilter, sectionFilter, searchQuery]);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetchNewsFilArticles()
+      .then((items) => {
+        if (!cancelled) setFilArticles(items);
+      })
+      .catch(() => {
+        if (!cancelled) setFilArticles([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', String(page));
@@ -102,9 +119,14 @@ function ArticlesContent() {
   return (
     <div className="py-8">
         <div className="mx-auto max-w-360 px-5 sm:px-9">
-          <div className="mb-8">
-            <h1 className="text-3xl font-extrabold text-[#201e1d]">Articles</h1>
-            <p className="mt-2 text-[#605d5d]">Découvrez toutes nos actualités</p>
+          <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center">
+            <div className="shrink-0">
+              <h1 className="text-3xl font-extrabold text-[#201e1d]">Articles</h1>
+              <p className="mt-2 text-[#605d5d]">Découvrez toutes nos actualités</p>
+            </div>
+            <div className="min-w-0 flex-1">
+              <NewsFilHorizontal articles={filArticles} />
+            </div>
           </div>
 
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

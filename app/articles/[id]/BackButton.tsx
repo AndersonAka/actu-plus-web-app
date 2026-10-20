@@ -52,7 +52,7 @@ export function BackButton({ countryCode, countryName }: BackButtonProps) {
   };
 
   return (
-    <div className="mb-6 flex items-center gap-4">
+    <div className="flex items-center gap-4">
       <button
         onClick={handleBack}
         className="inline-flex items-center gap-2 text-sm text-[#605d5d] hover:text-[#ec3013] transition-colors"
