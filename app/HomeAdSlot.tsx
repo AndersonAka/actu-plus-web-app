@@ -28,13 +28,13 @@ export function HomeAdSlot() {
         <span className="relative h-8 min-w-0 flex-1 overflow-hidden">
           <span className="home-ad-cycle block">
             {[...LINES, LINES[0]].map((line, index) => (
-              <span key={`${line}-${index}`} className="flex h-8 items-center truncate text-xl font-bold text-[#201e1d]">
+              <span key={`${line}-${index}`} className="flex h-8 items-center truncate text-base font-bold text-[#201e1d] sm:text-xl">
                 {line}
               </span>
             ))}
           </span>
         </span>
-        <span className="shrink-0 text-xs font-extrabold uppercase tracking-[0.08em] text-[#ec3013]">
+        <span className="hidden shrink-0 text-xs font-extrabold uppercase tracking-[0.08em] text-[#ec3013] sm:inline">
           Découvrir
         </span>
       </Link>

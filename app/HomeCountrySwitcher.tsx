@@ -27,7 +27,7 @@ export function HomeCountrySwitcher() {
   if (countries.length === 0) return null;
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center overflow-x-auto">
       <span className="mr-3.5 text-[11px] font-semibold uppercase tracking-widest text-[#605d5d]">Pays</span>
       <div className="flex items-stretch border-l border-[var(--public-divider)]">
         {countries.map((country) => (

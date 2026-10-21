@@ -8,6 +8,7 @@ import { HomeAuthButton } from './HomeAuthButton';
 import { HomeHeroCarousel } from './HomeHeroCarousel';
 import { NewsFil } from '@/components/organisms/NewsFil';
 import { HomeAdSlot } from './HomeAdSlot';
+import { HomeMobileMenu } from './HomeMobileMenu';
 import { Search, ArrowRight } from 'lucide-react';
 import { getArticlePublicPath } from '@/lib/articles/article-url';
 import { formatDistanceToNow } from 'date-fns';
@@ -256,7 +257,8 @@ export default async function HomePage() {
     <div className={`${archivo.className} bg-white text-[#201e1d]`} style={{ fontSize: 15, lineHeight: 1.55 }}>
       <div className="mx-auto max-w-[1440px]">
         {/* MASTHEAD */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-[var(--public-divider)] px-5 py-4 sm:px-10">
+        <HomeMobileMenu economieId={economie?.id} politiqueId={politique?.id} />
+        <div className="hidden flex-wrap items-center gap-x-6 gap-y-3 border-b border-[var(--public-divider)] px-5 py-4 sm:px-10 lg:flex">
           <Link href="/" className="shrink-0">
             <Image src="/images/logo-actu-plus.webp" alt="Actu Plus" width={180} height={57} priority unoptimized className="h-12 w-auto sm:h-14" />
           </Link>
@@ -310,8 +312,8 @@ export default async function HomePage() {
         </div>
 
         {/* NAV */}
-        <div className="flex items-center gap-4 border-b border-[var(--public-divider)] px-5 py-2 sm:px-10">
-          <div className="min-w-0 flex-1">
+        <div className="flex flex-col gap-3 border-b border-[var(--public-divider)] px-5 py-3 sm:px-10 lg:flex-row lg:items-center lg:gap-4 lg:py-2">
+          <div className="min-w-0 lg:flex-1">
             <HomeAdSlot />
           </div>
           <HomeCountrySwitcher />
